@@ -5,22 +5,28 @@ description: 把 site/ 發佈到 GitHub Pages。觸發條件：使用者說 publ
 
 # Library Publisher
 
-## 首次部署
+架構：整個 workshop 是單一 repo（`books-for-owen`，main branch），
+GitHub Pages 從 `gh-pages` branch 供站，內容 = `site/` 的 subtree split。
+站台網址：https://levichen.github.io/books-for-owen/
+
+## 首次部署（已於 2026-07-10 完成，留作參考）
 
 ```bash
-cd site
-git init && git add -A && git commit -m "feat: Owen's little library"
-gh repo create owen-books --public --source=. --push
-gh api -X POST repos/{owner}/owen-books/pages -f "source[branch]=main" -f "source[path]=/" || true
-# 或 repo Settings → Pages → main /(root)
-echo "https://$(gh api user -q .login).github.io/owen-books/"
+# repo 根目錄
+git init -b main && git add -A && git commit -m "feat: ..."
+gh repo create books-for-owen --public --source=. --push
+git subtree split --prefix site -b gh-pages && git push origin gh-pages
+gh api -X POST repos/{owner}/books-for-owen/pages -f "source[branch]=gh-pages" -f "source[path]=/" || true
 ```
 
 ## 日常更新（新書上架）
 
 ```bash
 cd src && python3 render_site.py
-cd ../site && git add -A && git commit -m "feat: add <slug>" && git push
+cd .. && git add -A && git commit -m "feat: add <slug>" && git push origin main
+# 重新切 gh-pages 並強推（subtree split 的 history 不連續，force 是預期行為）
+git branch -D gh-pages 2>/dev/null; git subtree split --prefix site -b gh-pages
+git push -f origin gh-pages
 ```
 
 ## 發佈前檢核
