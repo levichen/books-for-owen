@@ -328,7 +328,7 @@ BOOK = {
     "title_zh": "安靜的早晨",
     "subtitle": "Owen's morning story",
     "tagline_zh": "Owen 的早晨故事",
-    "chips": ["Social Story", "Morning", "10 pages"],
+    "chips": ["Social Story", "Morning", "12 pages"],
     "pdf_name": "My_Quiet_Morning.pdf",
     "bg": BG,
     "pages": PAGES,
