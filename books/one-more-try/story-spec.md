@@ -3,7 +3,7 @@
 - behavior_target: 過度在意輸贏——賽前焦慮追問「輸了會怎樣」、賽中覺得要輸就賴皮不玩（fear of losing / quitting mid-game）
 - cue_phrase: "One more try!"（完整口訣：Big breath → Keep playing → One more try!）
 - new_vocabulary: [strike, quit, home run]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（場邊，跨書角色）；隊友不具名（通用小孩）
 - 服裝備註：球場頁穿 100 號球衣；p1 開場維持招牌白色小士兵 T-shirt。眼鏡＋齊瀏海＋迷彩短褲全書不變
 - 劇情備註：依 Levi 指定含 home run 與跑壘（p8）；Owen 個人成功但**球隊當天輸球**（p9）——刻意設計，讓「表現好」與「贏」脫鉤

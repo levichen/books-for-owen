@@ -3,7 +3,7 @@
 - behavior_target: 排隊時心急插隊（cutting in line / can't wait for turn）
 - cue_phrase: "Wait my spot!"（完整口訣：Glue → Cheer → Wait my spot!）
 - new_vocabulary: [jumpy, glue, cheer]（p5 的 superpower 為已習得詞彙——save-my-answer 已教，系列儀式詞不計新字，見 context/owen.md）
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（場邊）、朋友 Lucas、朋友 Ann（隊友）
 - 服裝備註：球場頁穿 39 號球衣（新辨識元素）；p1 開場維持招牌白色小士兵 T-shirt。眼鏡＋齊瀏海＋迷彩短褲全書不變
 

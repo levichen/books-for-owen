@@ -25,12 +25,13 @@
 | 口訣 | 行為 | 書 | 狀態 |
 |---|---|---|---|
 | Hand up → Wait → **Save it!** | 上課搶答 | save-my-answer | 已出版 |
-| Glue → Cheer → **Wait my spot!** | 插隊／排隊心急 | wait-my-spot | 草稿 |
-| Big breath → Keep playing → **One more try!** | 輸贏焦慮／賴皮 | one-more-try | 草稿 |
+| Glue → Cheer → **Wait my spot!** | 插隊／排隊心急 | wait-my-spot | 已出版 |
+| Big breath → Keep playing → **One more try!** | 輸贏焦慮／賴皮 | one-more-try | 已出版 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）
 
-**已習得詞彙**（已出版書籍教過，跨書重用不計入該書新字上限）：itchy、superpower、pocket（來自 save-my-answer）。
+**已習得詞彙**（已出版書籍教過，跨書重用不計入該書新字上限）：itchy、superpower、pocket（save-my-answer）；
+jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try）。
 其中 **superpower** 是系列固定儀式詞——每本 p5 都用 "STOP! I use my superpower&hellip;" 開場，刻意跨書重複。
 新書出版後，其 new_vocabulary 併入此清單。
 
