@@ -10,12 +10,13 @@
   足球 **0 號**；背號本身即辨識元素；眼鏡＋瀏海＋短褲仍不變，開場/學校頁維持白 T
 - 家規（2026-07 議定）：早上 **6:30** 才能叫媽媽起床（Owen 會看時鐘，數字鐘顯示 6:30 為準）
 
-## 跨書角色（2026-07 登記）
+## 跨書角色（2026-07 登記；**全部是 Owen 生活中的真實人物**，僅卡通化呈現）
 
-- 媽媽 **April**（wait-my-spot、one-more-try 場邊；quiet-morning 主角級配角）
+- 媽媽 **April**（wait-my-spot、one-more-try 場邊；quiet-morning、statue-time、my-cup-only 主角級配角）
+- 爸爸 **Daddy**（freeze-and-look 帶足球練習＋吹哨）
 - 朋友 **Lucas**、朋友 **Ann**（wait-my-spot 隊友；Lucas 亦為 freeze-and-look 隊友）
 - 同學 **Ethan**（eyes-on-teacher；不小心碰到 Owen 的好朋友，非壞人設定）
-- 爸爸 **Daddy**（freeze-and-look 帶足球練習＋吹哨；真實人物）
+- 老師 **Tr. Mina**（save-my-answer、eyes-on-teacher）
 
 ## 行為模型（教養診斷結論，2026-07）
 
@@ -33,9 +34,14 @@
 | Check my clock → Play quiet → **Wait for 6:30!** | 清晨吵醒媽媽 | quiet-morning | 已出版 |
 | Catch my brain → Play later → **Eyes on teacher!** | 上課分心 | eyes-on-teacher | 已出版 |
 | Freeze → Look → **Listen!**（喊法：Freeze and look!） | 玩太 high 聽不進勸 | freeze-and-look | 已出版 |
+| Feet down → Hands on knees → **Statue time!** | 照護時間亂動（吹髮/洗澡/刷牙） | statue-time | 草稿 |
+| Stop → Find my name → **My cup only!** | 喝別人的杯子 | my-cup-only | 草稿 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
-body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）
+body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
+body feels wiggly（照護亂動）、"Whose bottle is this?"（拿杯前先問）
+
+口訣區隔備忘：**Freeze**（被叫到瞬間停）vs **Statue**（照護期間持續不動）是兩顆不同的肌肉，不可混用。
 
 **已習得詞彙**（已出版書籍教過，跨書重用不計入該書新字上限）：itchy、superpower、pocket（save-my-answer）；
 jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try）；
@@ -45,10 +51,8 @@ bounce、tiptoe、whisper（quiet-morning）；puppy、giggle、catch（eyes-on-
 
 ## 行為主題 backlog（下一本書從這裡挑）
 
-1. **喝別人的杯子**（衛生／物權）— 候選口訣：My cup only / My name, my cup；可沿用球場喝水休息場景（2026-07 新增）
-2. 吹頭髮亂動（低優先，任務化即可，未必需要成書）
-
-（已出 backlog：插隊→wait-my-spot、玩太high→freeze-and-look、早上5:30→quiet-morning，均 2026-07）
+（目前清空。已出 backlog：插隊→wait-my-spot、玩太high→freeze-and-look、早上5:30→quiet-morning、
+吹頭髮亂動→statue-time、喝別人杯子→my-cup-only，均 2026-07）
 
 ## 出版原則
 
