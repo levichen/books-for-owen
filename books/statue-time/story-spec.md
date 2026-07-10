@@ -3,7 +3,7 @@
 - behavior_target: 大人照護身體時亂動（吹頭髮、洗澡、刷牙）——安裝「雕像模式」的持續靜止腳本；主場景吹頭髮，p9 轉移到洗澡與刷牙
 - cue_phrase: "Statue time!"（完整口訣：Feet down → Hands on knees → Statue time!）
 - new_vocabulary: [wiggly, statue, dryer]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（吹頭髮的人，跨書角色）
 - 與 freeze-and-look 的區隔：Freeze 是「被叫到就瞬間停」，Statue 是「照護期間持續不動」——兩個口訣對應兩種肌肉，家長頁要講清楚
 - 服裝備註：居家情境全程白 T（浴巾/睡衣感由場景配件表達），眼鏡＋瀏海不變

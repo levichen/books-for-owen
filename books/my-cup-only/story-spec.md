@@ -3,7 +3,7 @@
 - behavior_target: 喝到別人的杯子/水壺（衛生與物權）——安裝「停手 → 找名字 → 只喝自己的」腳本
 - cue_phrase: "My cup only!"（完整口訣：Stop → Find my name → My cup only!）
 - new_vocabulary: [thirsty, germs, bottle]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（送水／確認的人）、Lucas、Ann（隊友，跨書角色）
 - 場景：籃球練習的喝水休息時間（沿用 wait-my-spot 的球場與 39 號球衣資產）；水壺上有名字貼紙是關鍵視覺
 - 家長配合前提：Owen 的水壺要貼大大的名字貼紙（書裡畫的樣子＝現實的樣子）
