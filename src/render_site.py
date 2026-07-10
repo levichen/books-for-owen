@@ -22,9 +22,9 @@ body{{font-family:'Huninn',system-ui,sans-serif;background:#FBF4E8;display:flex;
 header{{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}}
 header a{{color:#8A7460;text-decoration:none;font-size:15px;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
 header .ttl{{color:#4A3B32;font-size:16px}}
-#stage{{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:6px 12px}}
-.pg{{display:none;width:min(96vw,1080px,calc((100vh - 170px)*2.12));width:min(96vw,1080px,calc((100dvh - 170px)*2.12))}}
-body.fs .pg{{width:min(96vw,1080px,calc((100vh - 110px)*2.12));width:min(96vw,1080px,calc((100dvh - 110px)*2.12))}}
+#stage{{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:14px 12px}}
+.pg{{display:none;width:min(96vw,1080px,calc((100vh - 185px)*2.12));width:min(96vw,1080px,calc((100dvh - 185px)*2.12))}}
+body.fs .pg{{width:min(96vw,1080px,calc((100vh - 125px)*2.12));width:min(96vw,1080px,calc((100dvh - 125px)*2.12))}}
 .pg.on{{display:block}}
 .card{{background:var(--bg,#FFE9A8);border-radius:26px;padding:14px;box-shadow:0 10px 30px rgba(74,59,50,.12)}}
 .art svg{{width:100%;height:auto;display:block}}
@@ -59,6 +59,7 @@ button{{border:none;cursor:pointer;font-family:inherit}}
         background:rgba(74,59,50,.55);color:#fff;font-size:14px;box-shadow:none}}
 body.fs header{{display:none}}
 body.fs #fsexit{{display:flex}}
+body.fs #cnt{{display:none}}
 @media (max-width:719px){{ #fsbtn span{{display:none}} }}
 /* 橫向手機：視口矮，壓縮間距並加大高度預算，讓整頁塞進畫面 */
 @media (max-height:520px){{
@@ -68,10 +69,10 @@ body.fs #fsexit{{display:flex}}
  #prev,#next{{width:44px;height:44px;font-size:19px}}
  #cnt{{bottom:6px;font-size:12px}}
  .cover-ttl{{padding:2px 0 6px}} .cover-ttl .t1{{font-size:24px}} .cover-ttl .t2{{font-size:12px}}
- .pg,.pg.on{{width:min(96vw,calc((100vh - 135px)*2.12))}}
- .pg,.pg.on{{width:min(96vw,calc((100dvh - 135px)*2.12))}}
- body.fs .pg{{width:min(96vw,calc((100vh - 95px)*2.12))}}
- body.fs .pg{{width:min(96vw,calc((100dvh - 95px)*2.12))}}
+ .pg,.pg.on{{width:min(96vw,calc((100vh - 148px)*2.12))}}
+ .pg,.pg.on{{width:min(96vw,calc((100dvh - 148px)*2.12))}}
+ body.fs .pg{{width:min(96vw,calc((100vh - 112px)*2.12))}}
+ body.fs .pg{{width:min(96vw,calc((100dvh - 112px)*2.12))}}
 }}
 """
     js = """
