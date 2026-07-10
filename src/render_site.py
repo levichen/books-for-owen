@@ -49,13 +49,26 @@ button:disabled{{background:#E5D9C9;box-shadow:none;cursor:default}}
 #cnt{{color:#8A7460;font-size:15px;min-width:64px;text-align:center}}
 #fsbtn{{display:flex;align-items:center;gap:6px;width:auto;height:auto;background:#fff;color:#8A7460;
       font-size:15px;font-family:inherit;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
-#fsexit{{display:none;position:fixed;top:12px;right:12px;z-index:9;width:auto;height:auto;
+#fsexit{{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:9;width:auto;height:auto;
         align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-family:inherit;
         background:rgba(74,59,50,.55);color:#fff;font-size:14px;box-shadow:none}}
 body.fs header{{display:none}}
 body.fs #fsexit{{display:flex}}
 @media (max-width:719px){{ #fsbtn span{{display:none}} }}
 @media (min-width:720px){{ .pg{{width:min(88vw,920px)}} }}
+/* 橫向手機：視口矮，改用可視高度反推卡片寬（插圖比例 1188:560 ≈ 2.12），讓整頁塞進畫面 */
+@media (max-height:520px){{
+ header{{padding:6px 16px}}
+ .card{{padding:10px;border-radius:18px}}
+ .band{{padding:8px 14px;font-size:15px;margin-top:8px}}
+ footer{{padding:6px 0 8px}}
+ footer button{{width:44px;height:44px;font-size:19px}}
+ .cover-ttl{{padding:2px 0 6px}} .cover-ttl .t1{{font-size:24px}} .cover-ttl .t2{{font-size:12px}}
+ .pg,.pg.on{{width:min(96vw,calc((100vh - 205px)*2.12))}}
+ .pg,.pg.on{{width:min(96vw,calc((100dvh - 205px)*2.12))}}
+ body.fs .pg{{width:min(96vw,calc((100vh - 150px)*2.12))}}
+ body.fs .pg{{width:min(96vw,calc((100dvh - 150px)*2.12))}}
+}}
 """
     js = """
 const pgs=[...document.querySelectorAll('.pg')];let i=0;
@@ -116,7 +129,9 @@ go(0);
 </div></div></section>""")
 
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>{BOOK_TITLE_EN} · Owen's Library</title>
 <meta name="robots" content="noindex">
 <style>{css}</style></head><body>
