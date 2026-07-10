@@ -1,5 +1,6 @@
 dist/
 .venv/
+assets/fonts/
 __pycache__/
 *.pyc
 subset_chars.txt
