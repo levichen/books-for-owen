@@ -3,7 +3,7 @@
 - behavior_target: 玩太 high 時聽不進大人的話（high arousal, can't hear adults）——安裝「哨音/叫名字 = 全身結冰 → 看 → 聽」的身體開關
 - cue_phrase: "Freeze and look!"（完整口訣：Freeze → Look → Listen!）
 - new_vocabulary: [freeze, whistle]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：爸爸 Daddy（真實人物，場上帶練習＋吹哨；parts.py 新增角色）、Lucas（隊友，跨書角色）
 - 服裝備註：球場頁穿足球 **0 號**球衣（綠色系）；p1 開場維持白 T。眼鏡＋瀏海＋短褲不變
 - 設計備註：freeze 要包裝成好玩的遊戲（像紅綠燈/木頭人），不是處罰；哨音與叫名字都是觸發

@@ -3,7 +3,7 @@
 - behavior_target: 上課分心後把注意力帶回來（refocusing in class）——兩種觸發、同一腳本：①Ethan 不小心碰到他就玩起來 ②自己想到好笑的事自顧自笑
 - cue_phrase: "Eyes on teacher!"（完整口訣：Catch my brain → Play later → Eyes on teacher!）
 - new_vocabulary: [puppy, giggle, catch]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：Tr. Mina（老師，跨書角色）、同學 **Ethan**（新角色，需登記——不是壞人，碰到 Owen 是不小心的）
 - 隱喻設計：大腦＝小狗（brain puppy），有趣的東西一出現就跑走；分心不是壞，發現牠跑了、叫回來就是超能力。小狗吉祥物由本書場景函式自畫（非人類角色，不受 parts.py 限制），全書造型必須一致：淡紫色圓身小狗＋腦紋捲毛頭頂
 - 服裝備註：全書白 T（教室情境，無球衣）

@@ -3,7 +3,7 @@
 - behavior_target: 清晨 5:30 醒來吵醒媽媽（waking mommy too early）——給兩個合法選項：安靜窩在旁邊、或自己安靜玩，等時鐘 6:30 才叫媽媽
 - cue_phrase: "Wait for 6:30!"（完整口訣：Check my clock → Play quiet → Wait for 6:30!）
 - new_vocabulary: [bounce, tiptoe, whisper]（bounce 為本書身體訊號詞）
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（睡覺／被溫柔叫醒）
 - 前提道具（家長需配合）：Owen 床邊放一個看得清楚的數字時鐘；安靜玩具角（書、積木、畫紙）前一晚備好
 - 服裝備註：全書睡衣情境——上衣仍用招牌白色小士兵 T-shirt 當睡衣（不引入新衣），眼鏡＋瀏海不變
