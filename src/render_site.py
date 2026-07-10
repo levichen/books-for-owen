@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Build a GitHub Pages static site: Owen's little library + interactive book reader.
-Single content source (build_book.PAGES / scenes) -> web renderer."""
-import os, re, subprocess, html
-from render_pdf import PAGES, PARENT_TIPS, BG, scene_cover, TXT
+"""Build the GitHub Pages static site: Owen's little library + 每本書的互動 reader。
+單一內容源（book_<slug>.py 的 BOOK dict）→ web 渲染；書籍清單由 books_all 自動發現。"""
+import os
+import subprocess
+import html
+from book_common import TXT
+from books_all import load_books
 
 SITE = "../site"
-BOOK_SLUG = "save-my-answer"
-BOOK_TITLE_EN = "I Can Save My Answer!"
-BOOK_TITLE_ZH = "把答案存起來"
 
-os.makedirs(f"{SITE}/assets", exist_ok=True)
-os.makedirs(f"{SITE}/books/{BOOK_SLUG}", exist_ok=True)
 
 # ---------------------------------------------------------------- reader page
-def reader_html():
+def reader_html(book):
+    bg = book["bg"]
+    title_en = f"{book['title_pre']}{book['title_hi']}{book['title_post']}"
     css = f"""
 @font-face {{ font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }}
 *{{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}}
@@ -106,16 +106,16 @@ go(0);
 
     # cover
     secs.append(f"""
-<section class="pg" style="--bg:{BG['cover']}"><div class="card">
-  <div class="cover-ttl"><div class="t1">I Can <span>Save</span> My Answer!</div>
-  <div class="t2">&#9733; Owen's superpower story &#9733;</div></div>
-  <div class="art">{scene_cover()}</div>
+<section class="pg" style="--bg:{bg['cover']}"><div class="card">
+  <div class="cover-ttl"><div class="t1">{book['title_pre']}<span>{book['title_hi']}</span>{book['title_post']}</div>
+  <div class="t2">&#9733; {book['subtitle']} &#9733;</div></div>
+  <div class="art">{book['cover']()}</div>
 </div></section>""")
 
     # story pages
-    for key, fn, text in PAGES:
+    for key, fn, text in book["pages"]:
         secs.append(f"""
-<section class="pg" style="--bg:{BG[key]}"><div class="card">
+<section class="pg" style="--bg:{bg[key]}"><div class="card">
   <div class="art">{fn()}</div>
   <div class="band">{text}</div>
 </div></section>""")
@@ -123,32 +123,33 @@ go(0);
     # parent page
     tips = "".join(
         f'<div class="tip"><div class="n">{i+1}</div><div><b>{t}</b>&nbsp;&mdash;&nbsp;{d}</div></div>'
-        for i, (t, d) in enumerate(PARENT_TIPS))
+        for i, (t, d) in enumerate(book["parent_tips"]))
     secs.append(f"""
-<section class="pg" style="--bg:{BG['p11']}"><div class="card"><div class="parent">
+<section class="pg" style="--bg:{bg['p11']}"><div class="card"><div class="parent">
   <h2>給爸爸媽媽的使用說明</h2>
-  <div class="sub">這是一本社會故事（Social Story）。它的目標不是「講道理」，而是替 Owen 安裝一套<b>當下用得出來的動作腳本</b>。</div>
+  <div class="sub">{book['parent_intro']}</div>
   {tips}
-  <div class="cue">口訣（全書通關密語）：<b>Hand up &rarr; Wait &rarr; Save it!</b>&nbsp;
-  當他哪天主動說出 &ldquo;My mouth feels itchy&rdquo;（我察覺到衝動了），就是最值得大力稱讚的時刻。</div>
+  <div class="cue">{book['cue_html']}</div>
 </div></div></section>""")
 
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>{BOOK_TITLE_EN} · Owen's Library</title>
+<title>{title_en} · Owen's Library</title>
 <meta name="robots" content="noindex">
 <style>{css}</style></head><body>
-<header><a href="../../index.html">&larr; 書架 Bookshelf</a><div class="ttl">{BOOK_TITLE_EN}</div>
+<header><a href="../../index.html">&larr; 書架 Bookshelf</a><div class="ttl">{title_en}</div>
 <button id="fsbtn" aria-label="全螢幕"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>全螢幕</span></button></header>
 <div id="stage">{''.join(secs)}</div>
 <button id="fsexit" aria-label="離開全螢幕"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>離開全螢幕</button>
-<button id="prev" aria-label="previous page">&#8249;</button><button id="next" aria-label="next page">&#8250;</button><div id="cnt"></div>
+<footer><button id="prev" aria-label="previous page">&#8249;</button><button id="next" aria-label="next page">&#8250;</button><div id="cnt"></div></footer>
 <script>{js}</script></body></html>"""
 
+
 # ---------------------------------------------------------------- library page
-def library_html():
+def library_html(books):
+    first_bg = books[0]["bg"]["cover"]
     css = f"""
 @font-face {{ font-family:'Huninn'; src:url('assets/huninn.woff2') format('woff2'); font-display:swap; }}
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -159,7 +160,7 @@ h1{{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}}
 .book{{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 8px 26px rgba(74,59,50,.10);
       display:flex;flex-direction:column;text-decoration:none}}
-.thumb{{background:{BG['cover']};padding:12px}}
+.thumb{{padding:12px}}
 .thumb svg{{width:100%;height:auto;display:block;border-radius:12px}}
 .meta{{padding:14px 16px 18px}}
 .meta .t{{color:#4A3B32;font-size:19px}}
@@ -172,6 +173,21 @@ h1{{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}}
       color:#B8A88F;font-size:15px;min-height:220px;background:transparent}}
 footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 """
+    cards = []
+    for b in books:
+        title_en = f"{b['title_pre']}{b['title_hi']}{b['title_post']}"
+        chips = "".join(f'<span class="chip">{c}</span>' for c in b["chips"])
+        cards.append(f"""
+  <a class="book" href="books/{b['slug']}/index.html">
+    <div class="thumb" style="background:{b['bg']['cover']}">{b['cover']()}</div>
+    <div class="meta">
+      <div class="t">{title_en}</div>
+      <div class="z">{b['title_zh']} &mdash; {b['tagline_zh']}</div>
+      <div class="chips">{chips}</div>
+      <span class="read">Read &rarr;</span>
+    </div>
+  </a>""")
+
     return f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen's Little Library · 小小圖書館</title>
@@ -179,52 +195,43 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 <style>{css}</style></head><body><div class="wrap">
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
-<div class="grid">
-  <a class="book" href="books/{BOOK_SLUG}/index.html">
-    <div class="thumb">{scene_cover()}</div>
-    <div class="meta">
-      <div class="t">{BOOK_TITLE_EN}</div>
-      <div class="z">{BOOK_TITLE_ZH} &mdash; Owen 的超能力故事</div>
-      <div class="chips"><span class="chip">Social Story</span><span class="chip">English</span><span class="chip">12 pages</span></div>
-      <span class="read">Read &rarr;</span>
-    </div>
-  </a>
+<div class="grid">{''.join(cards)}
   <div class="soon">更多繪本製作中&hellip;</div>
 </div>
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
 </div></body></html>"""
 
+
 # ---------------------------------------------------------------- README
 README = """# Owen's Little Library
 
-專屬 Owen 的繪本書架（GitHub Pages 靜態站）。
-
-## 部署
-1. 建一個 repo（例如 `owen-books`），把本資料夾內容推上 `main`。
-2. Repo Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save。
-3. 網址：`https://<username>.github.io/owen-books/`
-
-## 新增一本書
-1. 複製 `books/save-my-answer/` 成新資料夾（一本書 = 一個自包含的 index.html）。
-2. 在根目錄 `index.html` 的 `.grid` 內加一張書卡。
-3. 若新書用到新的中文字，重新子集化 `assets/huninn.woff2`（fonttools pyftsubset）。
+專屬 Owen 的繪本書架（GitHub Pages 靜態站）。本資料夾由 src/render_site.py 產生，勿手改。
 
 > 注意：GitHub Pages 免費方案為公開網站。本站已加 `noindex`（不進搜尋引擎），但知道網址的人都能開啟。
 """
 
 # ---------------------------------------------------------------- build
 if __name__ == "__main__":
-    reader = reader_html()
-    lib = library_html()
-    with open(f"{SITE}/books/{BOOK_SLUG}/index.html", "w", encoding="utf-8") as f:
-        f.write(reader)
+    books = load_books()
+    all_html = []
+    for book in books:
+        os.makedirs(f"{SITE}/books/{book['slug']}", exist_ok=True)
+        reader = reader_html(book)
+        with open(f"{SITE}/books/{book['slug']}/index.html", "w", encoding="utf-8") as f:
+            f.write(reader)
+        all_html.append(reader)
+
+    lib = library_html(books)
+    os.makedirs(f"{SITE}/assets", exist_ok=True)
     with open(f"{SITE}/index.html", "w", encoding="utf-8") as f:
         f.write(lib)
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
 
     # font subset: every unique char used across the site (incl. unescaped entities)
-    chars = set(html.unescape(reader) + html.unescape(lib) + README)
+    chars = set(html.unescape(lib) + README)
+    for r in all_html:
+        chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
     text = "".join(sorted(c for c in chars if ord(c) >= 32))
     with open("subset_chars.txt", "w", encoding="utf-8") as f:
@@ -233,4 +240,4 @@ if __name__ == "__main__":
                     "--text-file=subset_chars.txt",
                     f"--output-file={SITE}/assets/huninn.woff2",
                     "--flavor=woff2"], check=True)
-    print("site built:", sum(len(files) for _, _, files in os.walk(SITE)), "files")
+    print("site built:", len(books), "books,", sum(len(files) for _, _, files in os.walk(SITE)), "files")

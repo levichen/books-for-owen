@@ -153,8 +153,11 @@ def tee_print():
             f'<rect x="3" y="16" width="7" height="10" rx="2" fill="{PRINT_GREEN}"/>'
             f'<rect x="-4" y="29" width="8" height="8" rx="2" fill="{PRINT_GREEN}"/></g>')
 
-def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=False):
-    """pose: stand | walk | handup | hips | wave | sit(bust w/ desk handled by scene)"""
+def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=False, jersey=None):
+    """pose: stand | walk | handup | hips | wave | jump | swing | run
+    jersey: (號碼字串, 底色, 深色描邊) — 球場頁球衣蓋掉白T；眼鏡/瀏海/短褲不變。
+    落地公式：stand/handup/hips/wave/swing feet_y = cy+228*scale；
+    walk/run 前腳約 cy+228*scale；jump 為騰空姿勢，腳底約 cy+214*scale。"""
     b = []
     # cape (behind everything)
     if cape:
@@ -173,6 +176,16 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
         b.append(f'<path d="M 14 210 L 26 246" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
         b.append(f'<ellipse cx="-26" cy="258" rx="17" ry="10" fill="#C9BFA8"/>')
         b.append(f'<ellipse cx="31" cy="252" rx="17" ry="10" fill="#C9BFA8"/>')
+    elif pose == "jump":  # 騰空：膝蓋微收
+        b.append(f'<path d="M -14 208 Q -30 222 -22 236" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<path d="M 14 208 Q 30 222 22 236" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<ellipse cx="-26" cy="242" rx="16" ry="10" fill="#C9BFA8"/>')
+        b.append(f'<ellipse cx="26" cy="242" rx="16" ry="10" fill="#C9BFA8"/>')
+    elif pose == "run":  # 跑：前腳踏地、後腳後勾
+        b.append(f'<path d="M 14 206 L 40 240" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<path d="M -14 206 Q -36 216 -52 206" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<ellipse cx="46" cy="248" rx="17" ry="10" fill="#C9BFA8"/>')
+        b.append(f'<ellipse cx="-60" cy="208" rx="15" ry="10" fill="#C9BFA8" transform="rotate(-24 -60 208)"/>')
     else:
         b.append(f'<path d="M -14 210 L -14 252" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
         b.append(f'<path d="M 14 210 L 14 252" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
@@ -183,9 +196,16 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
     b.append(f'<path d="M -34 178 L 34 178 L 38 222 L 8 222 L 0 200 L -8 222 L -38 222 Z" fill="{SHORTS}"/>')
     b.append(f'<circle cx="-18" cy="196" r="6" fill="{SHORTS_DK}"/><circle cx="16" cy="208" r="7" fill="{SHORTS_DK}"/><circle cx="4" cy="188" r="5" fill="{SHORTS_DK}"/>')
 
-    # torso tee
-    b.append(f'<path d="M -40 96 Q 0 84 40 96 L 46 118 Q 50 124 42 128 L 38 122 L 38 182 L -38 182 L -38 122 L -42 128 Q -50 124 -46 118 Z" fill="{TEE}" stroke="{TEE_LINE}" stroke-width="3"/>')
-    b.append(f'<g transform="translate(0,116)">{tee_print()}</g>')
+    # torso: jersey（球衣＋號碼）或招牌白 T
+    if jersey:
+        jnum, jfill, jline = jersey
+        b.append(f'<path d="M -40 96 Q 0 84 40 96 L 46 118 Q 50 124 42 128 L 38 122 L 38 182 L -38 182 L -38 122 L -42 128 Q -50 124 -46 118 Z" fill="{jfill}" stroke="{jline}" stroke-width="3"/>')
+        b.append(f'<path d="M -40 96 Q 0 110 40 96" fill="none" stroke="{jline}" stroke-width="4"/>')  # 領口
+        fs = 46 if len(jnum) <= 2 else 36
+        b.append(f'<text x="0" y="152" font-family="Huninn" font-size="{fs}" font-weight="bold" fill="#FFFFFF" stroke="{jline}" stroke-width="1.5" text-anchor="middle">{jnum}</text>')
+    else:
+        b.append(f'<path d="M -40 96 Q 0 84 40 96 L 46 118 Q 50 124 42 128 L 38 122 L 38 182 L -38 182 L -38 122 L -42 128 Q -50 124 -46 118 Z" fill="{TEE}" stroke="{TEE_LINE}" stroke-width="3"/>')
+        b.append(f'<g transform="translate(0,116)">{tee_print()}</g>')
 
     # straps if backpack
     if backpack:
@@ -207,6 +227,17 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
         b.append(f'<circle cx="-52" cy="162" r="11" fill="{SKIN}"/>')
         b.append(f'<path d="M 40 106 Q 60 126 56 152" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
         b.append(f'<circle cx="56" cy="156" r="11" fill="{SKIN}"/>')
+    elif pose == "swing":  # 揮棒：雙臂走胸前低位再伸向右側，避開臉；雙手交疊在 (90,78) 附近
+        b.append(f'<path d="M -40 106 Q 10 118 84 84" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<path d="M 40 106 Q 68 104 88 88" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="88" cy="80" r="12" fill="{SKIN}"/><circle cx="96" cy="90" r="11" fill="{SKIN}"/>')
+    elif pose == "run":  # 跑：前臂前擺、後臂後擺
+        b.append(f'<path d="M 40 106 Q 76 94 92 68" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="94" cy="62" r="11" fill="{SKIN}"/>')
+        b.append(f'<path d="M -40 106 Q -68 128 -80 150" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="-82" cy="154" r="11" fill="{SKIN}"/>')
+    elif pose == "jump":
+        pass  # 雙手都畫在 head 之後
     else:  # stand
         b.append(f'<path d="M -40 106 Q -54 138 -48 162" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
         b.append(f'<circle cx="-48" cy="166" r="11" fill="{SKIN}"/>')
@@ -224,16 +255,28 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
     elif pose == "wave":
         b.append(f'<path d="M 42 102 Q 86 56 88 -18" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
         b.append(f'<circle cx="88" cy="-26" r="13" fill="{SKIN}"/>')
+    elif pose == "jump":  # 雙手高舉過頭（上籃/歡呼），弧線外推避開臉
+        b.append(f'<path d="M 44 104 Q 98 24 76 -56" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="74" cy="-64" r="13" fill="{SKIN}"/>')
+        b.append(f'<path d="M -44 104 Q -98 24 -76 -56" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="-74" cy="-64" r="13" fill="{SKIN}"/>')
     inner = "".join(b)
     # head placed: head center at y≈34; body shoulders at 96
     return f'<g transform="translate({cx},{cy}) scale({scale})"><g transform="translate(0,-30)">{inner}</g></g>'
 
 
-def boy_bust(expr="smile", scale=1.0, cx=0, cy=0, arms="desk"):
-    """Bust for desk scenes: head + shoulders + arms on desk."""
+def boy_bust(expr="smile", scale=1.0, cx=0, cy=0, arms="desk", jersey=None):
+    """Bust for desk/close-up scenes: head + shoulders + arms. jersey 同 boy()。"""
     b = []
-    b.append(f'<path d="M -46 96 Q 0 82 46 96 L 52 150 L -52 150 Z" fill="{TEE}" stroke="{TEE_LINE}" stroke-width="3"/>')
-    b.append(f'<g transform="translate(0,112) scale(0.9)">{tee_print()}</g>')
+    if jersey:
+        jnum, jfill, jline = jersey
+        b.append(f'<path d="M -46 96 Q 0 82 46 96 L 52 150 L -52 150 Z" fill="{jfill}" stroke="{jline}" stroke-width="3"/>')
+        b.append(f'<path d="M -46 96 Q 0 108 46 96" fill="none" stroke="{jline}" stroke-width="4"/>')
+        fs = 34 if len(jnum) <= 2 else 27
+        b.append(f'<text x="0" y="136" font-family="Huninn" font-size="{fs}" font-weight="bold" fill="#FFFFFF" stroke="{jline}" stroke-width="1.2" text-anchor="middle">{jnum}</text>')
+    else:
+        b.append(f'<path d="M -46 96 Q 0 82 46 96 L 52 150 L -52 150 Z" fill="{TEE}" stroke="{TEE_LINE}" stroke-width="3"/>')
+        b.append(f'<g transform="translate(0,112) scale(0.9)">{tee_print()}</g>')
     if arms == "desk":
         b.append(f'<path d="M -46 104 Q -70 128 -58 148" stroke="{SKIN}" stroke-width="16" stroke-linecap="round" fill="none"/>')
         b.append(f'<path d="M 46 104 Q 70 128 58 148" stroke="{SKIN}" stroke-width="16" stroke-linecap="round" fill="none"/>')
@@ -311,6 +354,93 @@ def kid(variant=0, cx=0, cy=0, scale=1.0, expr="think"):
     k.append(f'<ellipse cx="26" cy="28" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
     inner = "".join(k)
     return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+def april(cx=0, cy=0, scale=1.0, pose="wave"):
+    """媽媽 April：珊瑚色洋裝＋棕色馬尾。pose: wave（單手揮）| cheer（雙手高舉）| stand
+    落地：鞋底約 cy + 212*scale（同 teacher）。"""
+    DRESS = "#F2917E"
+    DRESS_DK = "#D9705C"
+    AHAIR = "#6B4A35"
+    a = []
+    # dress
+    a.append(f'<path d="M -34 70 Q 0 58 34 70 L 44 178 L -44 178 Z" fill="{DRESS}"/>')
+    a.append(f'<path d="M -44 178 L 44 178" stroke="{DRESS_DK}" stroke-width="4"/>')
+    # arms
+    if pose == "cheer":
+        a.append(f'<path d="M -32 82 Q -70 40 -76 -6" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="-77" cy="-12" r="10" fill="{SKIN}"/>')
+        a.append(f'<path d="M 32 82 Q 70 40 76 -6" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="77" cy="-12" r="10" fill="{SKIN}"/>')
+    elif pose == "wave":
+        a.append(f'<path d="M 32 82 Q 68 48 78 4" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="80" cy="-2" r="10" fill="{SKIN}"/>')
+        a.append(f'<path d="M -32 84 Q -50 116 -42 140" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="-42" cy="144" r="9" fill="{SKIN}"/>')
+    else:  # stand
+        a.append(f'<path d="M -32 84 Q -50 116 -42 140" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="-42" cy="144" r="9" fill="{SKIN}"/>')
+        a.append(f'<path d="M 32 84 Q 50 116 42 140" stroke="{SKIN}" stroke-width="14" stroke-linecap="round" fill="none"/>')
+        a.append(f'<circle cx="42" cy="144" r="9" fill="{SKIN}"/>')
+    # legs + shoes
+    a.append(f'<path d="M -14 178 L -14 206" stroke="{SKIN}" stroke-width="12" stroke-linecap="round"/>')
+    a.append(f'<path d="M 14 178 L 14 206" stroke="{SKIN}" stroke-width="12" stroke-linecap="round"/>')
+    a.append(f'<ellipse cx="-15" cy="212" rx="13" ry="7" fill="#B0574A"/><ellipse cx="15" cy="212" rx="13" ry="7" fill="#B0574A"/>')
+    # head：圓臉＋瀏海（沿用 teacher 驗證過的髮頂路徑）＋高馬尾
+    a.append(f'<circle cx="0" cy="20" r="40" fill="{SKIN}"/>')
+    a.append(f'<path d="M -40 14 C -42 -30 42 -30 40 14 L 40 4 Q 20 -14 0 -8 Q -20 -14 -40 4 Z" fill="{AHAIR}"/>')
+    a.append(f'<circle cx="24" cy="-26" r="13" fill="{AHAIR}"/>')
+    a.append(f'<path d="M 32 -20 Q 54 2 46 32 Q 40 8 26 -12 Z" fill="{AHAIR}"/>')  # 馬尾垂落
+    a.append(f'<circle cx="-14" cy="18" r="4" fill="{LINE}"/><circle cx="14" cy="18" r="4" fill="{LINE}"/>')
+    a.append(f'<path d="M -10 34 Q 0 42 10 34" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+    a.append(f'<ellipse cx="-26" cy="30" rx="7" ry="4" fill="{BLUSH}" fill-opacity="0.7"/>')
+    a.append(f'<ellipse cx="26" cy="30" rx="7" ry="4" fill="{BLUSH}" fill-opacity="0.7"/>')
+    inner = "".join(a)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+def lucas(cx=0, cy=0, scale=1.0, expr="smile"):
+    """朋友 Lucas＝kid variant 1（捲髮男孩、綠衣）。跨書固定映射，勿換 variant。"""
+    return kid(variant=1, cx=cx, cy=cy, scale=scale, expr=expr)
+
+
+def ann(cx=0, cy=0, scale=1.0, expr="smile"):
+    """朋友 Ann＝kid variant 0（雙馬尾女孩、黃衣）。跨書固定映射，勿換 variant。"""
+    return kid(variant=0, cx=cx, cy=cy, scale=scale, expr=expr)
+
+
+# ---------------- SPORTS PROPS ----------------
+def basketball(cx=0, cy=0, r=26):
+    p = [f'<circle cx="0" cy="0" r="{r}" fill="#E8823C" stroke="#B85E22" stroke-width="3"/>',
+         f'<line x1="0" y1="{-r}" x2="0" y2="{r}" stroke="#B85E22" stroke-width="3"/>',
+         f'<line x1="{-r}" y1="0" x2="{r}" y2="0" stroke="#B85E22" stroke-width="3"/>',
+         f'<path d="M {-r*0.72:.0f} {-r*0.72:.0f} Q {r*0.30:.0f} 0 {-r*0.72:.0f} {r*0.72:.0f}" fill="none" stroke="#B85E22" stroke-width="3"/>',
+         f'<path d="M {r*0.72:.0f} {-r*0.72:.0f} Q {-r*0.30:.0f} 0 {r*0.72:.0f} {r*0.72:.0f}" fill="none" stroke="#B85E22" stroke-width="3"/>']
+    return f'<g transform="translate({cx},{cy})">{"".join(p)}</g>'
+
+
+def hoop(cx=0, cy=0, scale=1.0):
+    """籃框：籃板＋籃圈＋網。籃圈中心在 (0,0)，籃板在上方，柱子由場景自行決定要不要畫。"""
+    p = [f'<rect x="-52" y="-96" width="104" height="72" rx="8" fill="#FFF7E6" stroke="#C9A26B" stroke-width="5"/>',
+         f'<rect x="-24" y="-58" width="48" height="34" rx="4" fill="none" stroke="#E4574C" stroke-width="4"/>',
+         f'<ellipse cx="0" cy="0" rx="34" ry="9" fill="none" stroke="#E4574C" stroke-width="6"/>',
+         f'<path d="M -30 4 L -16 44 M -12 6 L -4 46 M 12 6 L 4 46 M 30 4 L 16 44 M -16 44 Q 0 52 16 44" fill="none" stroke="#DDD3C2" stroke-width="3"/>']
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{"".join(p)}</g>'
+
+
+def baseball(cx=0, cy=0, r=14):
+    p = [f'<circle cx="0" cy="0" r="{r}" fill="#FFFFFF" stroke="#C9BFA8" stroke-width="2.5"/>',
+         f'<path d="M {-r*0.5:.0f} {-r*0.87:.0f} Q {-r*1.05:.0f} 0 {-r*0.5:.0f} {r*0.87:.0f}" fill="none" stroke="#E4574C" stroke-width="2.5"/>',
+         f'<path d="M {r*0.5:.0f} {-r*0.87:.0f} Q {r*1.05:.0f} 0 {r*0.5:.0f} {r*0.87:.0f}" fill="none" stroke="#E4574C" stroke-width="2.5"/>']
+    return f'<g transform="translate({cx},{cy})">{"".join(p)}</g>'
+
+
+def bat(cx=0, cy=0, angle=-40, scale=1.0):
+    """球棒：握把端在 (0,0)，往右上延伸；angle 為旋轉角（度，負值朝上）。"""
+    p = [f'<path d="M 0 0 L 96 0" stroke="#C89355" stroke-width="14" stroke-linecap="round"/>',
+         f'<path d="M 96 0 L 132 0" stroke="#B87F42" stroke-width="20" stroke-linecap="round"/>',
+         f'<circle cx="-2" cy="0" r="9" fill="#8A5A3C"/>']
+    return f'<g transform="translate({cx},{cy}) rotate({angle}) scale({scale})">{"".join(p)}</g>'
 
 
 def desk(cx=0, cy=0, w=240, scale=1.0):
