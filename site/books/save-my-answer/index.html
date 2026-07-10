@@ -13,7 +13,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 header a{color:#8A7460;text-decoration:none;font-size:15px;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 header .ttl{color:#4A3B32;font-size:16px}
 #stage{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:6px 12px}
-.pg{display:none;width:min(96vw,920px)}
+.pg{display:none;width:min(96vw,1080px,calc((100vh - 170px)*2.12));width:min(96vw,1080px,calc((100dvh - 170px)*2.12))}
+body.fs .pg{width:min(96vw,1080px,calc((100vh - 110px)*2.12));width:min(96vw,1080px,calc((100dvh - 110px)*2.12))}
 .pg.on{display:block}
 .card{background:var(--bg,#FFE9A8);border-radius:26px;padding:14px;box-shadow:0 10px 30px rgba(74,59,50,.12)}
 .art svg{width:100%;height:auto;display:block}
@@ -32,11 +33,15 @@ header .ttl{color:#4A3B32;font-size:16px}
            align-items:center;justify-content:center;font-size:14px;flex:none;margin-top:2px}
 .parent .cue{margin-top:12px;background:#FBF4E8;border-radius:12px;padding:10px 14px;font-size:14px;color:#8A7460}
 .parent .cue b{color:#E4574C}
-footer{display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 0 16px}
-button{width:58px;height:58px;border:none;border-radius:50%;background:#E4574C;color:#fff;
-       font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(228,87,76,.35);display:flex;align-items:center;justify-content:center}
-button:disabled{background:#E5D9C9;box-shadow:none;cursor:default}
-#cnt{color:#8A7460;font-size:15px;min-width:64px;text-align:center}
+button{border:none;cursor:pointer;font-family:inherit}
+#prev,#next{position:fixed;top:50%;transform:translateY(-50%);z-index:8;width:52px;height:52px;border-radius:50%;
+ background:rgba(228,87,76,.9);color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(228,87,76,.3);
+ display:flex;align-items:center;justify-content:center}
+#prev{left:max(8px,env(safe-area-inset-left))}
+#next{right:max(8px,env(safe-area-inset-right))}
+#prev:disabled,#next:disabled{background:rgba(229,217,201,.75);box-shadow:none;cursor:default}
+#cnt{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:8;
+ color:#8A7460;font-size:13px;background:rgba(255,255,255,.85);border-radius:999px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 #fsbtn{display:flex;align-items:center;gap:6px;width:auto;height:auto;background:#fff;color:#8A7460;
       font-size:15px;font-family:inherit;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 #fsexit{display:none;position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:9;width:auto;height:auto;
@@ -45,19 +50,18 @@ button:disabled{background:#E5D9C9;box-shadow:none;cursor:default}
 body.fs header{display:none}
 body.fs #fsexit{display:flex}
 @media (max-width:719px){ #fsbtn span{display:none} }
-@media (min-width:720px){ .pg{width:min(88vw,920px)} }
-/* 橫向手機：視口矮，改用可視高度反推卡片寬（插圖比例 1188:560 ≈ 2.12），讓整頁塞進畫面 */
+/* 橫向手機：視口矮，壓縮間距並加大高度預算，讓整頁塞進畫面 */
 @media (max-height:520px){
  header{padding:6px 16px}
  .card{padding:10px;border-radius:18px}
  .band{padding:8px 14px;font-size:15px;margin-top:8px}
- footer{padding:6px 0 8px}
- footer button{width:44px;height:44px;font-size:19px}
+ #prev,#next{width:44px;height:44px;font-size:19px}
+ #cnt{bottom:6px;font-size:12px}
  .cover-ttl{padding:2px 0 6px} .cover-ttl .t1{font-size:24px} .cover-ttl .t2{font-size:12px}
- .pg,.pg.on{width:min(96vw,calc((100vh - 205px)*2.12))}
- .pg,.pg.on{width:min(96vw,calc((100dvh - 205px)*2.12))}
- body.fs .pg{width:min(96vw,calc((100vh - 150px)*2.12))}
- body.fs .pg{width:min(96vw,calc((100dvh - 150px)*2.12))}
+ .pg,.pg.on{width:min(96vw,calc((100vh - 135px)*2.12))}
+ .pg,.pg.on{width:min(96vw,calc((100dvh - 135px)*2.12))}
+ body.fs .pg{width:min(96vw,calc((100vh - 95px)*2.12))}
+ body.fs .pg{width:min(96vw,calc((100dvh - 95px)*2.12))}
 }
 </style></head><body>
 <header><a href="../../index.html">&larr; 書架 Bookshelf</a><div class="ttl">I Can Save My Answer!</div>
@@ -116,7 +120,7 @@ body.fs #fsexit{display:flex}
   當他哪天主動說出 &ldquo;My mouth feels itchy&rdquo;（我察覺到衝動了），就是最值得大力稱讚的時刻。</div>
 </div></div></section></div>
 <button id="fsexit" aria-label="離開全螢幕"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>離開全螢幕</button>
-<footer><button id="prev" aria-label="previous page">&#8249;</button><div id="cnt"></div><button id="next" aria-label="next page">&#8250;</button></footer>
+<button id="prev" aria-label="previous page">&#8249;</button><button id="next" aria-label="next page">&#8250;</button><div id="cnt"></div>
 <script>
 const pgs=[...document.querySelectorAll('.pg')];let i=0;
 const prev=document.getElementById('prev'),next=document.getElementById('next'),cnt=document.getElementById('cnt');
