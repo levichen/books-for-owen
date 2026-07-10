@@ -35,9 +35,18 @@ button{width:58px;height:58px;border:none;border-radius:50%;background:#E4574C;c
        font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(228,87,76,.35);display:flex;align-items:center;justify-content:center}
 button:disabled{background:#E5D9C9;box-shadow:none;cursor:default}
 #cnt{color:#8A7460;font-size:15px;min-width:64px;text-align:center}
+#fsbtn{display:flex;align-items:center;gap:6px;width:auto;height:auto;background:#fff;color:#8A7460;
+      font-size:15px;font-family:inherit;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+#fsexit{display:none;position:fixed;top:12px;right:12px;z-index:9;width:auto;height:auto;
+        align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-family:inherit;
+        background:rgba(74,59,50,.55);color:#fff;font-size:14px;box-shadow:none}
+body.fs header{display:none}
+body.fs #fsexit{display:flex}
+@media (max-width:719px){ #fsbtn span{display:none} }
 @media (min-width:720px){ .pg{width:min(88vw,920px)} }
 </style></head><body>
-<header><a href="../../index.html">&larr; 書架 Bookshelf</a><div class="ttl">I Can Save My Answer!</div><div style="width:110px"></div></header>
+<header><a href="../../index.html">&larr; 書架 Bookshelf</a><div class="ttl">I Can Save My Answer!</div>
+<button id="fsbtn" aria-label="全螢幕"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>全螢幕</span></button></header>
 <div id="stage">
 <section class="pg" style="--bg:#FFE9A8"><div class="card">
   <div class="cover-ttl"><div class="t1">I Can <span>Save</span> My Answer!</div>
@@ -91,6 +100,7 @@ button:disabled{background:#E5D9C9;box-shadow:none;cursor:default}
   <div class="cue">口訣（全書通關密語）：<b>Hand up &rarr; Wait &rarr; Save it!</b>&nbsp;
   當他哪天主動說出 &ldquo;My mouth feels itchy&rdquo;（我察覺到衝動了），就是最值得大力稱讚的時刻。</div>
 </div></div></section></div>
+<button id="fsexit" aria-label="離開全螢幕"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>離開全螢幕</button>
 <footer><button id="prev" aria-label="previous page">&#8249;</button><div id="cnt"></div><button id="next" aria-label="next page">&#8250;</button></footer>
 <script>
 const pgs=[...document.querySelectorAll('.pg')];let i=0;
@@ -106,5 +116,16 @@ let sx=0;
 document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;},{passive:true});
 document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;
  if(Math.abs(dx)>60)go(i+(dx<0?1:-1));},{passive:true});
+// 全螢幕：桌機/Android/iPad 走 Fullscreen API；iPhone Safari 不支援，退回 CSS 假全螢幕（body.fs）
+const root=document.documentElement;
+function setFS(on){document.body.classList.toggle('fs',on);
+ if(on){if(root.requestFullscreen)root.requestFullscreen().catch(()=>{});
+  else if(root.webkitRequestFullscreen)root.webkitRequestFullscreen();}
+ else{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();
+  else if(document.webkitFullscreenElement&&document.webkitExitFullscreen)document.webkitExitFullscreen();}}
+document.getElementById('fsbtn').onclick=()=>setFS(true);
+document.getElementById('fsexit').onclick=()=>setFS(false);
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{
+ if(!(document.fullscreenElement||document.webkitFullscreenElement))document.body.classList.remove('fs');}));
 go(0);
 </script></body></html>
