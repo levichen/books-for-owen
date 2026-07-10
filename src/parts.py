@@ -110,6 +110,11 @@ def head(expr="smile", scale=1.0, cx=0, cy=0):
         e.append(f'<path d="M -36 -27 Q -27 -31 -18 -27" fill="none" stroke="{HAIR}" stroke-width="5" stroke-linecap="round"/>')
         e.append(f'<path d="M 18 -27 Q 27 -31 36 -27" fill="none" stroke="{HAIR}" stroke-width="5" stroke-linecap="round"/>')
         e.append(f'<circle cx="-27" cy="0" r="5" fill="{LINE}"/><circle cx="27" cy="0" r="5" fill="{LINE}"/>')
+    elif expr == "sleep":  # 安詳閉眼（睡覺/被窩），眉毛放鬆
+        e.append(f'<path d="M -36 -27 Q -27 -30 -18 -27" fill="none" stroke="{HAIR}" stroke-width="5" stroke-linecap="round"/>')
+        e.append(f'<path d="M 18 -27 Q 27 -30 36 -27" fill="none" stroke="{HAIR}" stroke-width="5" stroke-linecap="round"/>')
+        e.append(f'<path d="M -34 2 Q -27 8 -20 2" fill="none" stroke="{LINE}" stroke-width="5" stroke-linecap="round"/>')
+        e.append(f'<path d="M 20 2 Q 27 8 34 2" fill="none" stroke="{LINE}" stroke-width="5" stroke-linecap="round"/>')
 
     # nose
     e.append(f'<path d="M -3 14 Q 0 18 3 14" fill="none" stroke="{SKIN_DK}" stroke-width="4" stroke-linecap="round"/>')
@@ -137,6 +142,8 @@ def head(expr="smile", scale=1.0, cx=0, cy=0):
         e.append(f'<path d="M -6 40 Q 0 43 6 40" fill="none" stroke="{SKIN_DK}" stroke-width="4" stroke-linecap="round"/>')
     elif expr == "proud":
         e.append(f'<path d="M -14 28 Q 0 38 14 28" fill="none" stroke="{LINE}" stroke-width="6" stroke-linecap="round"/>')
+    elif expr == "sleep":
+        e.append(f'<path d="M -8 30 Q 0 34 8 30" fill="none" stroke="{LINE}" stroke-width="5" stroke-linecap="round"/>')
     elif expr == "oh":
         e.append(f'<ellipse cx="0" cy="30" rx="8" ry="10" fill="#8C4A3C"/>')
     elif expr == "think":
@@ -186,6 +193,11 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
         b.append(f'<path d="M -14 206 Q -36 216 -52 206" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
         b.append(f'<ellipse cx="46" cy="248" rx="17" ry="10" fill="#C9BFA8"/>')
         b.append(f'<ellipse cx="-60" cy="208" rx="15" ry="10" fill="#C9BFA8" transform="rotate(-24 -60 208)"/>')
+    elif pose == "kick":  # 踢球：左腳站立、右腳前踢（球由場景畫在腳尖 (cx+72s, cy+160s) 附近）
+        b.append(f'<path d="M -14 210 L -14 252" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<ellipse cx="-16" cy="258" rx="17" ry="10" fill="#C9BFA8"/>')
+        b.append(f'<path d="M 14 206 Q 44 208 62 186" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
+        b.append(f'<ellipse cx="70" cy="182" rx="16" ry="10" fill="#C9BFA8" transform="rotate(-34 70 182)"/>')
     else:
         b.append(f'<path d="M -14 210 L -14 252" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
         b.append(f'<path d="M 14 210 L 14 252" stroke="{SKIN}" stroke-width="18" stroke-linecap="round" fill="none"/>')
@@ -238,6 +250,11 @@ def boy(pose="stand", expr="smile", scale=1.0, cx=0, cy=0, backpack=False, cape=
         b.append(f'<circle cx="-82" cy="154" r="11" fill="{SKIN}"/>')
     elif pose == "jump":
         pass  # 雙手都畫在 head 之後
+    elif pose == "kick":  # 平衡手：左臂後擺、右臂側舉
+        b.append(f'<path d="M -40 106 Q -72 122 -86 144" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="-88" cy="148" r="11" fill="{SKIN}"/>')
+        b.append(f'<path d="M 40 106 Q 72 96 90 78" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
+        b.append(f'<circle cx="92" cy="72" r="11" fill="{SKIN}"/>')
     else:  # stand
         b.append(f'<path d="M -40 106 Q -54 138 -48 162" stroke="{SKIN}" stroke-width="17" stroke-linecap="round" fill="none"/>')
         b.append(f'<circle cx="-48" cy="166" r="11" fill="{SKIN}"/>')
@@ -324,25 +341,31 @@ def teacher(cx=0, cy=0, scale=1.0, point="right", expr="smile"):
 
 
 def kid(variant=0, cx=0, cy=0, scale=1.0, expr="think"):
-    """Simple friend characters (no glasses, different hair/colors)."""
-    shirt = ["#F6C445", "#7BC47F", "#F49AB5"][variant % 3]
-    hairc = ["#5A4632", "#20201F", "#7A4A2C"][variant % 3]
-    skin = ["#FFD9B6", "#E8B98C", "#FFD9B6"][variant % 3]
+    """Simple friend characters (no glasses, different hair/colors).
+    variant: 0=Ann(雙馬尾黃衣) 1=Lucas(捲髮綠衣) 2=bob女孩粉衣 3=Ethan(刺蝟頭藍衣)"""
+    shirt = ["#F6C445", "#7BC47F", "#F49AB5", "#5CA8E8"][variant % 4]
+    hairc = ["#5A4632", "#20201F", "#7A4A2C", "#3A2E24"][variant % 4]
+    skin = ["#FFD9B6", "#E8B98C", "#FFD9B6", "#FFD9B6"][variant % 4]
     k = []
     k.append(f'<path d="M -34 78 Q 0 66 34 78 L 38 150 L -38 150 Z" fill="{shirt}"/>')
     k.append(f'<path d="M -34 86 Q -52 108 -44 128" stroke="{skin}" stroke-width="13" stroke-linecap="round" fill="none"/>')
     k.append(f'<path d="M 34 86 Q 52 108 44 128" stroke="{skin}" stroke-width="13" stroke-linecap="round" fill="none"/>')
     k.append(f'<circle cx="0" cy="16" r="42" fill="{skin}"/>')
-    if variant % 3 == 0:  # girl twin tails
+    if variant % 4 == 0:  # girl twin tails
         k.append(f'<path d="M -42 10 C -44 -34 44 -34 42 10 L 42 0 Q 0 -18 -42 0 Z" fill="{hairc}"/>')
         k.append(f'<circle cx="-46" cy="18" r="12" fill="{hairc}"/><circle cx="46" cy="18" r="12" fill="{hairc}"/>')
-    elif variant % 3 == 1:  # curly boy
+    elif variant % 4 == 1:  # curly boy
         k.append(f'<path d="M -42 8 C -46 -36 46 -36 42 8 L 42 -2 Q 0 -20 -42 -2 Z" fill="{hairc}"/>')
         k.append(f'<circle cx="-30" cy="-24" r="10" fill="{hairc}"/><circle cx="-10" cy="-30" r="11" fill="{hairc}"/>'
                  f'<circle cx="12" cy="-30" r="11" fill="{hairc}"/><circle cx="30" cy="-24" r="10" fill="{hairc}"/>')
-    else:  # bob girl
+    elif variant % 4 == 2:  # bob girl
         k.append(f'<path d="M -42 26 C -48 -34 48 -34 42 26 L 30 26 Q 34 -6 0 -8 Q -34 -6 -30 26 Z" fill="{hairc}"/>')
         k.append(f'<circle cx="32" cy="0" r="5" fill="#F0608A"/>')
+    else:  # spiky boy (Ethan)
+        k.append(f'<path d="M -42 8 C -46 -34 46 -34 42 8 L 42 -2 Q 0 -18 -42 -2 Z" fill="{hairc}"/>')
+        k.append(f'<polygon points="-34,-22 -26,-42 -20,-24" fill="{hairc}"/>'
+                 f'<polygon points="-14,-26 -4,-46 4,-27" fill="{hairc}"/>'
+                 f'<polygon points="12,-26 22,-44 28,-23" fill="{hairc}"/>')
     if expr == "think":
         k.append(f'<circle cx="-14" cy="16" r="4.5" fill="{LINE}"/><circle cx="14" cy="16" r="4.5" fill="{LINE}"/>')
         k.append(f'<path d="M -8 32 Q 0 35 8 32" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
@@ -397,6 +420,115 @@ def april(cx=0, cy=0, scale=1.0, pose="wave"):
     a.append(f'<ellipse cx="26" cy="30" rx="7" ry="4" fill="{BLUSH}" fill-opacity="0.7"/>')
     inner = "".join(a)
     return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+def ethan(cx=0, cy=0, scale=1.0, expr="smile"):
+    """同學 Ethan＝kid variant 3（刺蝟頭男孩、藍衣）。跨書固定映射，勿換 variant。"""
+    return kid(variant=3, cx=cx, cy=cy, scale=scale, expr=expr)
+
+
+def daddy(cx=0, cy=0, scale=1.0, pose="stand", whistle=False):
+    """爸爸 Daddy：戴同款圓框眼鏡（親子呼應）＋短黑髮＋藍綠 polo。
+    pose: stand | point（右指）| cheer（雙手高舉）。鞋底 ≈ cy + 216*scale。"""
+    POLO = "#3E8E8C"
+    POLO_DK = "#2E6D6B"
+    d = []
+    # polo 上衣
+    d.append(f'<path d="M -38 66 Q 0 54 38 66 L 44 150 L -44 150 Z" fill="{POLO}"/>')
+    d.append(f'<path d="M -10 66 L 0 84 L 10 66" fill="none" stroke="{POLO_DK}" stroke-width="4"/>')
+    # arms
+    if pose == "point":
+        d.append(f'<path d="M 34 80 Q 78 64 100 44" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="104" cy="40" r="10" fill="{SKIN}"/>')
+        d.append(f'<path d="M -34 82 Q -54 114 -46 138" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="-46" cy="142" r="9" fill="{SKIN}"/>')
+    elif pose == "cheer":
+        d.append(f'<path d="M -34 80 Q -74 36 -80 -10" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="-81" cy="-16" r="10" fill="{SKIN}"/>')
+        d.append(f'<path d="M 34 80 Q 74 36 80 -10" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="81" cy="-16" r="10" fill="{SKIN}"/>')
+    else:
+        d.append(f'<path d="M -34 82 Q -54 114 -46 138" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="-46" cy="142" r="9" fill="{SKIN}"/>')
+        d.append(f'<path d="M 34 82 Q 54 114 46 138" stroke="{SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/>')
+        d.append(f'<circle cx="46" cy="142" r="9" fill="{SKIN}"/>')
+    # 卡其短褲＋腿
+    d.append(f'<path d="M -32 150 L 32 150 L 34 184 L 6 184 L 0 168 L -6 184 L -34 184 Z" fill="#C9B48A"/>')
+    d.append(f'<path d="M -14 184 L -14 210" stroke="{SKIN}" stroke-width="13" stroke-linecap="round"/>')
+    d.append(f'<path d="M 14 184 L 14 210" stroke="{SKIN}" stroke-width="13" stroke-linecap="round"/>')
+    d.append(f'<ellipse cx="-15" cy="216" rx="14" ry="8" fill="#7A6A50"/><ellipse cx="15" cy="216" rx="14" ry="8" fill="#7A6A50"/>')
+    # 哨子（掛繩）
+    if whistle:
+        d.append(f'<path d="M -12 66 Q 0 96 12 66" fill="none" stroke="#8A7460" stroke-width="3"/>')
+        d.append(f'<rect x="-8" y="94" width="18" height="12" rx="5" fill="#F2B035" stroke="#C98A18" stroke-width="2.5"/>')
+    # head：方一點的臉＋短黑髮＋圓框眼鏡
+    d.append(f'<circle cx="0" cy="16" r="38" fill="{SKIN}"/>')
+    d.append(f'<path d="M -38 10 C -40 -30 40 -30 38 10 L 38 0 Q 18 -14 0 -10 Q -18 -14 -38 0 Z" fill="{HAIR}"/>')
+    d.append(f'<circle cx="-16" cy="14" r="13" fill="#FFFFFF" fill-opacity="0.25" stroke="#161616" stroke-width="5"/>')
+    d.append(f'<circle cx="16" cy="14" r="13" fill="#FFFFFF" fill-opacity="0.25" stroke="#161616" stroke-width="5"/>')
+    d.append(f'<path d="M -4 12 Q 0 9 4 12" fill="none" stroke="#161616" stroke-width="4" stroke-linecap="round"/>')
+    d.append(f'<circle cx="-16" cy="14" r="3.5" fill="{LINE}"/><circle cx="16" cy="14" r="3.5" fill="{LINE}"/>')
+    d.append(f'<path d="M -9 36 Q 0 43 9 36" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+    inner = "".join(d)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+def april_asleep(cx=0, cy=0, scale=1.0):
+    """睡著的媽媽 April：枕頭＋側躺頭（閉眼）＋被子隆起。頭中心在原點，被子往右延伸約 220。"""
+    DRESS_DK = "#D9705C"
+    AHAIR = "#6B4A35"
+    a = []
+    a.append(f'<ellipse cx="-6" cy="18" rx="64" ry="26" fill="#FFFFFF" stroke="#E5D9C9" stroke-width="3"/>')  # 枕頭
+    a.append(f'<circle cx="0" cy="0" r="36" fill="{SKIN}"/>')  # 頭
+    a.append(f'<path d="M -36 -6 C -38 -44 38 -44 36 -6 L 36 -14 Q 18 -28 0 -24 Q -18 -28 -36 -14 Z" fill="{AHAIR}"/>')
+    a.append(f'<circle cx="30" cy="-30" r="12" fill="{AHAIR}"/>')  # 髮髻
+    a.append(f'<path d="M -20 2 Q -14 8 -8 2" fill="none" stroke="{LINE}" stroke-width="4" stroke-linecap="round"/>')  # 閉眼
+    a.append(f'<path d="M 8 2 Q 14 8 20 2" fill="none" stroke="{LINE}" stroke-width="4" stroke-linecap="round"/>')
+    a.append(f'<path d="M -4 22 Q 2 26 8 22" fill="none" stroke="{LINE}" stroke-width="3.5" stroke-linecap="round"/>')  # 安詳微笑
+    a.append(f'<ellipse cx="-22" cy="16" rx="6" ry="4" fill="{BLUSH}" fill-opacity="0.6"/>')
+    a.append(f'<path d="M 30 6 Q 40 -2 52 6 L 230 6 Q 250 6 250 30 L 250 44 Q 250 58 230 58 L 44 58 Q 28 58 30 40 Z" fill="#F2A9A0"/>')  # 被子
+    a.append(f'<path d="M 56 6 L 56 58 M 96 6 L 96 58" stroke="{DRESS_DK}" stroke-width="3" stroke-opacity="0.4"/>')
+    inner = "".join(a)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+# ---------------- HOME / SOCCER PROPS ----------------
+def clock_digital(cx=0, cy=0, scale=1.0, time="6:30", glow=False):
+    """數字時鐘：圓角矩形＋螢幕顯示時間。glow=True 時亮金色光暈（6:30 時刻用）。"""
+    c = []
+    if glow:
+        c.append(f'<circle cx="0" cy="0" r="110" fill="{STAR_Y}" fill-opacity="0.16"/>')
+        c.append(f'<circle cx="0" cy="0" r="80" fill="{STAR_Y}" fill-opacity="0.16"/>')
+    c.append(f'<rect x="-70" y="-46" width="140" height="86" rx="16" fill="#5C6BC0" stroke="#3F4E9E" stroke-width="4"/>')
+    c.append(f'<rect x="-56" y="-32" width="112" height="58" rx="8" fill="#1F2440"/>')
+    c.append(f'<text x="0" y="12" font-family="Huninn" font-size="38" font-weight="bold" fill="{"#FFD34D" if glow else "#9FE8B8"}" text-anchor="middle">{time}</text>')
+    c.append(f'<rect x="-26" y="-56" width="52" height="12" rx="6" fill="#3F4E9E"/>')  # 上方按鈕
+    c.append(f'<ellipse cx="-46" cy="46" rx="12" ry="6" fill="#3F4E9E"/><ellipse cx="46" cy="46" rx="12" ry="6" fill="#3F4E9E"/>')
+    inner = "".join(c)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
+def soccer_ball(cx=0, cy=0, r=24):
+    penta = " ".join(f"{r*0.42*math.cos(math.radians(-90+i*72)):.1f},{r*0.42*math.sin(math.radians(-90+i*72)):.1f}" for i in range(5))
+    p = [f'<circle cx="0" cy="0" r="{r}" fill="#FFFFFF" stroke="#4A4A4A" stroke-width="3"/>',
+         f'<polygon points="{penta}" fill="#4A4A4A"/>']
+    for i in range(5):
+        a = math.radians(-90 + i * 72)
+        x1, y1 = r*0.40*math.cos(a), r*0.40*math.sin(a)
+        x2, y2 = r*0.92*math.cos(a), r*0.92*math.sin(a)
+        p.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="#4A4A4A" stroke-width="3"/>')
+    return f'<g transform="translate({cx},{cy})">{"".join(p)}</g>'
+
+
+def goal(cx=0, cy=0, scale=1.0):
+    """足球門：底部中心在原點，寬 280 高 150，含網格。"""
+    g = [f'<path d="M -140 0 L -140 -150 L 140 -150 L 140 0" fill="none" stroke="#FFFFFF" stroke-width="10"/>',
+         f'<path d="M -140 0 L -140 -150 L 140 -150 L 140 0" fill="none" stroke="#D9D2C4" stroke-width="3"/>']
+    for x in range(-120, 140, 28):
+        g.append(f'<line x1="{x}" y1="-144" x2="{x}" y2="-4" stroke="#D9D2C4" stroke-width="2"/>')
+    for y in range(-140, 0, 26):
+        g.append(f'<line x1="-134" y1="{y}" x2="134" y2="{y}" stroke="#D9D2C4" stroke-width="2"/>')
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{"".join(g)}</g>'
 
 
 def lucas(cx=0, cy=0, scale=1.0, expr="smile"):
