@@ -3,7 +3,7 @@
 - behavior_target: 早晨珠心算練習趕著寫、錯很多（rushing through morning math）——安裝「一題一題、指著檢查、慢慢寫」的腳本，提升正確率
 - cue_phrase: "Slow and check!"（完整口訣：One at a time → Point and check → Slow and check!）
 - new_vocabulary: [turtle, check, zoom]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（檢查作業的人，真實人物）
 - 吉祥物：**烏龜**（慢而穩的象徵）——由本書場景函式自畫，全書造型一致：綠色圓殼＋殼上六角紋＋伸長的脖子＋瞇瞇眼微笑；出現在 p5 之後陪在 Owen 桌邊
 - 場景道具：書桌（parts.desk）、珠算盤（算盤框＋兩層珠子，場景自畫）、習題紙（格線＋數字）、鉛筆

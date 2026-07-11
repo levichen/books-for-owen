@@ -3,7 +3,7 @@
 - behavior_target: 玩太 high 時聲音和動作越來越大（loud voice, big body indoors）——安裝「自己注意到 → 檢查音量表 → 轉到 2」的自我調節腳本
 - cue_phrase: "Volume down!"（完整口訣：Check my volume → Pick two → Volume down!）
 - new_vocabulary: [volume, buzzy]（buzzy 為本書內在訊號詞）
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（在旁看書被吵到）、爸爸 Daddy（在沙發休息）——皆真實人物
 - 核心視覺：**音量表 1-2-3**（由本書場景自畫，全書造型一致：三格量表＋指針——1=悄悄話(小老鼠 icon)、2=室內聲(小房子 icon)、3=戶外聲(大太陽 icon)）
 - 與 freeze-and-look 的區隔：Freeze 是「大人叫你、身體開關瞬間停」；本書是「自己發現太大聲、把旋鈕轉小」——自我監控 vs 外部訊號，家長頁要講清楚

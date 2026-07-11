@@ -3,7 +3,7 @@
 - behavior_target: 遊戲互動中忘記使用禮貌語（please／thank you／sorry）——把三個魔法詞掛到匹克球場上的三個自然時刻
 - cue_phrase: "Magic words!"（完整口訣：Please → Thank you → Sorry!）
 - new_vocabulary: [magic, paddle, pickleball]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：爸爸 Daddy（球伴，真實人物）、Ann（對面的球友，跨書角色）
 - 場景：匹克球場（新場景：球網、球拍 paddle、洞洞球）；無背號需求，全書白 T
 - 設計備註：三個詞對應三個球場時刻——要球=Please、拿到幫助=Thank you、球打到人/撞到=Sorry；p4 不羞辱，用「魔法詞躲起來」的隱喻
