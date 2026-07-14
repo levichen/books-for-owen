@@ -77,7 +77,7 @@ def scene_p1():
 
 
 def scene_p2():
-    """p2：球場：籃框在右側，Owen（39 號球衣）排在隊伍最後，前面是 Lucas（持球準備上籃）和 Ann"""
+    """p2：球場：籃框在右側，Owen（39 號球衣）排在隊伍最後，前面是 Lucas（持球準備上籃）和 Anne"""
     e = []
     # 球場地板線
     e.append(f'<rect x="0" y="460" width="1188" height="100" fill="#D4A574"/>')
@@ -85,7 +85,7 @@ def scene_p2():
     # 籃框右邊（中心點高度約 180，柱子自行繪製）
     e.append(f'<rect x="1050" y="390" width="12" height="110" fill="#8B5E52"/>')  # 柱子
     e.append(hoop(cx=1056, cy=390, scale=1.1))
-    # 隊伍排列（左到右）：Lucas > Ann > Owen
+    # 隊伍排列（左到右）：Lucas > Anne > Owen
     e.append(lucas(cx=300, cy=310, scale=1.15, expr="smile"))
     e.append(f'<circle cx="320" cy="240" r="24" fill="#E8823C" stroke="#B85E22" stroke-width="2"/>')  # Lucas 持球
     e.append(ann(cx=550, cy=310, scale=1.15, expr="smile"))
@@ -175,7 +175,7 @@ def scene_p6():
     e = []
     # 地板
     e.append(f'<rect x="0" y="470" width="1188" height="90" fill="#BFE3C2"/>')
-    # 隊伍：Lucas（左側）、Ann（中）、Owen（右側舉手）
+    # 隊伍：Lucas（左側）、Anne（中）、Owen（右側舉手）
     e.append(lucas(cx=280, cy=310, scale=1.0, expr="smile"))
     e.append(ann(cx=560, cy=310, scale=1.0, expr="smile"))
     # Owen 舉手（handup 動作）
@@ -196,7 +196,7 @@ def scene_p6():
 
 
 def scene_p7():
-    """p7：觀點頁：Lucas 和 Ann 各自站在自己的發光 spot 上微笑等待；角落一個灰色小畫面：有人插隊、被插的孩子哭臉"""
+    """p7：觀點頁：Lucas 和 Anne 各自站在自己的發光 spot 上微笑等待；角落一個灰色小畫面：有人插隊、被插的孩子哭臉"""
     e = []
     # 地板
     e.append(f'<rect x="0" y="470" width="1188" height="90" fill="#D4E8D0"/>')
@@ -205,7 +205,7 @@ def scene_p7():
     e.append(f'<circle cx="280" cy="518" r="52" fill="{STAR_Y}" fill-opacity="0.26"/>')
     e.append(f'<circle cx="280" cy="518" r="38" fill="{STAR_Y}" fill-opacity="0.30"/>')
     e.append(f'<circle cx="280" cy="518" r="26" fill="{STAR_Y}" stroke="{STAR_DK}" stroke-width="2.5"/>')
-    # Ann 右邊（有 SPOT）
+    # Anne 右邊（有 SPOT）
     e.append(ann(cx=900, cy=300, scale=1.1, expr="smile"))
     e.append(f'<circle cx="900" cy="518" r="52" fill="{STAR_Y}" fill-opacity="0.26"/>')
     e.append(f'<circle cx="900" cy="518" r="38" fill="{STAR_Y}" fill-opacity="0.30"/>')
@@ -318,12 +318,12 @@ def scene_p10():
 # ============ PAGES ============
 PAGES = [
     ("p1", scene_p1, 'This is me, <b>Owen</b>!<br/>I am number <b>39</b>. I love basketball!'),
-    ("p2", scene_p2, 'We line up to shoot.<br/>Lucas is first, then Ann, then me!'),
+    ("p2", scene_p2, 'We line up to shoot.<br/>Lucas is first, then Anne, then me!'),
     ("p3", scene_p3, 'I want to shoot <b>NOW</b>!<br/>Waiting is so hard.'),
     ("p4", scene_p4, 'My feet feel <b>jumpy</b>!<br/>My legs want to run.<br/><b>Go, go, go</b>, says my heart!'),
     ("p5", scene_p5, '<b>STOP!</b> I use my superpower&hellip;<br/>I <b>glue</b> my feet to my spot!'),
     ("p6", scene_p6, 'I glue my feet down.<br/>I count: one, two.<br/>I <b>cheer</b> for my friends!'),
-    ("p7", scene_p7, 'Lucas waits for his turn.<br/>Ann waits too.<br/>Jumping the line makes friends sad.'),
+    ("p7", scene_p7, 'Lucas waits for his turn.<br/>Anne waits too.<br/>Jumping the line makes friends sad.'),
     ("p8", scene_p8, 'Now it is my turn!<br/>Mom April says, &ldquo;Great waiting, <b>Owen</b>!&rdquo;'),
     ("p9", scene_p9, '<b>Swish!</b> I feel <b>GREAT</b>!<br/>At school, I wait my spot too.'),
     ("p10", scene_p10, 'Glue my feet. Cheer for friends.<br/><b>Wait my spot!</b><br/>I practice every day!'),

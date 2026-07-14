@@ -137,7 +137,7 @@ def scene_p1():
 
 
 def scene_p2():
-    """p2：球場邊長凳：三個水壺排排站（OWEN／LUCAS／ANN，各有名字貼紙），Lucas、Ann 走向"""
+    """p2：球場邊長凳：三個水壺排排站（OWEN／LUCAS／ANNE，各有名字貼紙），Lucas、Anne 走向"""
     e = []
     # 球場地板
     e.append(f'<rect x="0" y="460" width="1188" height="100" fill="#D4A574"/>')
@@ -148,12 +148,12 @@ def scene_p2():
     e.append(f'<rect x="220" y="{bench_y+18}" width="14" height="40" fill="#7A5D52"/>')
     e.append(f'<rect x="760" y="{bench_y+18}" width="14" height="40" fill="#7A5D52"/>')
 
-    # 三個水壺排排站在長凳上（OWEN / LUCAS / ANN）
+    # 三個水壺排排站在長凳上（OWEN / LUCAS / ANNE）
     e.append(bottle(cx=320, cy=350, scale=1.0, name="OWEN", color=BOTTLE_OWEN))
     e.append(bottle(cx=594, cy=350, scale=1.0, name="LUCAS", color=BOTTLE_LUCAS))
-    e.append(bottle(cx=868, cy=350, scale=1.0, name="ANN", color=BOTTLE_ANN))
+    e.append(bottle(cx=868, cy=350, scale=1.0, name="ANNE", color=BOTTLE_ANN))
 
-    # Lucas 和 Ann 走向長凳（左邊 Lucas，右邊 Ann）
+    # Lucas 和 Anne 走向長凳（左邊 Lucas，右邊 Anne）
     e.append(lucas(cx=280, cy=310, scale=1.1, expr="smile"))
     e.append(ann(cx=920, cy=310, scale=1.1, expr="smile"))
 
@@ -192,7 +192,7 @@ def scene_p3():
 
 
 def scene_p4():
-    """p4 **衝動頁**：Owen 雙臂伸向右側（swing 姿勢），伸手抓 ANN 水壺；頭上大「?」，紅熱氣線"""
+    """p4 **衝動頁**：Owen 雙臂伸向右側（swing 姿勢），伸手抓 ANNE 水壺；頭上大「?」，紅熱氣線"""
     e = []
     # 熱氣線（四周蛇形）
     for (x, y) in [(200, 150), (980, 160), (180, 400), (1010, 390)]:
@@ -203,12 +203,12 @@ def scene_p4():
     e.append(boy(pose="swing", expr="big", cx=350, cy=180, scale=1.3, jersey=JERSEY_39))
 
     # swing 姿勢手的位置：(cx+88*scale, cy+50*scale) = (464.4, 245)
-    # ANN 水壺放大（scale=2.2），放在手前方 50px（手指向水壺）
+    # ANNE 水壺放大（scale=2.2），放在手前方 50px（手指向水壺）
     hand_x = 350 + 88 * 1.3  # 464.4
     hand_y = 180 + 50 * 1.3  # 245
     bottle_x = hand_x + 70
     bottle_y = hand_y + 60
-    e.append(bottle(cx=bottle_x, cy=bottle_y, scale=2.2, name="ANN", color=BOTTLE_ANN))
+    e.append(bottle(cx=bottle_x, cy=bottle_y, scale=2.2, name="ANNE", color=BOTTLE_ANN))
 
     # 手到水壺之間的速度線（3 條）
     for i in range(3):
@@ -283,8 +283,8 @@ def scene_p6():
     e.append(svgtext(594, 170, "2", size=36, fill="#4A78A8", weight="bold", anchor="middle"))
     # OWEN 壺（發光，放大，左邊）
     e.append(bottle(cx=470, cy=280, scale=2.8, name="OWEN", color=BOTTLE_OWEN))
-    # ANN 壺（灰化，放大，右邊，距離夠遠不重疊）
-    e.append(bottle(cx=720, cy=280, scale=2.8, name="ANN", color=BOTTLE_ANN, faded=True))
+    # ANNE 壺（灰化，放大，右邊，距離夠遠不重疊）
+    e.append(bottle(cx=720, cy=280, scale=2.8, name="ANNE", color=BOTTLE_ANN, faded=True))
     # 箭頭指向 OWEN 壺
     e.append(f'<path d="M 470 420 L 470 460" fill="none" stroke="{STAR_DK}" stroke-width="6" stroke-linecap="round"/>')
     e.append(f'<polygon points="470,460 462,445 478,445" fill="{STAR_DK}"/>')
@@ -305,16 +305,16 @@ def scene_p6():
 
 
 def scene_p7():
-    """p7：觀點頁：Ann 的水壺上有 2-3 隻放大的可愛 germs，Owen 的水壺乾淨發亮"""
+    """p7：觀點頁：Anne 的水壺上有 2-3 隻放大的可愛 germs，Owen 的水壺乾淨發亮"""
     e = []
     # 背景
     e.append(f'<rect x="0" y="470" width="1188" height="90" fill="#DFF7EB"/>')
 
-    # ANN 的水壺（左邊，放大到 scale=3.2，高度 ~256px）
+    # ANNE 的水壺（左邊，放大到 scale=3.2，高度 ~256px）
     ann_x, ann_y = 310, 280
-    e.append(bottle(cx=ann_x, cy=ann_y, scale=3.2, name="ANN", color=BOTTLE_ANN))
+    e.append(bottle(cx=ann_x, cy=ann_y, scale=3.2, name="ANNE", color=BOTTLE_ANN))
 
-    # 在 ANN 壺上「坐」2-3 隻 germs（大一點，半徑 ~20px）
+    # 在 ANNE 壺上「坐」2-3 隻 germs（大一點，半徑 ~20px）
     # 水壺坐標系：壺身上邊 y≈-80*3.2+280=-16，下邊 y≈80*3.2+280=536
     # germs 位置調整（坐在壺身和瓶蓋上，不飄在空中）
     germs_scale = 1.67  # 12*1.67 ≈ 20px
@@ -377,7 +377,7 @@ def scene_p8():
 
 
 def scene_p9():
-    """p9：Owen 大口喝水（頭仰起、水壺舉高、gulp 泡泡文字），Lucas、Ann 各自拿自己壺乾杯"""
+    """p9：Owen 大口喝水（頭仰起、水壺舉高、gulp 泡泡文字），Lucas、Anne 各自拿自己壺乾杯"""
     e = []
     # 背景
     e.append(f'<rect x="0" y="470" width="1188" height="90" fill="#FFEDEE"/>')
@@ -396,9 +396,9 @@ def scene_p9():
     e.append(lucas(cx=200, cy=300, scale=1.1, expr="smile"))
     e.append(bottle(cx=280, cy=280, scale=0.95, name="LUCAS", color=BOTTLE_LUCAS))
 
-    # Ann 右邊拿自己的壺
+    # Anne 右邊拿自己的壺
     e.append(ann(cx=950, cy=300, scale=1.1, expr="smile"))
-    e.append(bottle(cx=870, cy=280, scale=0.95, name="ANN", color=BOTTLE_ANN))
+    e.append(bottle(cx=870, cy=280, scale=0.95, name="ANNE", color=BOTTLE_ANN))
 
     # 星星點綴
     e.append(star(400, 150, 20))
@@ -436,12 +436,12 @@ def scene_p10():
 # ============ PAGES ============
 PAGES = [
     ("p1", scene_p1, 'This is me, <b>Owen</b>!<br/>I play hard.<br/>I get SO <b>thirsty</b>!'),
-    ("p2", scene_p2, 'Water break!<br/><b>Bottles</b> sit in a row.<br/>Lucas, Ann, and me!'),
+    ("p2", scene_p2, 'Water break!<br/><b>Bottles</b> sit in a row.<br/>Lucas, Anne, and me!'),
     ("p3", scene_p3, 'I am so thirsty!<br/>My mouth is dry, dry, dry!'),
     ("p4", scene_p4, 'My mouth feels dry.<br/>My hands <b>grab, grab, grab</b>!<br/>Wait&mdash;whose bottle is this?'),
     ("p5", scene_p5, '<b>STOP!</b> I use my superpower&hellip;<br/>I look for my <b>name</b>!'),
     ("p6", scene_p6, 'I stop my hands.<br/>I find my name.<br/><b>My cup only!</b>'),
-    ("p7", scene_p7, 'Ann\'s bottle has Ann\'s <b>germs</b>.<br/>Germs can make me sick.<br/>My bottle is just for me!'),
+    ("p7", scene_p7, 'Anne\'s bottle has Anne\'s <b>germs</b>.<br/>Germs can make me sick.<br/>My bottle is just for me!'),
     ("p8", scene_p8, 'Mom April smiles.<br/>&ldquo;That one is yours, <b>Owen</b>!&rdquo;<br/>I found my name!'),
     ("p9", scene_p9, '<b>Gulp, gulp!</b> Cold water!<br/>I feel <b>GREAT</b>!'),
     ("p10", scene_p10, 'Stop. Find my name.<br/><b>My cup only!</b><br/>I practice every day!'),
@@ -452,7 +452,7 @@ PARENT_TIPS = [
     ("只在平靜時光共讀", "睡前最好。每週讀 3&ndash;4 次，重複是關鍵，讓腳本自動化。"),
     ("出事後絕對不拿出來讀", "一旦變成懲罰教材，這本書就報廢了。"),
     ("書裡的樣子＝現實的樣子", "Owen 的水壺請貼上大大的名字貼紙（和書裡同款式最好），學校水壺、家裡杯子都貼。腳本依賴「找名字」這個動作，名字不在就無從練習。"),
-    ("germs 講衛生不講嫌惡", "p7 的 germs 是「Ann 的小夥伴住在 Ann 的瓶子」，不是「別人的東西很髒」——別把腳本教成排斥別人。"),
+    ("germs 講衛生不講嫌惡", "p7 的 germs 是「Anne 的小夥伴住在 Anne 的瓶子」，不是「別人的東西很髒」——別把腳本教成排斥別人。"),
     ("當他主動問『誰的杯子？』時大力稱讚", "拿之前先問 &ldquo;Whose bottle is this?&rdquo; = 腳本啟動的訊號，是最值得鼓勵的時刻。"),
     ("搭配每日聯絡卡", "請老師每天打勾 2&ndash;3 條「有沒有喝對杯子」；當天達標 → 當天兌現小獎勵。"),
 ]

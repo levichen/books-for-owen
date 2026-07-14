@@ -15,7 +15,7 @@
 
 - 媽媽 **April**（wait-my-spot、one-more-try 場邊；quiet-morning、statue-time、my-cup-only 主角級配角）
 - 爸爸 **Daddy**（freeze-and-look 帶足球練習＋吹哨）
-- 朋友 **Lucas**、朋友 **Ann**（wait-my-spot 隊友；Lucas 亦為 freeze-and-look 隊友）
+- 朋友 **Lucas**、朋友 **Anne**（wait-my-spot 隊友；Lucas 亦為 freeze-and-look 隊友）
 - 同學 **Ethan**（eyes-on-teacher；不小心碰到 Owen 的好朋友，非壞人設定）
 - 老師 **Tr. Mina**（save-my-answer、eyes-on-teacher）
 

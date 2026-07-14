@@ -342,7 +342,7 @@ def teacher(cx=0, cy=0, scale=1.0, point="right", expr="smile"):
 
 def kid(variant=0, cx=0, cy=0, scale=1.0, expr="think"):
     """Simple friend characters (no glasses, different hair/colors).
-    variant: 0=Ann(雙馬尾黃衣) 1=Lucas(捲髮綠衣) 2=bob女孩粉衣 3=Ethan(刺蝟頭藍衣)"""
+    variant: 0=Anne(雙馬尾黃衣) 1=Lucas(捲髮綠衣) 2=bob女孩粉衣 3=Ethan(刺蝟頭藍衣)"""
     shirt = ["#F6C445", "#7BC47F", "#F49AB5", "#5CA8E8"][variant % 4]
     hairc = ["#5A4632", "#20201F", "#7A4A2C", "#3A2E24"][variant % 4]
     skin = ["#FFD9B6", "#E8B98C", "#FFD9B6", "#FFD9B6"][variant % 4]
@@ -537,7 +537,7 @@ def lucas(cx=0, cy=0, scale=1.0, expr="smile"):
 
 
 def ann(cx=0, cy=0, scale=1.0, expr="smile"):
-    """朋友 Ann＝kid variant 0（雙馬尾女孩、黃衣）。跨書固定映射，勿換 variant。"""
+    """朋友 Anne＝kid variant 0（雙馬尾女孩、黃衣）。跨書固定映射，勿換 variant。"""
     return kid(variant=0, cx=cx, cy=cy, scale=scale, expr=expr)
 
 

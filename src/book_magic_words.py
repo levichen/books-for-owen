@@ -248,7 +248,7 @@ def scene_p3():
 
 def scene_p4():
     """p4：衝動頁。Owen 左中 swing 伸向右邊，速度線向右，大聲線在嘴邊右側。
-    Ann 在右側完整可見，三張 hiding 卡片在 Owen 身後左下不碰身體。"""
+    Anne 在右側完整可見，三張 hiding 卡片在 Owen 身後左下不碰身體。"""
     e = []
     # 球場
     e.append(f'<rect x="0" y="420" width="1188" height="140" fill="#D4F0E8"/>')
@@ -270,10 +270,10 @@ def scene_p4():
     for (offset_x, offset_y) in [(25, -12), (32, 0), (28, 12), (38, -6), (40, 6)]:
         e.append(f'<path d="M {370+offset_x} {260+offset_y} l 12 0" fill="none" stroke="#FF4444" stroke-width="5" stroke-linecap="round"/>')
 
-    # Ann 在右側，完整可見，oh 表情，驚訝
+    # Anne 在右側，完整可見，oh 表情，驚訝
     e.append(ann(cx=880, cy=330, scale=1.15, expr="oh"))
 
-    # wiffle 球在 Ann 手邊（不碰 Ann 身體）
+    # wiffle 球在 Anne 手邊（不碰 Anne 身體）
     e.append(wiffle(820, 270, 20))
 
     # 三張 magic_card(hiding=True) 躲在 Owen 身後左下
@@ -336,7 +336,7 @@ def scene_p6():
     e.append(f'<polygon points="594,160 572,180 616,180" fill="#E0F8E4" stroke="#228B22" stroke-width="3"/>')
     e.append(svgtext(594, 135, "Thank you!", size=16, fill="#228B22", anchor="middle", weight="bold"))
 
-    # 格 3：Owen 和 Ann 拉開，球在兩人之間
+    # 格 3：Owen 和 Anne 拉開，球在兩人之間
     e.append(wiffle(850, 360, 20))
     e.append(boy(pose="stand", expr="press", cx=750, cy=340, scale=0.95))
     e.append(ann(cx=900, cy=340, scale=0.95, expr="smile"))
@@ -349,7 +349,7 @@ def scene_p6():
 
 
 def scene_p7():
-    """p7：觀點頁。Ann 和 Daddy 都笑著，頭上小愛心；三張魔法卡片在空中發光。"""
+    """p7：觀點頁。Anne 和 Daddy 都笑著，頭上小愛心；三張魔法卡片在空中發光。"""
     e = []
     # 球場地面
     e.append(f'<rect x="0" y="400" width="1188" height="160" fill="#D4F0E8"/>')
@@ -357,7 +357,7 @@ def scene_p7():
     # Owen 中央，開心表情
     e.append(boy(pose="stand", expr="smile", cx=594, cy=280, scale=1.25))
 
-    # Ann 左側，開心笑容
+    # Anne 左側，開心笑容
     e.append(ann(cx=240, cy=340, scale=1.1, expr="smile"))
 
     # Daddy 右側，開心笑容
@@ -427,7 +427,7 @@ def scene_p9():
     e.append(boy(pose="swing", expr="big", cx=594, cy=240, scale=1.2))
     e.append(paddle(594+88*1.2, 240+50*1.2, angle=60, scale=1.0))
 
-    # Ann 左側，開心微笑
+    # Anne 左側，開心微笑
     e.append(ann(cx=200, cy=340, scale=1.0, expr="smile"))
 
     # Daddy 右側，開心微笑（feet_y ≈ 300 + 216 = 516）
