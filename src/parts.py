@@ -427,6 +427,50 @@ def ethan(cx=0, cy=0, scale=1.0, expr="smile"):
     return kid(variant=3, cx=cx, cy=cy, scale=scale, expr=expr)
 
 
+def anne(cx=0, cy=0, scale=1.0, expr="smile"):
+    """朋友 Anne（2026-07 照片參考重繪）：雙丸子頭＋齊瀏海＋圓黑框眼鏡（深灰鏡腳，
+    與 Owen 的橘鏡腳區分）＋粉紅紗裙（藍綠滾邊）。半身無腿，底部 y≈cy+152*scale。"""
+    DRESS = "#F8BCC8"
+    TRIM = "#4EC9B8"
+    AHAIR = "#2A2320"
+    k = []
+    # 蓬蓬紗裙（上窄下寬＋裙襬滾邊）
+    k.append(f'<path d="M -30 76 Q 0 64 30 76 L 44 146 Q 0 160 -44 146 Z" fill="{DRESS}"/>')
+    k.append(f'<path d="M -44 146 Q 0 160 44 146" fill="none" stroke="{TRIM}" stroke-width="5" stroke-linecap="round"/>')
+    k.append(f'<path d="M -30 76 Q 0 88 30 76" fill="none" stroke="{TRIM}" stroke-width="4"/>')  # 領口滾邊
+    # 手臂
+    k.append(f'<path d="M -30 84 Q -50 106 -44 126" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    k.append(f'<path d="M 30 84 Q 50 106 44 126" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    # 頭
+    k.append(f'<circle cx="0" cy="16" r="42" fill="{SKIN}"/>')
+    # 齊瀏海髮（深髮頂＋壓低的小鋸齒瀏海，蓋住上額）
+    k.append(f'<path d="M -42 16 C -46 -42 46 -42 42 16 L 42 6 '
+             f'Q 32 -8 22 -2 Q 12 -10 2 -4 Q -8 -12 -18 -4 Q -28 -10 -42 6 Z" fill="{AHAIR}"/>')
+    # 雙丸子頭（貼在髮頂兩側，不外飄）＋粉色髮飾
+    k.append(f'<circle cx="-25" cy="-27" r="11" fill="{AHAIR}"/><circle cx="25" cy="-27" r="11" fill="{AHAIR}"/>')
+    k.append(f'<circle cx="-25" cy="-21" r="3.5" fill="#F088A8"/><circle cx="25" cy="-21" r="3.5" fill="#F088A8"/>')
+    # 圓黑框眼鏡（深灰鏡腳）
+    k.append(f'<line x1="-38" y1="12" x2="-42" y2="15" stroke="#4A4A4A" stroke-width="4" stroke-linecap="round"/>')
+    k.append(f'<line x1="38" y1="12" x2="42" y2="15" stroke="#4A4A4A" stroke-width="4" stroke-linecap="round"/>')
+    k.append(f'<circle cx="-17" cy="14" r="15" fill="#FFFFFF" fill-opacity="0.25" stroke="#161616" stroke-width="5"/>')
+    k.append(f'<circle cx="17" cy="14" r="15" fill="#FFFFFF" fill-opacity="0.25" stroke="#161616" stroke-width="5"/>')
+    k.append(f'<path d="M -4 12 Q 0 9 4 12" fill="none" stroke="#161616" stroke-width="4" stroke-linecap="round"/>')
+    # 表情
+    if expr == "think":
+        k.append(f'<circle cx="-17" cy="14" r="4" fill="{LINE}"/><circle cx="17" cy="14" r="4" fill="{LINE}"/>')
+        k.append(f'<path d="M -8 34 Q 0 37 8 34" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+    elif expr == "oh":
+        k.append(f'<circle cx="-17" cy="14" r="4" fill="{LINE}"/><circle cx="17" cy="14" r="4" fill="{LINE}"/>')
+        k.append(f'<ellipse cx="0" cy="34" rx="6" ry="7" fill="#8C4A3C"/>')
+    else:  # smile
+        k.append(f'<circle cx="-17" cy="14" r="4" fill="{LINE}"/><circle cx="17" cy="14" r="4" fill="{LINE}"/>')
+        k.append(f'<path d="M -9 32 Q 0 40 9 32" fill="none" stroke="{LINE}" stroke-width="5" stroke-linecap="round"/>')
+    k.append(f'<ellipse cx="-28" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    k.append(f'<ellipse cx="28" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    inner = "".join(k)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
+
+
 def daddy(cx=0, cy=0, scale=1.0, pose="stand", whistle=False):
     """爸爸 Daddy：戴同款圓框眼鏡（親子呼應）＋短黑髮＋藍綠 polo。
     pose: stand | point（右指）| cheer（雙手高舉）。鞋底 ≈ cy + 216*scale。"""
@@ -532,13 +576,43 @@ def goal(cx=0, cy=0, scale=1.0):
 
 
 def lucas(cx=0, cy=0, scale=1.0, expr="smile"):
-    """朋友 Lucas＝kid variant 1（捲髮男孩、綠衣）。跨書固定映射，勿換 variant。"""
-    return kid(variant=1, cx=cx, cy=cy, scale=scale, expr=expr)
+    """朋友 Lucas（2026-07 照片參考重繪）：黑色短直髮＋淺灰 T 恤＋大笑容。
+    半身無腿，底部 y≈cy+150*scale。"""
+    LHAIR = "#26201C"
+    SHIRT = "#C9CDD4"
+    k = []
+    # 淺灰 T 恤
+    k.append(f'<path d="M -34 78 Q 0 66 34 78 L 38 150 L -38 150 Z" fill="{SHIRT}" stroke="#AEB4BC" stroke-width="2.5"/>')
+    # 手臂
+    k.append(f'<path d="M -34 86 Q -52 108 -44 128" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    k.append(f'<path d="M 34 86 Q 52 108 44 128" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    # 頭
+    k.append(f'<circle cx="0" cy="16" r="42" fill="{SKIN}"/>')
+    # 黑色短直髮：深圓頂＋自然短瀏海（蓋住上額，微露額頭）
+    k.append(f'<path d="M -42 10 C -46 -42 46 -42 42 10 L 42 0 '
+             f'Q 26 -8 10 -5 Q -6 -10 -22 -5 Q -34 -9 -42 0 Z" fill="{LHAIR}"/>')
+    k.append(f'<path d="M -42 4 Q -46 12 -42 18 L -38 6 Z" fill="{LHAIR}"/>')
+    k.append(f'<path d="M 42 4 Q 46 12 42 18 L 38 6 Z" fill="{LHAIR}"/>')
+    # 表情（照片的大笑容）
+    if expr == "think":
+        k.append(f'<circle cx="-14" cy="14" r="4.5" fill="{LINE}"/><circle cx="14" cy="14" r="4.5" fill="{LINE}"/>')
+        k.append(f'<path d="M -8 32 Q 0 35 8 32" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+    elif expr == "oh":
+        k.append(f'<circle cx="-14" cy="14" r="4.5" fill="{LINE}"/><circle cx="14" cy="14" r="4.5" fill="{LINE}"/>')
+        k.append(f'<ellipse cx="0" cy="34" rx="6" ry="7" fill="#8C4A3C"/>')
+    else:  # smile：開口大笑＋牙齒
+        k.append(f'<circle cx="-14" cy="12" r="4.5" fill="{LINE}"/><circle cx="14" cy="12" r="4.5" fill="{LINE}"/>')
+        k.append(f'<path d="M -14 28 A 14 11 0 0 0 14 28 Z" fill="#8C4A3C"/>')
+        k.append(f'<rect x="-10" y="28" width="20" height="4" rx="2" fill="#FFFFFF"/>')
+    k.append(f'<ellipse cx="-26" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    k.append(f'<ellipse cx="26" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    inner = "".join(k)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
 
 
 def ann(cx=0, cy=0, scale=1.0, expr="smile"):
-    """朋友 Anne＝kid variant 0（雙馬尾女孩、黃衣）。跨書固定映射，勿換 variant。"""
-    return kid(variant=0, cx=cx, cy=cy, scale=scale, expr=expr)
+    """朋友 Anne 的舊別名（相容既有場景呼叫）——實體見 anne()。"""
+    return anne(cx=cx, cy=cy, scale=scale, expr=expr)
 
 
 # ---------------- SPORTS PROPS ----------------

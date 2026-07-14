@@ -16,7 +16,11 @@
 
 - 媽媽 **April**（wait-my-spot、one-more-try 場邊；quiet-morning、statue-time、my-cup-only 主角級配角）
 - 爸爸 **Daddy**（freeze-and-look 帶足球練習＋吹哨）
-- 朋友 **Lucas**、朋友 **Anne**（wait-my-spot 隊友；Lucas 亦為 freeze-and-look 隊友）
+- 朋友 **Lucas**（wait-my-spot、freeze-and-look 隊友）——卡通辨識特徵（2026-07 照片參考，parts.lucas 已實作，勿改）：
+  黑色短直髮＋自然短瀏海、淺灰 T 恤、開口大笑容
+- 朋友 **Anne**（wait-my-spot 隊友、magic-words 球友）——卡通辨識特徵（2026-07 照片參考，parts.anne 已實作，勿改）：
+  雙丸子頭（粉色髮飾）＋齊瀏海、圓黑框眼鏡（深灰鏡腳，與 Owen 的橘鏡腳區分）、粉紅紗裙（藍綠滾邊）
+  ※ 通用 kid() 仍維持無眼鏡原則；Anne 是唯一戴眼鏡的朋友，靠髮型與裙裝區分
 - 同學 **Ethan**（eyes-on-teacher；不小心碰到 Owen 的好朋友，非壞人設定）
 - 老師 **Tr. Mina**（save-my-answer、eyes-on-teacher）
 
