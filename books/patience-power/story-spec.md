@@ -3,7 +3,7 @@
 - behavior_target: 快輸或一直錯的當下失去耐心（玩麻將/拉密快輸、珠心算錯很多時想炸掉/推牌/放棄）——安裝「深呼吸 → 說 I can wait → 繼續輪流」的情緒調節腳本
 - cue_phrase: "Patience power!"（完整口訣：Big breath → "I can wait" → Play my turn）
 - new_vocabulary: [patience, volcano, tiles]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April、爸爸 Daddy（牌桌家人，真實人物）
 - 與 one-more-try 的分工：**One more try = 輸了/失敗之後重新再試**（行為重啟）；**Patience power = 快輸/一直錯的當下不爆炸**（過程中的情緒調節）——兩顆肌肉，家長頁要講清楚
 - 隱喻設計：**胸口的小火山**——快輸時火山開始冒泡（可指認的內在訊號），深呼吸是給火山蓋上安靜的藍色小雲

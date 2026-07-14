@@ -41,9 +41,9 @@
 | Please → Thank you → Sorry（喊法：**Magic words!**） | 忘記禮貌語 | magic-words | 已出版 |
 | One at a time → Point and check → **Slow and check!** | 珠心算趕寫錯多 | slow-and-check | 已出版 |
 | Check my volume → Pick two → **Volume down!** | 室內聲音動作太大 | volume-down | 已出版 |
-| Arms up high → Quick breath → Kick, kick, splash!（喊法：**Arms, breath, kick!**） | 自由式動作散掉 | arms-breath-kick | 草稿 |
-| Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 草稿 |
-| Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 草稿 |
+| Arms up high → Quick breath → Kick, kick, splash!（喊法：**Arms, breath, kick!**） | 自由式動作散掉 | arms-breath-kick | 已出版 |
+| Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 已出版 |
+| Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 已出版 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
@@ -62,7 +62,8 @@ my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued 
 jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try）；
 bounce、tiptoe、whisper（quiet-morning）；puppy、giggle、catch（eyes-on-teacher）；freeze、whistle（freeze-and-look）；
 wiggly、statue、dryer（statue-time）；thirsty、germs、bottle（my-cup-only）；
-magic、paddle、pickleball（magic-words）；turtle、check、zoom（slow-and-check）；volume、buzzy（volume-down）。
+magic、paddle、pickleball（magic-words）；turtle、check、zoom（slow-and-check）；volume、buzzy（volume-down）；
+splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）。（listen-and-go 零新字）
 其中 **superpower** 是系列固定儀式詞——每本 p5 都用 "STOP! I use my superpower&hellip;" 開場，刻意跨書重複。
 新書出版後，其 new_vocabulary 併入此清單。
 

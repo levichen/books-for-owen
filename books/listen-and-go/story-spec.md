@@ -3,7 +3,7 @@
 - behavior_target: 媽媽的指令要講很多次才動（洗鼻子、吹頭髮、洗澡）——安裝「第一次叫就回應並出發」的腳本（first-time listening）
 - cue_phrase: "Listen and go!"（完整口訣：Say "OK, Mommy!" → Toys down → Go right away!）
 - new_vocabulary: []（全書皆 sight words＋已習得字——glued 屬 wait-my-spot 已習得的 glue 家族）
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（發指令的人，真實人物）
 - 隱喻設計：**玩具會拉人**——衝動頁把玩具擬人化（伸出小手喊 "Stay!"），把「拖延」變成他能辨識的外部角色；腳本裡玩具會微笑揮手說再見＋p7 保證「玩具會等你」，降低放下的阻力
 - 場景：客廳玩具區 ↔ 浴室（洗鼻壺、吹風機、浴缸三情境，吹風機/浴缸資產可參考 statue-time 的畫法）

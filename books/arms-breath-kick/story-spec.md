@@ -3,7 +3,7 @@
 - behavior_target: 游自由式時動作散掉（手抬不高、換氣慢、腳忘記踢）——把三個技術要點裝成一個可自查的口訣
 - cue_phrase: "Arms, breath, kick!"（完整口訣：Arms up high → Quick breath → Kick, kick, splash!）
 - new_vocabulary: [splash, breath, coach]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：**Coach Bear 大灰熊教練**（新吉祥物級角色，泳池的大灰熊教練——高大、和藹、掛哨子；由本書場景函式自畫，全書造型一致：灰色圓身大熊＋圓耳＋淺色吻部＋肚皮＋紅色哨子）、爸爸 Daddy（池邊觀眾，真實人物）
 - 場景：室內泳池（水道線、池邊磁磚、跳水台）
 - 服裝備註：泳池頁 Owen 穿**泳褲**（深藍）＋**圓框蛙鏡**（同款黑框＋橘色鏡帶，取代眼鏡保持辨識）＋齊瀏海不變；p1 白 T 拿泳具
