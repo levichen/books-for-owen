@@ -4,7 +4,7 @@
     python3 render_pdf.py <slug>    # 只渲染一本（如 wait-my-spot）
 書籍內容在 book_<slug>.py，由 books_all.load_books() 自動發現。"""
 import sys
-from book_common import FONT, TXT
+from book_common import FONT, TXT, vocab_sentence
 from books_all import load_books
 
 
@@ -51,6 +51,27 @@ def build_html(book):
       <div class="pnum">{i}</div>
       <div class="art">{fn()}</div>
       <div class="band"><div class="t">{text}</div></div>
+    </div>""")
+
+    # ---- VOCAB REVIEW PAGE（倒數第二頁：生字複習；零生字書自動略過）----
+    vocab = book.get("vocab") or []
+    if vocab:
+        vrows = []
+        for w in vocab:
+            sent = vocab_sentence(book["pages"], w)
+            vrows.append(
+                f'<div style="display:flex; align-items:center; background:#FFFFFF; border-radius:8mm; '
+                f'padding:8mm 12mm; margin-bottom:7mm;">'
+                f'<div style="min-width:78mm; font-size:34pt; color:#E4574C;">&#9733; {w}</div>'
+                f'<div style="font-size:16pt; color:{TXT}; line-height:1.55;">{sent}</div></div>')
+        pages.append(f"""
+    <div class="page" style="background:{bg['p10']}">
+      <div class="pnum">{len(book['pages']) + 1}</div>
+      <div style="padding: 16mm 24mm;">
+        <div style="font-size:30pt; color:{TXT}; text-align:center; margin-bottom:10mm;">&#9733; My New Words! &#9733;</div>
+        {''.join(vrows)}
+        <div style="text-align:center; font-size:16pt; color:#8A7460; margin-top:10mm;">Read it. Say it. Use it!</div>
+      </div>
     </div>""")
 
     # ---- PARENT PAGE ----

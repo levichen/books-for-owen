@@ -4,7 +4,7 @@
 import os
 import subprocess
 import html
-from book_common import TXT
+from book_common import TXT, vocab_sentence
 from books_all import load_books
 
 SITE = "../site"
@@ -43,6 +43,13 @@ body.fs .pg{{width:min(96vw,1080px,calc((100vh - 125px)*2.12));width:min(96vw,10
            align-items:center;justify-content:center;font-size:14px;flex:none;margin-top:2px}}
 .parent .cue{{margin-top:12px;background:#FBF4E8;border-radius:12px;padding:10px 14px;font-size:14px;color:#8A7460}}
 .parent .cue b{{color:#E4574C}}
+.vocab{{background:#fff;border-radius:18px;padding:18px 22px}}
+.vocab h2{{font-size:22px;color:{TXT};text-align:center;margin-bottom:14px}}
+.vrow{{display:flex;align-items:center;gap:16px;background:#FBF4E8;border-radius:14px;padding:12px 16px;margin-bottom:10px}}
+.vw{{min-width:160px;font-size:28px;color:#E4574C}}
+.vs{{font-size:16.5px;color:{TXT};line-height:1.5}}
+.vs b{{color:#E4574C}}
+.vfoot{{text-align:center;color:#8A7460;margin-top:12px;font-size:15px}}
 button{{border:none;cursor:pointer;font-family:inherit}}
 #prev,#next{{position:fixed;top:50%;transform:translateY(-50%);z-index:8;width:52px;height:52px;border-radius:50%;
  background:rgba(228,87,76,.9);color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(228,87,76,.3);
@@ -120,6 +127,20 @@ go(0);
   <div class="band">{text}</div>
 </div></section>""")
 
+    # vocab review page（倒數第二頁：生字複習；零生字書自動略過）
+    vocab = book.get("vocab") or []
+    if vocab:
+        vrows = "".join(
+            f'<div class="vrow"><div class="vw">&#9733; {w}</div>'
+            f'<div class="vs">{vocab_sentence(book["pages"], w)}</div></div>'
+            for w in vocab)
+        secs.append(f"""
+<section class="pg" style="--bg:{bg['p10']}"><div class="card"><div class="vocab">
+  <h2>&#9733; My New Words! &#9733;</h2>
+  {vrows}
+  <div class="vfoot">Read it. Say it. Use it!</div>
+</div></div></section>""")
+
     # parent page
     tips = "".join(
         f'<div class="tip"><div class="n">{i+1}</div><div><b>{t}</b>&nbsp;&mdash;&nbsp;{d}</div></div>'
@@ -176,7 +197,10 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
     cards = []
     for b in books:
         title_en = f"{b['title_pre']}{b['title_hi']}{b['title_post']}"
-        chips = "".join(f'<span class="chip">{c}</span>' for c in b["chips"])
+        total_pages = 2 + len(b["pages"]) + (1 if b.get("vocab") else 0)
+        chips = "".join(
+            f'<span class="chip">{(f"{total_pages} pages" if c.endswith("pages") else c)}</span>'
+            for c in b["chips"])
         cards.append(f"""
   <a class="book" href="books/{b['slug']}/index.html">
     <div class="thumb" style="background:{b['bg']['cover']}">{b['cover']()}</div>

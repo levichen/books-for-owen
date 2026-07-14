@@ -332,6 +332,7 @@ BOOK = {
     "pdf_name": "My_Quiet_Morning.pdf",
     "bg": BG,
     "pages": PAGES,
+    "vocab": ['bounce', 'tiptoe', 'whisper'],
     "parent_tips": PARENT_TIPS,
     "parent_intro": ("這是一本社會故事（Social Story）。清晨 5:30 醒來很正常，"
                      "但吵醒睡夢中的媽媽不是。這本書教 Owen 兩套合法選項："

@@ -75,4 +75,6 @@ splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（pat
 ## 出版原則
 
 - 每本書封面留 "This book belongs to ______"（PDF 版）給 Owen 手寫——所有權儀式
+- 每本書倒數第二頁為**生字複習頁**（My New Words）——由渲染器自 BOOK["vocab"] 自動生成，
+  例句自動取自書中文案；零生字書（如 listen-and-go）自動略過
 - 家長頁固定六條使用規則，第 2 條永遠是：**出事後絕對不拿出來讀**

@@ -469,6 +469,7 @@ BOOK = {
     "pdf_name": "My_Cup_Only.pdf",
     "bg": BG,
     "pages": PAGES,
+    "vocab": ['thirsty', 'germs', 'bottle'],
     "parent_tips": PARENT_TIPS,
     "parent_intro": ("這是一本社會故事（Social Story）。目標不是「講道理」，"
                      "而是替 Owen 安裝一套<b>當下用得出來的喝水認杯腳本</b>。"),

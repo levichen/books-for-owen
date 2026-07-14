@@ -223,6 +223,7 @@ BOOK = {
     "pdf_name": "I_Can_Save_My_Answer.pdf",
     "bg": BG,
     "pages": PAGES,
+    "vocab": ['itchy', 'superpower', 'pocket'],
     "parent_tips": PARENT_TIPS,
     "parent_intro": ("這是一本社會故事（Social Story）。它的目標不是「講道理」，"
                      "而是替 Owen 安裝一套<b>當下用得出來的動作腳本</b>。"),

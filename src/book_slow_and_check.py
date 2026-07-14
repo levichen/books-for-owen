@@ -628,6 +628,7 @@ BOOK = {
     "pdf_name": "Slow_And_Check.pdf",
     "bg": BG,
     "pages": PAGES,
+    "vocab": ['turtle', 'check', 'zoom'],
     "parent_tips": PARENT_TIPS,
     "parent_intro": ("這是一本社會故事（Social Story）。它的目標不是「講道理」，"
                      "而是替 Owen 安裝一套<b>當下用得出來的動作腳本</b>。"),

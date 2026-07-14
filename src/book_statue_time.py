@@ -541,6 +541,7 @@ BOOK = {
     "pdf_name": "Statue_Time.pdf",
     "bg": BG,
     "pages": PAGES,
+    "vocab": ['wiggly', 'statue', 'dryer'],
     "parent_tips": PARENT_TIPS,
     "parent_intro": ("這是一本社會故事（Social Story）。它的目標不是「講道理」，"
                      "而是替 Owen 安裝一套<b>在照護時間用得出來的「雕像模式」動作腳本</b>。"),
