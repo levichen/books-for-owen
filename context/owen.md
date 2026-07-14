@@ -9,6 +9,7 @@
 - 運動場景服裝例外（2026-07 議定）：球場頁可穿球衣蓋掉白 T——籃球 **39 號**、棒球 **100 號**、
   足球 **0 號**；背號本身即辨識元素；眼鏡＋瀏海＋短褲仍不變，開場/學校頁維持白 T
 - 匹克球（magic-words）無背號需求，全書白 T＋球拍
+- 泳池例外（arms-breath-kick）：泳褲＋**同款黑框橘帶圓框蛙鏡**（取代眼鏡保持辨識），瀏海不變
 - 家規（2026-07 議定）：早上 **6:30** 才能叫媽媽起床（Owen 會看時鐘，數字鐘顯示 6:30 為準）
 
 ## 跨書角色（2026-07 登記；**全部是 Owen 生活中的真實人物**，僅卡通化呈現）
@@ -40,14 +41,22 @@
 | Please → Thank you → Sorry（喊法：**Magic words!**） | 忘記禮貌語 | magic-words | 已出版 |
 | One at a time → Point and check → **Slow and check!** | 珠心算趕寫錯多 | slow-and-check | 已出版 |
 | Check my volume → Pick two → **Volume down!** | 室內聲音動作太大 | volume-down | 已出版 |
+| Arms up high → Quick breath → Kick, kick, splash!（喊法：**Arms, breath, kick!**） | 自由式動作散掉 | arms-breath-kick | 草稿 |
+| Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 草稿 |
+| Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 草稿 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
 body feels wiggly（照護亂動）、"Whose bottle is this?"（拿杯前先問）、
-my magic words hide（忘禮貌）、my pencil zooms + heart goes fast（趕寫）、my voice grows big + body feels buzzy（太大聲）
+my magic words hide（忘禮貌）、my pencil zooms + heart goes fast（趕寫）、my voice grows big + body feels buzzy（太大聲）、
+my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued + "One more minute…"（拖延，出現時指口訣不重複指令）、my volcano bubbles（快炸）
 
 口訣區隔備忘：**Freeze**（被叫到瞬間停）vs **Statue**（照護期間持續不動）vs **Volume down**（自己發現太大聲、轉小）
 是三顆不同的肌肉——外部開關／持續靜止／自我監控，不可混用。
+另一組：**One more try**（輸了之後重新再試）vs **Patience power**（快輸/一直錯的當下不爆炸）——重啟 vs 過程調節。
+
+吉祥物家族（各書場景自畫、非人類不受 parts.py 限制）：腦小狗（eyes-on-teacher）、烏龜（slow-and-check）、
+**Coach Bear 大灰熊教練**（arms-breath-kick，泳池教練）。
 
 **已習得詞彙**（已出版書籍教過，跨書重用不計入該書新字上限）：itchy、superpower、pocket（save-my-answer）；
 jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try）；
