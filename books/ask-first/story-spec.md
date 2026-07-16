@@ -3,7 +3,7 @@
 - behavior_target: 未經同意就動手（硬幫 Anne 拿書拉扯弄破、排隊時推人）——安裝「先問 → 聽答案 → 手收好」的腳本；幫忙的好心要保住，教的是「先問一問」
 - cue_phrase: "Ask first!"（完整口訣：Ask first → Listen → Hands to myself）
 - new_vocabulary: [rip, tape, carry]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：**Anne**（真實朋友，跨書角色——書的主人）、Tr. Mina（老師，提供膠帶）
 - 事件原型：2026-07 真實事件（想幫 Anne 拿書被拒仍硬拿→書弄破；排隊推 Anne）——故事保留「想幫忙」的善意動機，聚焦「手比嘴快」
 - 修復設計：p8 用已習得的 magic word「Sorry」＋兩人一起用膠帶修書——**東西破了可以修，朋友生氣了也可以修**

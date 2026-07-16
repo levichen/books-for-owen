@@ -49,7 +49,7 @@
 | Arms up high → Quick breath → Kick, kick, splash!（喊法：**Arms, breath, kick!**） | 自由式動作散掉 | arms-breath-kick | 已出版 |
 | Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 已出版 |
 | Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 已出版 |
-| Ask first → Listen → Hands to myself（喊法：**Ask first!**） | 未經同意動手（硬幫忙/推人） | ask-first | 草稿 |
+| Ask first → Listen → Hands to myself（喊法：**Ask first!**） | 未經同意動手（硬幫忙/推人） | ask-first | 已出版 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
@@ -70,7 +70,7 @@ jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try
 bounce、tiptoe、whisper（quiet-morning）；puppy、giggle、catch（eyes-on-teacher）；freeze、whistle（freeze-and-look）；
 wiggly、statue、dryer（statue-time）；thirsty、germs、bottle（my-cup-only）；
 magic、paddle、pickleball（magic-words）；turtle、check、zoom（slow-and-check）；volume、buzzy（volume-down）；
-splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）。（listen-and-go 零新字）
+splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）；rip、tape、carry（ask-first）。（listen-and-go 零新字）
 其中 **superpower** 是系列固定儀式詞——每本 p5 都用 "STOP! I use my superpower&hellip;" 開場，刻意跨書重複。
 新書出版後，其 new_vocabulary 併入此清單。
 
