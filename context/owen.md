@@ -50,7 +50,7 @@
 | Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 已出版 |
 | Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 已出版 |
 | Ask first → Listen → Hands to myself（喊法：**Ask first!**） | 未經同意動手（硬幫忙/推人） | ask-first | 已出版 |
-| Owl eyes on → Read it right → Write it once（喊法：**Read it right!**） | 計時比賽求快亂寫 | read-it-right | 草稿 |
+| Owl eyes on → Read it right → Write it once（喊法：**Read it right!**） | 計時比賽求快亂寫 | read-it-right | 已出版 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
@@ -72,7 +72,8 @@ jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try
 bounce、tiptoe、whisper（quiet-morning）；puppy、giggle、catch（eyes-on-teacher）；freeze、whistle（freeze-and-look）；
 wiggly、statue、dryer（statue-time）；thirsty、germs、bottle（my-cup-only）；
 magic、paddle、pickleball（magic-words）；turtle、check、zoom（slow-and-check）；volume、buzzy（volume-down）；
-splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）；rip、tape、carry（ask-first）。（listen-and-go 零新字）
+splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）；rip、tape、carry（ask-first）；
+owl、timer、contest（read-it-right）。（listen-and-go 零新字）
 其中 **superpower** 是系列固定儀式詞——每本 p5 都用 "STOP! I use my superpower&hellip;" 開場，刻意跨書重複。
 新書出版後，其 new_vocabulary 併入此清單。
 

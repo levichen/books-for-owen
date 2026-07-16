@@ -3,7 +3,7 @@
 - behavior_target: 珠心算計時比賽練習（2 分鐘 50 題、30 秒 15 題）時求快亂寫、看錯題目錯一堆——安裝「貓頭鷹眼睛盯題 → 讀對 → 一次寫對」的比賽腳本；核心洞察：**寫錯才是最慢的，做對才是真的快**
 - cue_phrase: "Read it right!"（完整口訣：Owl eyes on → Read it right → Write it once）
 - new_vocabulary: [owl, timer, contest]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（計時與對答案的人，真實人物）
 - 吉祥物：**貓頭鷹 Owl**（看清楚的象徵——大圓眼呼應 Owen 的圓框眼鏡）——由本書場景函式自畫，全書造型一致：棕色圓身＋淺色肚皮＋兩顆大圓眼（黑框白底大瞳孔）＋小三角嘴＋頭頂兩撮耳羽＋短翅
 - 與 slow-and-check 的分工：**Slow and check = 平日練習**（慢慢寫＋逐題用手指檢查）；**Read it right = 計時比賽**（沒時間逐題檢查，靠看清楚一次寫對——速度來自不用改錯）。兩個口訣對應兩種模式，家長頁要講清楚
