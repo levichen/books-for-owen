@@ -423,8 +423,44 @@ def april(cx=0, cy=0, scale=1.0, pose="wave"):
 
 
 def ethan(cx=0, cy=0, scale=1.0, expr="smile"):
-    """同學 Ethan＝kid variant 3（刺蝟頭男孩、藍衣）。跨書固定映射，勿換 variant。"""
-    return kid(variant=3, cx=cx, cy=cy, scale=scale, expr=expr)
+    """同學 Ethan（2026-07 照片參考重繪）：深棕蓬鬆微亂髮＋長瀏海、
+    綠袖深藍身棒球 T（raglan 雙色）、露齒大笑。半身無腿，底部 y≈cy+150*scale。"""
+    EHAIR = "#4A362A"
+    NAVY = "#2E3A5C"
+    GREEN = "#7BC08A"
+    k = []
+    # 棒球 T：深藍身
+    k.append(f'<path d="M -34 78 Q 0 66 34 78 L 38 150 L -38 150 Z" fill="{NAVY}" stroke="#232D48" stroke-width="2.5"/>')
+    # 綠色肩袖（raglan 斜線兩側）
+    k.append(f'<path d="M -34 78 Q -20 70 -8 72 L -18 96 Q -30 96 -36 90 Z" fill="{GREEN}"/>')
+    k.append(f'<path d="M 34 78 Q 20 70 8 72 L 18 96 Q 30 96 36 90 Z" fill="{GREEN}"/>')
+    # 手臂
+    k.append(f'<path d="M -34 86 Q -52 108 -44 128" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    k.append(f'<path d="M 34 86 Q 52 108 44 128" stroke="{SKIN}" stroke-width="13" stroke-linecap="round" fill="none"/>')
+    # 頭
+    k.append(f'<circle cx="0" cy="16" r="42" fill="{SKIN}"/>')
+    # 深棕蓬鬆髮：厚圓頂＋長而微亂的瀏海（幾撮不齊的髮尖）
+    k.append(f'<path d="M -42 12 C -48 -44 48 -44 42 12 L 42 2 '
+             f'Q 34 -6 28 2 Q 22 -10 14 0 Q 6 -12 -2 -2 Q -10 -12 -18 -2 Q -26 -8 -34 2 Q -38 -4 -42 4 Z" fill="{EHAIR}"/>')
+    # 蓬鬆感：頂上兩撮翹起
+    k.append(f'<path d="M -14 -28 Q -8 -38 0 -30 Q -6 -26 -14 -28 Z" fill="{EHAIR}"/>')
+    k.append(f'<path d="M 10 -29 Q 18 -37 24 -28 Q 16 -25 10 -29 Z" fill="{EHAIR}"/>')
+    # 表情（照片的露齒大笑）
+    if expr == "think":
+        k.append(f'<circle cx="-14" cy="16" r="4.5" fill="{LINE}"/><circle cx="14" cy="16" r="4.5" fill="{LINE}"/>')
+        k.append(f'<path d="M -8 32 Q 0 35 8 32" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+    elif expr == "oh":
+        k.append(f'<circle cx="-14" cy="16" r="4.5" fill="{LINE}"/><circle cx="14" cy="16" r="4.5" fill="{LINE}"/>')
+        k.append(f'<ellipse cx="0" cy="34" rx="6" ry="7" fill="#8C4A3C"/>')
+    else:  # smile：開口大笑＋牙齒
+        k.append(f'<path d="M -19 12 Q -14 6 -9 12" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+        k.append(f'<path d="M 9 12 Q 14 6 19 12" fill="none" stroke="{LINE}" stroke-width="4.5" stroke-linecap="round"/>')
+        k.append(f'<path d="M -14 28 A 14 11 0 0 0 14 28 Z" fill="#8C4A3C"/>')
+        k.append(f'<rect x="-10" y="28" width="20" height="4" rx="2" fill="#FFFFFF"/>')
+    k.append(f'<ellipse cx="-27" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    k.append(f'<ellipse cx="27" cy="26" rx="7" ry="4.5" fill="{BLUSH}" fill-opacity="0.7"/>')
+    inner = "".join(k)
+    return f'<g transform="translate({cx},{cy}) scale({scale})">{inner}</g>'
 
 
 def anne(cx=0, cy=0, scale=1.0, expr="smile"):

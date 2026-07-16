@@ -21,7 +21,8 @@
 - 朋友 **Anne**（wait-my-spot 隊友、magic-words 球友）——卡通辨識特徵（2026-07 照片參考，parts.anne 已實作，勿改）：
   雙丸子頭（粉色髮飾）＋齊瀏海、圓黑框眼鏡（深灰鏡腳，與 Owen 的橘鏡腳區分）、粉紅紗裙（藍綠滾邊）
   ※ 通用 kid() 仍維持無眼鏡原則；Anne 是唯一戴眼鏡的朋友，靠髮型與裙裝區分
-- 同學 **Ethan**（eyes-on-teacher；不小心碰到 Owen 的好朋友，非壞人設定）
+- 同學 **Ethan**（eyes-on-teacher；不小心碰到 Owen 的好朋友，非壞人設定）——卡通辨識特徵
+  （2026-07 照片參考，parts.ethan 已實作，勿改）：深棕蓬鬆微亂髮＋長瀏海、綠袖深藍身棒球 T（raglan 雙色）、露齒大笑
 - 老師 **Tr. Mina**（save-my-answer、eyes-on-teacher）
 
 ## 行為模型（教養診斷結論，2026-07）
