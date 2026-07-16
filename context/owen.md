@@ -50,20 +50,22 @@
 | Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 已出版 |
 | Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 已出版 |
 | Ask first → Listen → Hands to myself（喊法：**Ask first!**） | 未經同意動手（硬幫忙/推人） | ask-first | 已出版 |
+| Owl eyes on → Read it right → Write it once（喊法：**Read it right!**） | 計時比賽求快亂寫 | read-it-right | 草稿 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
 body feels wiggly（照護亂動）、"Whose bottle is this?"（拿杯前先問）、
 my magic words hide（忘禮貌）、my pencil zooms + heart goes fast（趕寫）、my voice grows big + body feels buzzy（太大聲）、
 my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued + "One more minute…"（拖延，出現時指口訣不重複指令）、my volcano bubbles（快炸）、
-my hands jump first（沒問就動手）
+my hands jump first（沒問就動手）、my eyes skip the numbers（比賽看不清就寫）
 
 口訣區隔備忘：**Freeze**（被叫到瞬間停）vs **Statue**（照護期間持續不動）vs **Volume down**（自己發現太大聲、轉小）
 是三顆不同的肌肉——外部開關／持續靜止／自我監控，不可混用。
 另一組：**One more try**（輸了之後重新再試）vs **Patience power**（快輸/一直錯的當下不爆炸）——重啟 vs 過程調節。
+另一組：**Slow and check**（平日練習：慢＋逐題檢查）vs **Read it right**（計時比賽：看清一次寫對，速度來自不用改錯）——兩種模式，開始前先問他今天是哪一種。
 
 吉祥物家族（各書場景自畫、非人類不受 parts.py 限制）：腦小狗（eyes-on-teacher）、烏龜（slow-and-check）、
-**Coach Bear 大灰熊教練**（arms-breath-kick，泳池教練）。
+**Coach Bear 大灰熊教練**（arms-breath-kick，泳池教練）、**貓頭鷹 Owl**（read-it-right，大眼看清楚）。
 
 **已習得詞彙**（已出版書籍教過，跨書重用不計入該書新字上限）：itchy、superpower、pocket（save-my-answer）；
 jumpy、glue、cheer（wait-my-spot）；strike、quit、home run（one-more-try）；
