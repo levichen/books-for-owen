@@ -49,12 +49,14 @@
 | Arms up high → Quick breath → Kick, kick, splash!（喊法：**Arms, breath, kick!**） | 自由式動作散掉 | arms-breath-kick | 已出版 |
 | Say "OK, Mommy!" → Toys down → **Listen and go!** | 指令要講很多次 | listen-and-go | 已出版 |
 | Big breath → "I can wait" → **Patience power!** | 快輸/一直錯時失去耐心 | patience-power | 已出版 |
+| Ask first → Listen → Hands to myself（喊法：**Ask first!**） | 未經同意動手（硬幫忙/推人） | ask-first | 草稿 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
 body feels wiggly（照護亂動）、"Whose bottle is this?"（拿杯前先問）、
 my magic words hide（忘禮貌）、my pencil zooms + heart goes fast（趕寫）、my voice grows big + body feels buzzy（太大聲）、
-my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued + "One more minute…"（拖延，出現時指口訣不重複指令）、my volcano bubbles（快炸）
+my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued + "One more minute…"（拖延，出現時指口訣不重複指令）、my volcano bubbles（快炸）、
+my hands jump first（沒問就動手）
 
 口訣區隔備忘：**Freeze**（被叫到瞬間停）vs **Statue**（照護期間持續不動）vs **Volume down**（自己發現太大聲、轉小）
 是三顆不同的肌肉——外部開關／持續靜止／自我監控，不可混用。
