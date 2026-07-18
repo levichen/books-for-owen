@@ -3,7 +3,7 @@
 - behavior_target: 亂碰不是自己的東西（爸媽的手機、便利商店的商品、同學的眼鏡、同學的書本）——安裝「這是我的嗎？→ 用眼睛看 → 想摸先問主人」的物權腳本；好奇心要保住，給它「用眼睛看」的合法出口
 - cue_phrase: "Eyes, not hands!"（完整口訣：Is it mine? → Eyes, not hands → Or ask the owner）
 - new_vocabulary: [store, phone, touch]
-- status: draft（2026-07）
+- status: published（PDF + site，2026-07）
 - 角色：媽媽 April（超商同行，真實人物）；p7/p9 以物主 icon 帶到 Daddy（手機）與 Anne（眼鏡）
 - 與 ask-first 的分工：**Ask first = 想幫忙/介入別人時先問**；**Eyes, not hands = 想碰別人的東西時先判斷物權**——「手比嘴快」家族的姊妹口訣；本書 p6 第三步「想摸就問主人」直接呼應已習得的 Ask first
 - 場景：便利商店（貨架、糖果、玩具）為主場景；轉移頁帶手機/眼鏡/書本
