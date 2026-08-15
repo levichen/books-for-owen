@@ -3,7 +3,7 @@
 - behavior_target: 防走失——出門人多時鬆手亂跑、放學在一樓沒看到爸媽就亂跑找人；安裝「人多牽手 → 沒看到爸媽待在裡面 → 原地等大人來」的單一連結腳本（核心：讓爸媽找得到你，兩個場景同一顆肌肉）
 - cue_phrase: "Hold and wait!"（完整口訣：Hold a hand → Stay inside → Wait, Mommy comes）
 - new_vocabulary: [elevator, inside, fly]
-- status: draft
+- status: published（PDF + site，2026-08）
 - 角色：媽媽 April、爸爸 Daddy（皆真實人物）；人群用通用大人/小孩剪影（不具名）
 - 事件原型：真實日常——①出門到人多的地方要牽好爸媽 ②放學自己從**三樓教室搭電梯**下到一樓，若沒看到爸媽要**待在建築物裡面等**，不可以亂跑
 - 與既有口訣的分工：**Wait my spot** = 排隊輪流；**Wait for 6:30** = 時間到才行動；**Hold and wait** = 防走失（原地等大人來找你）——三種「等」不同肌肉
