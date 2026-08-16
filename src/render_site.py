@@ -7,7 +7,7 @@ import html
 from book_common import TXT, vocab_sentence
 from books_all import load_books
 import json
-from reading_log import reading_log_html, API_URL
+from reading_log import reading_log_html, write_zhuyin_asset, BOPO_CHARS, API_URL
 
 SITE = "../site"
 
@@ -287,6 +287,7 @@ if __name__ == "__main__":
     os.makedirs(f"{SITE}/reading-log", exist_ok=True)
     with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
         f.write(log_page)
+    write_zhuyin_asset(f"{SITE}/assets/zhuyin.json")  # 注音字典（存在即跳過）
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
 
@@ -295,6 +296,7 @@ if __name__ == "__main__":
     for r in all_html:
         chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
+    chars |= BOPO_CHARS  # 注音符號（閱讀紀錄書名 ruby 用）
     text = "".join(sorted(c for c in chars if ord(c) >= 32))
     with open("subset_chars.txt", "w", encoding="utf-8") as f:
         f.write(text)

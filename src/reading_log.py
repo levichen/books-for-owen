@@ -7,7 +7,29 @@ API 網址為公開資訊（風險模型已與 Levi 議定：任何人可讀可�
 UI 靜態文字走 Huninn 子集字型；使用者輸入的書名為任意字元，自動 fallback 到系統字型。
 """
 
+import os
+
 GOAL = 100  # 累積讀滿 100 本換禮物
+
+# 注音符號字元集（含聲調）；同時供字典驗證與字型子集使用
+BOPO_CHARS = set(chr(c) for c in range(0x3105, 0x3130)) | set("ˉˊˇˋ˙")
+
+
+def write_zhuyin_asset(path):
+    """產生「字 → 注音」字典檔（單字預設讀音，破音字取最常見音）。
+    轉換 2 萬字約需數十秒，因此只在檔案不存在時產生；要更新就手動刪檔重跑。"""
+    if os.path.exists(path):
+        return
+    import json
+    from pypinyin import pinyin, Style
+    m = {}
+    for cp in range(0x4E00, 0xA000):
+        ch = chr(cp)
+        r = pinyin(ch, style=Style.BOPOMOFO, heteronym=False, errors=lambda x: [""])[0][0]
+        if r and all(c in BOPO_CHARS for c in r):
+            m[ch] = r
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(m, f, ensure_ascii=False, separators=(",", ":"))
 
 API_URL = "https://script.google.com/macros/s/AKfycbxKUSCFF4yCoz3FGG7T4tEFnHhFX9upuMT60_4bFC8hduUKao7Lf4EGLYO0N_UQfDLg/exec"
 
@@ -75,7 +97,8 @@ button{font-family:inherit;font-size:15px;border:none;border-radius:999px;cursor
 .day-title{font-size:15px;margin-bottom:8px}
 .entry{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #EFE4D4}
 .entry:last-child{border-bottom:none}
-.entry .bk{flex:1;font-size:15px;word-break:break-all}
+.entry .bk{flex:1;font-size:17px;word-break:break-all;line-height:2.3}
+.entry .bk rt{font-size:9px;color:#8A7460;font-family:'Huninn',system-ui,sans-serif}
 .entry .pend{font-size:12px;color:#B8A88F}
 .del{background:#FBF4E8;color:#8A7460;padding:6px 12px;font-size:13px}
 .empty{color:#B8A88F;font-size:14px}
@@ -250,13 +273,29 @@ function renderCalendar() {
     ['日','一','二','三','四','五','六'].map(w => '<div class="dow">' + w + '</div>').join('') + cells.join('');
 }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+/* 注音字典（懶載入）：載到後書名逐字上 ruby，讓小一的 Owen 自己念得出書名 */
+let ZY = null;
+fetch('../assets/zhuyin.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(m => { if (m) { ZY = m; renderDay(); } })
+  .catch(err => console.error('zhuyin load failed', err));
+function rubyTitle(s) {
+  let out = '';
+  for (const ch of s) {
+    const e = esc(ch);
+    out += (ZY && ZY[ch]) ? '<ruby>' + e + '<rt>' + ZY[ch] + '</rt></ruby>' : e;
+  }
+  return out;
+}
+
 function renderDay() {
   document.getElementById('day-title').textContent = selected + ' 讀了什麼';
   const list = byDate(selected);
   const box = document.getElementById('day-list');
   if (!list.length) { box.innerHTML = '<div class="empty">這天還沒有紀錄</div>'; return; }
   box.innerHTML = list.map(e =>
-    '<div class="entry"><span class="bk">&#128214; ' + esc(e.title) + '</span>' +
+    '<div class="entry"><span class="bk">&#128214; ' + rubyTitle(e.title) + '</span>' +
     (e.pending ? '<span class="pend">待同步</span>' : '') +
     '<button class="del" data-id="' + e.id + '">刪除</button></div>').join('');
 }
