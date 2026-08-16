@@ -97,8 +97,15 @@ button{font-family:inherit;font-size:15px;border:none;border-radius:999px;cursor
 .day-title{font-size:15px;margin-bottom:8px}
 .entry{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #EFE4D4}
 .entry:last-child{border-bottom:none}
-.entry .bk{flex:1;font-size:17px;word-break:break-all;line-height:2.3}
-.entry .bk rt{font-size:9px;color:#8A7460;font-family:'Huninn',system-ui,sans-serif}
+.entry .bk{flex:1;font-size:17px;word-break:break-all;line-height:1.5}
+/* 直式注音在字右側（台灣課本式）：字＋右側注音欄＋聲調欄 */
+.zc{display:inline-flex;align-items:center;vertical-align:middle;margin:2px 3px 2px 0}
+.zc .h{font-size:19px;line-height:1.2}
+.zc .zy{display:inline-flex;flex-direction:column;justify-content:center;margin-left:1.5px}
+.zc .zy i{font-style:normal;font-size:9.5px;line-height:1.15;color:#8A7460;text-align:center;
+  font-family:'Huninn',system-ui,sans-serif}
+.zc .tn{font-size:10.5px;color:#8A7460;align-self:center;line-height:1;
+  font-family:'Huninn',system-ui,sans-serif}
 .entry .pend{font-size:12px;color:#B8A88F}
 .del{background:#FBF4E8;color:#8A7460;padding:6px 12px;font-size:13px}
 .empty{color:#B8A88F;font-size:14px}
@@ -280,11 +287,22 @@ fetch('../assets/zhuyin.json')
   .then(r => r.ok ? r.json() : null)
   .then(m => { if (m) { ZY = m; renderDay(); } })
   .catch(err => console.error('zhuyin load failed', err));
+function zyHtml(zy) {
+  const last = zy.slice(-1);
+  const tone = 'ˊˇˋ'.includes(last) ? last : '';     // 二三四聲：右側
+  const light = last === '˙';                          // 輕聲：注音欄頂端
+  const syms = (tone || light) ? zy.slice(0, -1) : zy;
+  let col = light ? '<i>˙</i>' : '';
+  for (const s of syms) col += '<i>' + s + '</i>';
+  return '<span class="zy">' + col + '</span>' + (tone ? '<span class="tn">' + tone + '</span>' : '');
+}
 function rubyTitle(s) {
   let out = '';
   for (const ch of s) {
     const e = esc(ch);
-    out += (ZY && ZY[ch]) ? '<ruby>' + e + '<rt>' + ZY[ch] + '</rt></ruby>' : e;
+    out += (ZY && ZY[ch])
+      ? '<span class="zc"><span class="h">' + e + '</span>' + zyHtml(ZY[ch]) + '</span>'
+      : e;
   }
   return out;
 }
