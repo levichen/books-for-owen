@@ -6,6 +6,7 @@ import subprocess
 import html
 from book_common import TXT, vocab_sentence
 from books_all import load_books
+from reading_log import reading_log_html
 
 SITE = "../site"
 
@@ -192,6 +193,10 @@ h1{{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}}
       padding:8px 18px;font-size:14px;align-self:flex-start}}
 .soon{{border:2px dashed #E5D9C9;border-radius:22px;display:flex;align-items:center;justify-content:center;
       color:#B8A88F;font-size:15px;min-height:220px;background:transparent}}
+.log-link{{display:block;max-width:420px;margin:0 auto 26px;text-align:center;text-decoration:none;
+      background:#fff;color:#4A3B32;border-radius:999px;padding:12px 22px;font-size:15px;
+      box-shadow:0 6px 18px rgba(74,59,50,.10)}}
+.log-link b{{color:#E4574C}}
 footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 """
     cards = []
@@ -219,6 +224,7 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 <style>{css}</style></head><body><div class="wrap">
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
+<a class="log-link" href="reading-log/">&#128214; 閱讀紀錄 &mdash; 累積 100 本<b>換禮物</b> &#127873;</a>
 <div class="grid">{''.join(cards)}
   <div class="soon">更多繪本製作中&hellip;</div>
 </div>
@@ -249,11 +255,15 @@ if __name__ == "__main__":
     os.makedirs(f"{SITE}/assets", exist_ok=True)
     with open(f"{SITE}/index.html", "w", encoding="utf-8") as f:
         f.write(lib)
+    log_page = reading_log_html()
+    os.makedirs(f"{SITE}/reading-log", exist_ok=True)
+    with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
+        f.write(log_page)
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
 
     # font subset: every unique char used across the site (incl. unescaped entities)
-    chars = set(html.unescape(lib) + README)
+    chars = set(html.unescape(lib) + README + html.unescape(log_page))
     for r in all_html:
         chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
