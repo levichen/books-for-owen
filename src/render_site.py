@@ -6,7 +6,8 @@ import subprocess
 import html
 from book_common import TXT, vocab_sentence
 from books_all import load_books
-from reading_log import reading_log_html
+import json
+from reading_log import reading_log_html, API_URL
 
 SITE = "../site"
 
@@ -52,6 +53,11 @@ body.fs .pg{{width:min(96vw,1080px,calc((100vh - 125px)*2.12));width:min(96vw,10
 .vs b{{color:#E4574C}}
 .vfoot{{text-align:center;color:#8A7460;margin-top:12px;font-size:15px}}
 button{{border:none;cursor:pointer;font-family:inherit}}
+#donebtn{{display:block;margin:12px auto 0;background:#E4574C;color:#fff;font-size:clamp(16px,2.5vw,21px);
+        border-radius:999px;padding:12px 30px;box-shadow:0 6px 16px rgba(228,87,76,.35)}}
+#donebtn:disabled{{opacity:.6;cursor:wait}}
+#donebtn.ok{{background:#7BC47F;box-shadow:0 6px 16px rgba(123,196,127,.35)}}
+#donemsg{{text-align:center;color:#8A7460;font-size:14px;margin-top:8px;min-height:20px}}
 #prev,#next{{position:fixed;top:50%;transform:translateY(-50%);z-index:8;width:52px;height:52px;border-radius:50%;
  background:rgba(228,87,76,.9);color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(228,87,76,.3);
  display:flex;align-items:center;justify-content:center}}
@@ -109,7 +115,25 @@ document.getElementById('fsexit').onclick=()=>setFS(false);
 ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{
  if(!(document.fullscreenElement||document.webkitFullscreenElement))document.body.classList.remove('fs');}));
 go(0);
+// 「我讀完了！」→ 記進雲端閱讀紀錄（同一本同一天只記一次，先查雲端再寫，跨裝置也不重複）
+const doneBtn=document.getElementById('donebtn'),doneMsg=document.getElementById('donemsg');
+if(doneBtn)doneBtn.onclick=async()=>{
+ doneBtn.disabled=true;doneMsg.textContent='記錄中…';
+ const today=(d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))(new Date());
+ try{
+  const list=await (await fetch(LOG_API)).json();
+  if(!list.ok)throw new Error('api');
+  if(list.entries.some(e=>e.title===BOOK_TITLE&&e.date===today)){
+   doneBtn.classList.add('ok');doneBtn.innerHTML='&#11088; 今天記過囉！';
+   doneMsg.textContent='這本今天已經在紀錄裡了，明天再讀再記一筆';return;}
+  const resp=await (await fetch(LOG_API,{method:'POST',body:JSON.stringify({action:'add',date:today,title:BOOK_TITLE})})).json();
+  if(!resp.ok)throw new Error(resp.error||'api');
+  doneBtn.classList.add('ok');doneBtn.innerHTML='&#127881; 已記錄！';
+  doneMsg.textContent='目前累積 '+resp.entries.length+' 本，繼續加油！';
+ }catch(err){console.error(err);doneBtn.disabled=false;doneMsg.textContent='連不上網路，請稍後再按一次（或到閱讀紀錄頁手動記）';}
+};
 """
+    js = f"const LOG_API={json.dumps(API_URL)};const BOOK_TITLE={json.dumps(title_en)};\n" + js
     secs = []
 
     # cover
@@ -120,12 +144,16 @@ go(0);
   <div class="art">{book['cover']()}</div>
 </div></section>""")
 
-    # story pages
+    # story pages（最後一個故事頁附「我讀完了！」按鈕，記進閱讀紀錄）
+    last_key = book["pages"][-1][0]
     for key, fn, text in book["pages"]:
+        done = ('<button id="donebtn">&#11088; 我讀完了！</button><div id="donemsg"></div>'
+                if key == last_key else "")
         secs.append(f"""
 <section class="pg" style="--bg:{bg[key]}"><div class="card">
   <div class="art">{fn()}</div>
   <div class="band">{text}</div>
+  {done}
 </div></section>""")
 
     # vocab review page（倒數第二頁：生字複習；零生字書自動略過）
