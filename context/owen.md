@@ -53,6 +53,7 @@
 | Owl eyes on → Read it right → Write it once（喊法：**Read it right!**） | 計時比賽求快亂寫 | read-it-right | 已出版 |
 | Is it mine? → Eyes, not hands → Or ask the owner（喊法：**Eyes, not hands!**） | 亂碰別人的東西（手機/商品/眼鏡/書） | eyes-not-hands | 已出版 |
 | Hold a hand → Stay inside → Wait（喊法：**Hold and wait!**） | 防走失（人多鬆手亂跑／接送點亂跑） | hold-and-wait | 已出版 |
+| Zip my lips → Quiet hands → **Ears on!** | 上課聊天/玩文具/自言自語（衝動變形） | ears-on | 草稿 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
@@ -68,6 +69,7 @@ my feet fly first + heart goes boom（人多鬆手衝掉／走散）
 另一組：**Slow and check**（平日練習：慢＋逐題檢查）vs **Read it right**（計時比賽：看清一次寫對，速度來自不用改錯）——兩種模式，開始前先問他今天是哪一種。
 另一組：**Ask first**（想幫忙/介入別人時先問）vs **Eyes, not hands**（想碰別人的東西時先判斷物權）——「先問」肌肉的姊妹口訣，互相加強。
 另一組三種「等」：**Wait my spot**（排隊輪流）vs **Wait for 6:30**（時間到才行動）vs **Hold and wait**（防走失：原地等大人來找你）——不可混用。
+另一組上課三兄弟：**Save it!**（有答案想搶說→存起來）vs **Eyes on teacher**（注意力被帶走→抓回來）vs **Ears on**（想聊想玩的衝動變形：聊天/玩文具/自言自語→嘴手安靜、耳朵收訊）。
 
 吉祥物家族（各書場景自畫、非人類不受 parts.py 限制）：腦小狗（eyes-on-teacher）、烏龜（slow-and-check）、
 **Coach Bear 大灰熊教練**（arms-breath-kick，泳池教練）、**貓頭鷹 Owl**（read-it-right，大眼看清楚）。
