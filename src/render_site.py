@@ -252,7 +252,7 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 <style>{css}</style></head><body><div class="wrap">
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
-<a class="log-link" href="reading-log/">&#128214; 閱讀紀錄 &mdash; 累積 100 本<b>換禮物</b> &#127873;</a>
+<a class="log-link" href="reading-log/">&#128214; 閱讀紀錄 &mdash; 每滿 100 本<b>換禮物</b> &#127873;</a>
 <div class="grid">{''.join(cards)}
   <div class="soon">更多繪本製作中&hellip;</div>
 </div>

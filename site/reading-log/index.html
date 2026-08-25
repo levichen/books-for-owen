@@ -82,7 +82,7 @@ footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
 </style></head><body><div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#128214; Owen 的閱讀紀錄</h1>
-<div class="sub">每天讀的書都記下來，累積 100 本換禮物 &#127873;</div>
+<div class="sub">每天讀的書都記下來，每滿 100 本換一個禮物 &#127873;</div>
 <div class="status"><span id="sync-status">同步中&hellip;</span></div>
 
 <div class="card">
@@ -93,7 +93,7 @@ footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
         <circle id="arc" cx="85" cy="85" r="70" fill="none" stroke="#E4574C" stroke-width="18"
                 stroke-linecap="round" stroke-dasharray="0 440"/>
       </svg>
-      <div class="center"><div class="num"><span id="total">0</span></div><div class="pct"><span id="pct">0%</span> / 100 本</div></div>
+      <div class="center"><div class="num"><span id="total">0</span></div><div class="pct"><span id="pct">本輪 0 / 100</span></div></div>
     </div>
     <div class="gift">
       <div class="big">禮物進度</div>
@@ -262,20 +262,31 @@ function setStatus(state) {
 }
 function renderProgress() {
   const total = currentEntries().length;
-  const pct = Math.min(100, Math.round(total / GOAL * 100));
+  const cycles = Math.floor(total / GOAL);            // 已完成的百本輪數 = 可換禮物數
+  const justHit = total > 0 && total % GOAL === 0;    // 剛好停在整百
+  const inCycle = justHit ? GOAL : total % GOAL;      // 本輪進度（整百時顯示滿環）
+  const pct = Math.round(inCycle / GOAL * 100);
   const C = 2 * Math.PI * 70;
   const arc = document.getElementById('arc');
   arc.setAttribute('stroke-dasharray', (pct / 100 * C) + ' ' + C);
   arc.style.display = pct === 0 ? 'none' : '';  // 0% 時隱藏，避免 round linecap 殘留圓點
   document.getElementById('total').textContent = total;
-  document.getElementById('pct').textContent = pct + '%';
+  document.getElementById('pct').textContent = '本輪 ' + inCycle + ' / ' + GOAL;
   const gift = document.getElementById('gift-msg');
-  if (total >= GOAL) {
-    gift.innerHTML = '<div class="done">&#127873; 達成 ' + GOAL + ' 本！可以換禮物啦！</div>';
-  } else {
-    gift.innerHTML = '<div class="left">再讀 <b>' + (GOAL - total) + '</b> 本就能換禮物 &#127873;</div>';
+  let html = '';
+  if (cycles > 0) {
+    html += '<div class="done">' + '\u{1F381}'.repeat(Math.min(cycles, 8)) +
+            ' 已達成 <b>' + cycles + '</b> 次換禮物！</div>';
   }
-  const miles = [25, 50, 75, 100];
+  if (justHit) {
+    html += '<div class="left">第 ' + cycles + ' 個 ' + GOAL + ' 本達成！先去換禮物，下一輪繼續 &#127881;</div>';
+  } else {
+    html += '<div class="left">再讀 <b>' + (GOAL - total % GOAL) + '</b> 本換第 ' + (cycles + 1) + ' 個禮物 &#127873;</div>';
+  }
+  gift.innerHTML = html;
+  // 里程碑膠囊：顯示當前這一輪的四個絕對里程碑（例：125/150/175/200 本）
+  const base = justHit ? (cycles - 1) * GOAL : cycles * GOAL;
+  const miles = [base + 25, base + 50, base + 75, base + GOAL];
   document.getElementById('miles').innerHTML = miles.map(m =>
     '<span class="mile' + (total >= m ? ' hit' : '') + '">' + m + ' 本</span>').join('');
 }
