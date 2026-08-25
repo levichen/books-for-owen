@@ -4,6 +4,7 @@
 import os
 import subprocess
 import html
+import time
 from book_common import TXT, vocab_sentence
 from books_all import load_books
 import json
@@ -12,6 +13,23 @@ from drink_log import drink_log_html
 from jump_log import jump_log_html
 
 SITE = "../site"
+BUILD = time.strftime("%Y%m%d%H%M%S")  # 每次 build 的版本戳，供頁面自動更新偵測
+
+
+def inject_autorefresh(page):
+    """在 </body> 前注入自動更新偵測：背景抓最新 HTML 的 build 戳，
+    不一致就自動重載一次（sessionStorage 防迴圈）。
+    治 iOS 主畫面捷徑/Safari 把舊版 HTML 快取住的問題。"""
+    js = (
+        "<script>/*#AR#" + BUILD + "*/(function(){var B='" + BUILD + "';"
+        "try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})"
+        ".then(function(r){return r.ok?r.text():''}).then(function(t){"
+        "var m=t.match(/#AR#(\\d{14})/);"
+        "if(m&&m[1]!==B){var k='ar-'+m[1];"
+        "if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}"
+        "}).catch(function(){});}catch(e){}})()</script>"
+    )
+    return page.replace("</body>", js + "</body>", 1)
 
 
 # ---------------------------------------------------------------- reader page
@@ -282,25 +300,25 @@ if __name__ == "__main__":
     all_html = []
     for book in books:
         os.makedirs(f"{SITE}/books/{book['slug']}", exist_ok=True)
-        reader = reader_html(book)
+        reader = inject_autorefresh(reader_html(book))
         with open(f"{SITE}/books/{book['slug']}/index.html", "w", encoding="utf-8") as f:
             f.write(reader)
         all_html.append(reader)
 
-    lib = library_html(books)
+    lib = inject_autorefresh(library_html(books))
     os.makedirs(f"{SITE}/assets", exist_ok=True)
     with open(f"{SITE}/index.html", "w", encoding="utf-8") as f:
         f.write(lib)
-    log_page = reading_log_html()
+    log_page = inject_autorefresh(reading_log_html())
     os.makedirs(f"{SITE}/reading-log", exist_ok=True)
     with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
         f.write(log_page)
     write_zhuyin_asset(f"{SITE}/assets/zhuyin.json")  # 注音字典（存在即跳過）
-    drink_page = drink_log_html()
+    drink_page = inject_autorefresh(drink_log_html())
     os.makedirs(f"{SITE}/drink-log", exist_ok=True)
     with open(f"{SITE}/drink-log/index.html", "w", encoding="utf-8") as f:
         f.write(drink_page)
-    jump_page = jump_log_html()
+    jump_page = inject_autorefresh(jump_log_html())
     os.makedirs(f"{SITE}/jump-log", exist_ok=True)
     with open(f"{SITE}/jump-log/index.html", "w", encoding="utf-8") as f:
         f.write(jump_page)
