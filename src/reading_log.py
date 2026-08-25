@@ -31,7 +31,7 @@ def write_zhuyin_asset(path):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(m, f, ensure_ascii=False, separators=(",", ":"))
 
-API_URL = "https://script.google.com/macros/s/AKfycbxKUSCFF4yCoz3FGG7T4tEFnHhFX9upuMT60_4bFC8hduUKao7Lf4EGLYO0N_UQfDLg/exec"
+API_URL = "https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec"  # 2026-08-25 新部署（含 drinks）
 
 STYLE = """
 @font-face { font-family:'Huninn'; src:url('../assets/huninn.woff2') format('woff2'); font-display:swap; }
