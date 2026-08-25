@@ -16,6 +16,69 @@ SITE = "../site"
 BUILD = time.strftime("%Y%m%d%H%M%S")  # 每次 build 的版本戳，供頁面自動更新偵測
 
 
+PWA_HEAD = (
+    '<link rel="manifest" href="/books-for-owen/manifest.webmanifest">'
+    '<link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png">'
+    '<meta name="apple-mobile-web-app-title" content="Owen 書架">'
+    '<meta name="theme-color" content="#FBF4E8">'
+)
+
+MANIFEST = """{
+  "name": "Owen's Little Library",
+  "short_name": "Owen 書架",
+  "start_url": "/books-for-owen/",
+  "scope": "/books-for-owen/",
+  "display": "standalone",
+  "background_color": "#FBF4E8",
+  "theme_color": "#FBF4E8",
+  "icons": [
+    { "src": "/books-for-owen/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/books-for-owen/assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+"""
+
+
+def inject_pwa(page):
+    """head 注入 PWA meta（manifest / iOS 圖示與標題 / 主題色）。"""
+    return page.replace("</head>", PWA_HEAD + "</head>", 1)
+
+
+def write_icons():
+    """產生 app icon（Owen 頭像＋三本小書，滿版暖黃底）——存在即跳過。"""
+    from parts import head
+    if all(os.path.exists(f"{SITE}/assets/icon-{s}.png") for s in (180, 192, 512)):
+        return
+    import cairosvg
+    books = (
+        '<g transform="translate(256,408)">'
+        '<rect x="-96" y="-34" width="56" height="68" rx="8" fill="#E4574C"/>'
+        '<rect x="-28" y="-42" width="56" height="76" rx="8" fill="#3D7BC4"/>'
+        '<rect x="40" y="-30" width="56" height="64" rx="8" fill="#43A047"/>'
+        '<rect x="-84" y="-22" width="32" height="6" rx="3" fill="#FFF7E0"/>'
+        '<rect x="-16" y="-30" width="32" height="6" rx="3" fill="#FFF7E0"/>'
+        '<rect x="52" y="-18" width="32" height="6" rx="3" fill="#FFF7E0"/>'
+        "</g>"
+    )
+    icon_svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
+        '<rect width="512" height="512" fill="#FFE9A8"/>'
+        '<circle cx="256" cy="212" r="150" fill="#FFF3CC"/>'
+        + head(expr="big", scale=1.9, cx=256, cy=208)
+        + books
+        + "</svg>"
+    )
+    for size in (180, 192, 512):
+        cairosvg.svg2png(bytestring=icon_svg.encode("utf-8"),
+                         write_to=f"{SITE}/assets/icon-{size}.png",
+                         output_width=size, output_height=size)
+
+
+def finalize(page):
+    """每頁輸出前的共同處理：PWA meta ＋ 自動更新偵測。"""
+    return inject_pwa(inject_autorefresh(page))
+
+
 def inject_autorefresh(page):
     """在 </body> 前注入自動更新偵測：背景抓最新 HTML 的 build 戳，
     不一致就自動重載一次（sessionStorage 防迴圈）。
@@ -245,10 +308,12 @@ h1{{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}}
       background:#fff;color:#4A3B32;border-radius:999px;padding:12px 22px;font-size:15px;
       box-shadow:0 6px 18px rgba(74,59,50,.10)}}
 .log-link b{{color:#E4574C}}
+.log-sub{{display:block;font-size:13px;color:#8A7460;margin-top:3px}}
+.log-sub b{{font-size:13px}}
 .log-drink{{margin-top:-14px}}
-.log-drink b{{color:#3D7BC4}}
+.log-drink b,.log-drink .log-sub b{{color:#3D7BC4}}
 .log-jump{{margin-top:-14px}}
-.log-jump b{{color:#43A047}}
+.log-jump b,.log-jump .log-sub b{{color:#43A047}}
 footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 """
     cards = []
@@ -276,14 +341,48 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 <style>{css}</style></head><body><div class="wrap">
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
-<a class="log-link" href="reading-log/">&#128214; 閱讀紀錄 &mdash; 每滿 100 本<b>換禮物</b> &#127873;</a>
-<a class="log-link log-drink" href="drink-log/">&#129475; 牛奶點數 &mdash; 每滿 100 點<b>換禮物</b> &#127873;</a>
-<a class="log-link log-jump" href="jump-log/">&#129336; 跳繩次數 &mdash; 每滿 10,000 次<b>換禮物</b> &#127873;</a>
+<a class="log-link" href="reading-log/">&#128214; 閱讀紀錄<span class="log-sub" id="sum-books">每滿 100 本換禮物 &#127873;</span></a>
+<a class="log-link log-drink" href="drink-log/">&#129475; 牛奶點數<span class="log-sub" id="sum-drinks">每滿 100 點換禮物 &#127873;</span></a>
+<a class="log-link log-jump" href="jump-log/">&#129336; 跳繩次數<span class="log-sub" id="sum-jumps">每滿 10,000 次換禮物 &#127873;</span></a>
 <div class="grid">{''.join(cards)}
   <div class="soon">更多繪本製作中&hellip;</div>
 </div>
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
-</div></body></html>"""
+</div><script>{HOME_JS.replace("__API__", API_URL)}</script></body></html>"""
+
+
+# ---------------------------------------------------------------- 首頁進度總覽 JS
+HOME_JS = """
+(function(){
+'use strict';
+var API='__API__';
+var PTS={'小安素':2,'保久乳':1,'水':1};
+function fmt(n){return n.toLocaleString('en-US');}
+function line(total, goal, unit){
+  if(total===0) return '每滿 '+fmt(goal)+' '+unit+'換禮物 \\u{1F381}';
+  if(total%goal===0) return '<b>'+fmt(total)+'</b> '+unit+'・達標可以換禮物啦！\\u{1F381}';
+  return '<b>'+fmt(total)+'</b> '+unit+'・再 '+fmt(goal-total%goal)+' '+unit+'換禮物 \\u{1F381}';
+}
+function show(id, html){var el=document.getElementById(id); if(el) el.innerHTML=html;}
+function render(s){
+  if(!s) return;
+  if(typeof s.books==='number') show('sum-books', line(s.books,100,'本'));
+  if(typeof s.drinks==='number') show('sum-drinks', line(s.drinks,100,'點'));
+  if(typeof s.jumps==='number') show('sum-jumps', line(s.jumps,10000,'次'));
+}
+try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}  // 先顯示上次數字
+function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
+Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
+  var b=rs[0],d=rs[1],j=rs[2];
+  var s={};
+  if(b&&b.ok&&Array.isArray(b.entries)) s.books=b.entries.length;
+  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0);
+  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+  render(s);
+  try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
+});
+})();
+"""
 
 
 # ---------------------------------------------------------------- README
@@ -300,25 +399,28 @@ if __name__ == "__main__":
     all_html = []
     for book in books:
         os.makedirs(f"{SITE}/books/{book['slug']}", exist_ok=True)
-        reader = inject_autorefresh(reader_html(book))
+        reader = finalize(reader_html(book))
         with open(f"{SITE}/books/{book['slug']}/index.html", "w", encoding="utf-8") as f:
             f.write(reader)
         all_html.append(reader)
 
-    lib = inject_autorefresh(library_html(books))
+    lib = finalize(library_html(books))
     os.makedirs(f"{SITE}/assets", exist_ok=True)
     with open(f"{SITE}/index.html", "w", encoding="utf-8") as f:
         f.write(lib)
-    log_page = inject_autorefresh(reading_log_html())
+    log_page = finalize(reading_log_html())
     os.makedirs(f"{SITE}/reading-log", exist_ok=True)
     with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
         f.write(log_page)
     write_zhuyin_asset(f"{SITE}/assets/zhuyin.json")  # 注音字典（存在即跳過）
-    drink_page = inject_autorefresh(drink_log_html())
+    write_icons()  # PWA icon（存在即跳過）
+    with open(f"{SITE}/manifest.webmanifest", "w", encoding="utf-8") as f:
+        f.write(MANIFEST)
+    drink_page = finalize(drink_log_html())
     os.makedirs(f"{SITE}/drink-log", exist_ok=True)
     with open(f"{SITE}/drink-log/index.html", "w", encoding="utf-8") as f:
         f.write(drink_page)
-    jump_page = inject_autorefresh(jump_log_html())
+    jump_page = finalize(jump_log_html())
     os.makedirs(f"{SITE}/jump-log", exist_ok=True)
     with open(f"{SITE}/jump-log/index.html", "w", encoding="utf-8") as f:
         f.write(jump_page)
