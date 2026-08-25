@@ -8,6 +8,7 @@ from book_common import TXT, vocab_sentence
 from books_all import load_books
 import json
 from reading_log import reading_log_html, write_zhuyin_asset, BOPO_CHARS, API_URL
+from drink_log import drink_log_html
 
 SITE = "../site"
 
@@ -225,6 +226,8 @@ h1{{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}}
       background:#fff;color:#4A3B32;border-radius:999px;padding:12px 22px;font-size:15px;
       box-shadow:0 6px 18px rgba(74,59,50,.10)}}
 .log-link b{{color:#E4574C}}
+.log-drink{{margin-top:-14px}}
+.log-drink b{{color:#3D7BC4}}
 footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 """
     cards = []
@@ -253,6 +256,7 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
 <a class="log-link" href="reading-log/">&#128214; 閱讀紀錄 &mdash; 每滿 100 本<b>換禮物</b> &#127873;</a>
+<a class="log-link log-drink" href="drink-log/">&#129475; 牛奶點數 &mdash; 每滿 100 點<b>換禮物</b> &#127873;</a>
 <div class="grid">{''.join(cards)}
   <div class="soon">更多繪本製作中&hellip;</div>
 </div>
@@ -288,11 +292,15 @@ if __name__ == "__main__":
     with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
         f.write(log_page)
     write_zhuyin_asset(f"{SITE}/assets/zhuyin.json")  # 注音字典（存在即跳過）
+    drink_page = drink_log_html()
+    os.makedirs(f"{SITE}/drink-log", exist_ok=True)
+    with open(f"{SITE}/drink-log/index.html", "w", encoding="utf-8") as f:
+        f.write(drink_page)
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
 
     # font subset: every unique char used across the site (incl. unescaped entities)
-    chars = set(html.unescape(lib) + README + html.unescape(log_page))
+    chars = set(html.unescape(lib) + README + html.unescape(log_page) + html.unescape(drink_page))
     for r in all_html:
         chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
