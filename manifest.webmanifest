@@ -1,0 +1,13 @@
+{
+  "name": "Owen's Little Library",
+  "short_name": "Owen 書架",
+  "start_url": "/books-for-owen/",
+  "scope": "/books-for-owen/",
+  "display": "standalone",
+  "background_color": "#FBF4E8",
+  "theme_color": "#FBF4E8",
+  "icons": [
+    { "src": "/books-for-owen/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/books-for-owen/assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
