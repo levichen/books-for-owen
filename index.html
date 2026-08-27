@@ -34,7 +34,7 @@ h1{color:#4A3B32;font-size:clamp(26px,5vw,40px);text-align:center}
 .log-jump{margin-top:-14px}
 .log-jump b,.log-jump .log-sub b{color:#43A047}
 footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}
-</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><div class="wrap">
+</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/" class="on">&#128214; 書櫃</a><a href="/books-for-owen/points/">&#127873; 點數</a><a href="/books-for-owen/games/">&#127918; 遊戲</a></nav><div class="wrap">
 <h1>Owen's Little Library</h1>
 <div class="sub">&#9733; 專屬 Owen 的繪本書架 &#9733;</div>
 <a class="log-link" href="reading-log/">&#128214; 閱讀紀錄<span class="log-sub" id="sum-books">每滿 100 本換禮物 &#127873;</span></a>
@@ -242,7 +242,7 @@ function render(s){
   if(typeof s.drinks==='number') show('sum-drinks', line(s.drinks,100,'點'));
   if(typeof s.jumps==='number') show('sum-jumps', line(s.jumps,10000,'次'));
 }
-try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}  // 先顯示上次數字
+try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}
 function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
 Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
   var b=rs[0],d=rs[1],j=rs[2];
@@ -254,4 +254,4 @@ Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
 });
 })();
-</script><script>/*#AR#20260827082831*/(function(){var B='20260827082831';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260827085337*/(function(){var B='20260827085337';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生字翻翻樂</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face { font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Huninn',system-ui,sans-serif;background:#FBF4E8;min-height:100vh;color:#4A3B32}
+.wrap{max-width:640px;margin:0 auto;padding:22px 14px 50px}
+h1{font-size:clamp(22px,5vw,30px);text-align:center}
+.sub{color:#8A7460;text-align:center;margin:6px 0 14px;font-size:13px}
+.hud{display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.hud span{font-size:13px;color:#8A7460;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(74,59,50,.08)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{aspect-ratio:4/3;border-radius:16px;border:none;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;font-size:clamp(15px,4.5vw,22px);
+  background:#E4574C;color:#fff;box-shadow:0 6px 14px rgba(74,59,50,.15);transition:transform .12s}
+.tile:active{transform:scale(.96)}
+.tile.open{background:#fff;color:#4A3B32;border:3px solid #F0B429}
+.tile.done{background:#7BC47F;color:#fff;border:none;box-shadow:none}
+.tile .back{font-size:26px}
+.sentence{min-height:44px;text-align:center;color:#8A7460;font-size:14px;line-height:1.5;
+  background:#fff;border-radius:14px;padding:10px 14px;margin-top:14px}
+.sentence b{color:#E4574C}
+.win{display:none;text-align:center;background:#fff;border-radius:20px;padding:22px;margin-top:16px;
+  box-shadow:0 8px 26px rgba(74,59,50,.12)}
+.win .big{font-size:24px}
+.win .stat{color:#8A7460;font-size:14px;margin-top:8px}
+button.again{font-family:inherit;border:none;cursor:pointer;background:#E4574C;color:#fff;
+  border-radius:999px;padding:12px 28px;font-size:16px;margin-top:14px}
+footer{text-align:center;color:#B8A88F;font-size:12px;margin-top:26px}
+</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/">&#127873; 點數</a><a href="/books-for-owen/games/" class="on">&#127918; 遊戲</a></nav><div class="wrap">
+<h1>&#127183; 生字翻翻樂</h1>
+<div class="sub">翻牌找出兩張一樣的生字——翻開會唸給你聽 &#128264;</div>
+<div class="hud"><span id="time">0 秒</span><span id="moves">0 步</span></div>
+<div class="grid" id="grid"></div>
+<div class="sentence" id="sentence"></div>
+<div class="win" id="win">
+  <div class="big">&#127881; 全部配對成功！</div>
+  <div class="stat" id="win-stat"></div>
+  <button class="again" id="again">再玩一次</button>
+</div>
+<footer>made with &hearts; by Daddy &amp; Claude</footer>
+</div><script>
+'use strict';
+const VOCAB = [{"w": "itchy", "s": "My mouth feels itchy. My body feels hot."}, {"w": "superpower", "s": "STOP! I use my superpower…"}, {"w": "pocket", "s": "I save my answer in my brain pocket!"}, {"w": "jumpy", "s": "My feet feel jumpy!"}, {"w": "glue", "s": "I glue my feet to my spot!"}, {"w": "cheer", "s": "I cheer for my friends!"}, {"w": "strike", "s": "Strike one! Strike two!"}, {"w": "quit", "s": "I want to quit the game!"}, {"w": "home run", "s": "CRACK! Home run!"}, {"w": "bounce", "s": "My body wants to bounce!"}, {"w": "tiptoe", "s": "or I tiptoe out and play."}, {"w": "whisper", "s": "I whisper, “Good morning, Mommy!”"}, {"w": "puppy", "s": "My brain is like a puppy."}, {"w": "giggle", "s": "We giggle and giggle."}, {"w": "catch", "s": "I catch my puppy brain!"}, {"w": "freeze", "s": "I FREEZE like ice!"}, {"w": "whistle", "s": "Daddy blows the whistle."}, {"w": "wiggly", "s": "My body feels wiggly!"}, {"w": "statue", "s": "Statue time!"}, {"w": "dryer", "s": "Whoosh! The dryer is loud and warm."}, {"w": "thirsty", "s": "I get SO thirsty!"}, {"w": "germs", "s": "Anne's bottle has Anne's germs."}, {"w": "bottle", "s": "Bottles sit in a row."}, {"w": "magic", "s": "My magic words hide away!"}, {"w": "paddle", "s": ""}, {"w": "pickleball", "s": "I play pickleball with Daddy!"}, {"w": "turtle", "s": "I am a turtle!"}, {"w": "check", "s": "Point and check."}, {"w": "zoom", "s": "My pencil zooms!"}, {"w": "volume", "s": "I turn my volume down!"}, {"w": "buzzy", "s": "My body feels buzzy!"}, {"w": "splash", "s": "Splash! Water in my mouth!"}, {"w": "breath", "s": "I zoom! My breath goes fast, fast!"}, {"w": "coach", "s": "This is Coach Bear!"}, {"w": "patience", "s": "Patience power!"}, {"w": "volcano", "s": "My volcano starts to bubble!"}, {"w": "tiles", "s": "Game night! We play tiles."}, {"w": "rip", "s": "I pull. Anne pulls. RIP!"}, {"w": "tape", "s": "We tape the book together."}, {"w": "carry", "s": "I want to carry it for her!"}, {"w": "owl", "s": "I get my owl eyes!"}, {"w": "timer", "s": "The timer goes tick, tick, tick."}, {"w": "contest", "s": "I practice for my math contest!"}, {"w": "store", "s": "We go to the store."}, {"w": "phone", "s": "Daddy's phone is Daddy's."}, {"w": "touch", "s": "I want to touch them all!"}, {"w": "elevator", "s": "School is done! Elevator down—three, two, one!"}, {"w": "inside", "s": "No Mommy? Stay inside."}, {"w": "fly", "s": "My feet fly first!"}, {"w": "zip", "s": "I zip and turn my ears ON!"}, {"w": "chat", "s": "I chat. I play. I blah-blah."}, {"w": "test", "s": "On my test, they jump out to help!"}, {"w": "shout", "s": "A shout jumps up my throat!"}, {"w": "squeeze", "s": "Squeeze my fists tight!"}, {"w": "fist", "s": "Squeeze my fists tight!"}];  // [{w:生字, s:例句}]
+const PAIRS = 6;
+let deck = [], open = [], lock = false, matched = 0, moves = 0, t0 = null, timerId = null;
+
+function speak(word) {
+  try {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = 0.85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function shuffle(a) {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = r[i]; r[i] = r[j]; r[j] = t;
+  }
+  return r;
+}
+function newGame() {
+  const pick = shuffle(VOCAB).slice(0, PAIRS);
+  deck = shuffle(pick.concat(pick).map((v, i) => ({ key: v.w, s: v.s, id: i })));
+  open = []; lock = false; matched = 0; moves = 0; t0 = null;
+  if (timerId) { clearInterval(timerId); timerId = null; }
+  document.getElementById('time').textContent = '0 秒';
+  document.getElementById('moves').textContent = '0 步';
+  document.getElementById('win').style.display = 'none';
+  document.getElementById('sentence').innerHTML = '點卡片翻開，找出兩張一樣的生字！';
+  const grid = document.getElementById('grid');
+  grid.innerHTML = deck.map((c, i) =>
+    '<button class="tile" data-i="' + i + '"><span class="back">&#11088;</span></button>').join('');
+}
+function tick() {
+  document.getElementById('time').textContent = Math.round((Date.now() - t0) / 1000) + ' 秒';
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function flip(i, el) {
+  if (lock || el.classList.contains('open') || el.classList.contains('done')) return;
+  if (!t0) { t0 = Date.now(); timerId = setInterval(tick, 1000); }
+  el.classList.add('open');
+  el.innerHTML = esc(deck[i].key);
+  speak(deck[i].key);
+  open.push({ i, el });
+  if (open.length < 2) return;
+  moves++;
+  document.getElementById('moves').textContent = moves + ' 步';
+  const [a, b] = open;
+  if (deck[a.i].key === deck[b.i].key) {
+    a.el.classList.remove('open'); b.el.classList.remove('open');
+    a.el.classList.add('done'); b.el.classList.add('done');
+    matched++;
+    document.getElementById('sentence').innerHTML =
+      '&#11088; <b>' + esc(deck[a.i].key) + '</b>&nbsp;&mdash;&nbsp;' + esc(deck[a.i].s);
+    open = [];
+    if (matched === PAIRS) finish();
+  } else {
+    lock = true;
+    setTimeout(() => {
+      a.el.classList.remove('open'); b.el.classList.remove('open');
+      a.el.innerHTML = '<span class="back">&#11088;</span>';
+      b.el.innerHTML = '<span class="back">&#11088;</span>';
+      open = []; lock = false;
+    }, 900);
+  }
+}
+function finish() {
+  clearInterval(timerId); timerId = null;
+  const secs = Math.round((Date.now() - t0) / 1000);
+  document.getElementById('win-stat').textContent = '用了 ' + secs + ' 秒、' + moves + ' 步';
+  document.getElementById('win').style.display = 'block';
+}
+document.getElementById('grid').addEventListener('click', ev => {
+  const el = ev.target.closest('.tile');
+  if (!el) return;
+  flip(+el.dataset.i, el);
+});
+document.getElementById('again').addEventListener('click', newGame);
+newGame();
+</script><script>/*#AR#20260827085337*/(function(){var B='20260827085337';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
