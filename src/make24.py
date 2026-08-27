@@ -45,6 +45,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 .tile{width:72px;height:100px;border-radius:14px;background:#FFF;color:#4A3B32;font-size:34px;
   box-shadow:0 4px 12px rgba(0,0,0,.15);border:3px solid transparent;transition:transform .12s,opacity .12s}
 .tile:disabled{opacity:.4;cursor:default}
+.cards.preview .tile:disabled{opacity:1}
+.demo-cards{display:flex;gap:8px;justify-content:center}
+.demo-cards span{width:44px;height:60px;border-radius:8px;background:#FFF;color:#4A3B32;font-size:24px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.3)}
 .tile.sel{border-color:#F0B429;transform:scale(1.06)}
 .tile.hl{border-color:#43A047;box-shadow:0 0 14px rgba(67,160,71,.6)}
 .tile.fresh{animation:pop .24s}
@@ -136,10 +140,12 @@ def make24_html():
 
 <div id="overlay">
   <h1>&#9889; MAKE 24</h1>
-  <p>Four cards. Use + &minus; &times; &divide; to make 24.<br>
+  <div class="demo-cards"><span>3</span><span>8</span><span>2</span><span>4</span></div>
+  <p>Four cards like these are your puzzle.<br>
+  Use + &minus; &times; &divide; to make 24.<br>
   First to 4 round wins takes the match!<br>
   Put the tablet flat between you &mdash; top player sees it right-side up.</p>
-  <button class="bigbtn" id="start-btn">&#9654; START</button>
+  <button class="bigbtn" id="start-btn">&#9654; START &mdash; DEAL CARDS</button>
 </div>
 
 <div id="endpanel">

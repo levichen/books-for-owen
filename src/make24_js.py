@@ -171,6 +171,8 @@ function renderLights() {
 function renderBoard(side, viewBoard, operable) {
   const b = viewBoard || boards[side];
   const wrap = $('cards-' + side); wrap.innerHTML = '';
+  // 搶答窗：牌全亮（可看不可點）；其餘狀態的 disabled 牌照規格 40% 透明
+  wrap.classList.toggle('preview', state === 'THINKING' || state === 'DEALING');
   b.cards.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'tile' + (b.sel.left === c.id ? ' sel' : '') + (c.fresh ? ' fresh' : '');
@@ -278,7 +280,7 @@ function onHint(side) {
 
 /* ---------- 狀態機（§4.1） ---------- */
 function startMatch() {
-  audio().resume && audio().resume();
+  try { const a = audio(); a.resume && a.resume(); } catch (e) {}  // iOS AudioContext 失敗不得卡死開局
   match = { rounds: [], wins: { A: 0, B: 0 }, usedIds: [], hardCount: 0, startedAt: now() };
   $('overlay').style.display = 'none';
   nextRound();
