@@ -54,7 +54,7 @@
 | Is it mine? → Eyes, not hands → Or ask the owner（喊法：**Eyes, not hands!**） | 亂碰別人的東西（手機/商品/眼鏡/書） | eyes-not-hands | 已出版 |
 | Hold a hand → Stay inside → Wait（喊法：**Hold and wait!**） | 防走失（人多鬆手亂跑／接送點亂跑） | hold-and-wait | 已出版 |
 | Zip my lips → Quiet hands → **Ears on!** | 上課聊天/玩文具/自言自語（衝動變形） | ears-on | 已出版 |
-| Catch the shout → Squeeze my fists → **Quiet cheer!** | 課堂激動瞬間大聲叫喊 | quiet-cheer | 草稿 |
+| Catch the shout → Squeeze my fists → **Quiet cheer!** | 課堂激動瞬間大聲叫喊 | quiet-cheer | 已出版 |
 
 對應身體訊號詞（出現即大力稱讚）：itchy mouth（搶答）、jumpy feet（插隊）、hot face + tight tummy（怕輸）、
 body wants to bounce（清晨）、my brain ran away（分心）、wind fills my ears（玩太 high）、
@@ -62,7 +62,8 @@ body feels wiggly（照護亂動）、"Whose bottle is this?"（拿杯前先問�
 my magic words hide（忘禮貌）、my pencil zooms + heart goes fast（趕寫）、my voice grows big + body feels buzzy（太大聲）、
 my breath goes fast + arms go flat（游太急泳姿散掉）、feet feel glued + "One more minute…"（拖延，出現時指口訣不重複指令）、my volcano bubbles（快炸）、
 my hands jump first（沒問就動手）、my eyes skip the numbers（比賽看不清就寫）、my fingers want to dance（想亂摸）、
-my feet fly first + heart goes boom（人多鬆手衝掉／走散）、my mouth feels full of words（上課想聊想玩）
+my feet fly first + heart goes boom（人多鬆手衝掉／走散）、my mouth feels full of words（上課想聊想玩）、
+a shout jumps up my throat（興奮瞬間爆音）
 
 口訣區隔備忘：**Freeze**（被叫到瞬間停）vs **Statue**（照護期間持續不動）vs **Volume down**（自己發現太大聲、轉小）
 是三顆不同的肌肉——外部開關／持續靜止／自我監控，不可混用。
@@ -82,7 +83,7 @@ bounce、tiptoe、whisper（quiet-morning）；puppy、giggle、catch（eyes-on-
 wiggly、statue、dryer（statue-time）；thirsty、germs、bottle（my-cup-only）；
 magic、paddle、pickleball（magic-words）；turtle、check、zoom（slow-and-check）；volume、buzzy（volume-down）；
 splash、breath、coach（arms-breath-kick）；patience、volcano、tiles（patience-power）；rip、tape、carry（ask-first）；
-owl、timer、contest（read-it-right）；store、phone、touch（eyes-not-hands）；elevator、inside、fly（hold-and-wait）；zip、chat、test（ears-on）。（listen-and-go 零新字）
+owl、timer、contest（read-it-right）；store、phone、touch（eyes-not-hands）；elevator、inside、fly（hold-and-wait）；zip、chat、test（ears-on）；shout、squeeze、fist（quiet-cheer）。（listen-and-go 零新字）
 其中 **superpower** 是系列固定儀式詞——每本 p5 都用 "STOP! I use my superpower&hellip;" 開場，刻意跨書重複。
 新書出版後，其 new_vocabulary 併入此清單。
 
