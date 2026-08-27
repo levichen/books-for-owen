@@ -1,0 +1,82 @@
+# -*- coding: utf-8 -*-
+"""點數 hub 頁（site/points/）：三個計數器的入口＋即時進度總覽。
+未來新計數器都掛這一頁。HOME_JS 同時供首頁預覽按鈕使用。"""
+
+from reading_log import API_URL
+
+# 即時進度 JS（首頁與點數 hub 共用）：三 API 平行抓，先顯示快取再更新
+HOME_JS = """
+(function(){
+'use strict';
+var API='__API__';
+var PTS={'小安素':2,'保久乳':1,'水':1};
+function fmt(n){return n.toLocaleString('en-US');}
+function line(total, goal, unit){
+  if(total===0) return '每滿 '+fmt(goal)+' '+unit+'換禮物 \\u{1F381}';
+  if(total%goal===0) return '<b>'+fmt(total)+'</b> '+unit+'・達標可以換禮物啦！\\u{1F381}';
+  return '<b>'+fmt(total)+'</b> '+unit+'・再 '+fmt(goal-total%goal)+' '+unit+'換禮物 \\u{1F381}';
+}
+function show(id, html){var el=document.getElementById(id); if(el) el.innerHTML=html;}
+function render(s){
+  if(!s) return;
+  if(typeof s.books==='number') show('sum-books', line(s.books,100,'本'));
+  if(typeof s.drinks==='number') show('sum-drinks', line(s.drinks,100,'點'));
+  if(typeof s.jumps==='number') show('sum-jumps', line(s.jumps,10000,'次'));
+}
+try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}
+function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
+Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
+  var b=rs[0],d=rs[1],j=rs[2];
+  var s={};
+  if(b&&b.ok&&Array.isArray(b.entries)) s.books=b.entries.length;
+  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0);
+  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+  render(s);
+  try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
+});
+})();
+"""
+
+STYLE = """
+@font-face { font-family:'Huninn'; src:url('../assets/huninn.woff2') format('woff2'); font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Huninn',system-ui,sans-serif;background:#FBF4E8;min-height:100vh;color:#4A3B32}
+.wrap{max-width:760px;margin:0 auto;padding:26px 16px 60px}
+h1{font-size:clamp(24px,5vw,34px);text-align:center}
+.sub{color:#8A7460;text-align:center;margin:6px 0 24px;font-size:14px}
+.pcard{display:block;background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(74,59,50,.10);
+  padding:20px 22px;margin-bottom:16px;text-decoration:none;color:#4A3B32}
+.pcard .t{font-size:19px}
+.pcard .s{display:block;font-size:14px;color:#8A7460;margin-top:6px}
+.pcard.books .s b{color:#E4574C}
+.pcard.drinks .s b{color:#3D7BC4}
+.pcard.jumps .s b{color:#43A047}
+.pcard .go{float:right;color:#B8A88F;font-size:14px;margin-top:4px}
+footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
+"""
+
+
+def points_html():
+    js = HOME_JS.replace("__API__", API_URL)
+    return f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Owen 的點數</title>
+<meta name="robots" content="noindex">
+<style>{STYLE}</style></head><body><div class="wrap">
+<h1>&#127873; Owen 的點數</h1>
+<div class="sub">三種累積，滿了都能換禮物</div>
+
+<a class="pcard books" href="../reading-log/"><span class="go">前往 &rarr;</span>
+  <div class="t">&#128214; 閱讀紀錄</div>
+  <span class="s" id="sum-books">每滿 100 本換禮物 &#127873;</span></a>
+
+<a class="pcard drinks" href="../drink-log/"><span class="go">前往 &rarr;</span>
+  <div class="t">&#129475; 牛奶點數</div>
+  <span class="s" id="sum-drinks">每滿 100 點換禮物 &#127873;</span></a>
+
+<a class="pcard jumps" href="../jump-log/"><span class="go">前往 &rarr;</span>
+  <div class="t">&#129336; 跳繩次數</div>
+  <span class="s" id="sum-jumps">每滿 10,000 次換禮物 &#127873;</span></a>
+
+<footer>made with &hearts; by Daddy &amp; Claude</footer>
+</div><script>{js}</script></body></html>"""

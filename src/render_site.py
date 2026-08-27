@@ -11,6 +11,8 @@ import json
 from reading_log import reading_log_html, write_zhuyin_asset, BOPO_CHARS, API_URL
 from drink_log import drink_log_html
 from jump_log import jump_log_html
+from points_hub import points_html, HOME_JS
+from games import games_index_html, word_match_html
 
 SITE = "../site"
 BUILD = time.strftime("%Y%m%d%H%M%S")  # 每次 build 的版本戳，供頁面自動更新偵測
@@ -74,9 +76,33 @@ def write_icons():
                          output_width=size, output_height=size)
 
 
-def finalize(page):
-    """每頁輸出前的共同處理：PWA meta ＋ 自動更新偵測。"""
-    return inject_pwa(inject_autorefresh(page))
+NAV_ITEMS = [("books", "&#128214; 書櫃", "/books-for-owen/"),
+             ("points", "&#127873; 點數", "/books-for-owen/points/"),
+             ("games", "&#127918; 遊戲", "/books-for-owen/games/")]
+
+
+def inject_nav(page, active):
+    """<body> 後插輕量導覽列（書櫃｜點數｜遊戲）。reader 書頁不掛（閱讀沉浸）。"""
+    links = "".join(
+        f'<a href="{href}"{" class=\"on\"" if key == active else ""}>{label}</a>'
+        for key, label, href in NAV_ITEMS)
+    nav = (
+        '<style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}'
+        '.site-nav a{font-family:\'Huninn\',system-ui,sans-serif;font-size:14px;color:#8A7460;'
+        'text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;'
+        'box-shadow:0 2px 8px rgba(74,59,50,.08)}'
+        '.site-nav a.on{background:#4A3B32;color:#fff}</style>'
+        f'<nav class="site-nav">{links}</nav>'
+    )
+    return page.replace("<body>", "<body>" + nav, 1)
+
+
+def finalize(page, nav=None):
+    """每頁輸出前的共同處理：PWA meta ＋ 自動更新偵測（＋可選導覽列）。"""
+    page = inject_pwa(inject_autorefresh(page))
+    if nav:
+        page = inject_nav(page, nav)
+    return page
 
 
 def inject_autorefresh(page):
@@ -351,40 +377,6 @@ footer{{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}}
 </div><script>{HOME_JS.replace("__API__", API_URL)}</script></body></html>"""
 
 
-# ---------------------------------------------------------------- 首頁進度總覽 JS
-HOME_JS = """
-(function(){
-'use strict';
-var API='__API__';
-var PTS={'小安素':2,'保久乳':1,'水':1};
-function fmt(n){return n.toLocaleString('en-US');}
-function line(total, goal, unit){
-  if(total===0) return '每滿 '+fmt(goal)+' '+unit+'換禮物 \\u{1F381}';
-  if(total%goal===0) return '<b>'+fmt(total)+'</b> '+unit+'・達標可以換禮物啦！\\u{1F381}';
-  return '<b>'+fmt(total)+'</b> '+unit+'・再 '+fmt(goal-total%goal)+' '+unit+'換禮物 \\u{1F381}';
-}
-function show(id, html){var el=document.getElementById(id); if(el) el.innerHTML=html;}
-function render(s){
-  if(!s) return;
-  if(typeof s.books==='number') show('sum-books', line(s.books,100,'本'));
-  if(typeof s.drinks==='number') show('sum-drinks', line(s.drinks,100,'點'));
-  if(typeof s.jumps==='number') show('sum-jumps', line(s.jumps,10000,'次'));
-}
-try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}  // 先顯示上次數字
-function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
-Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
-  var b=rs[0],d=rs[1],j=rs[2];
-  var s={};
-  if(b&&b.ok&&Array.isArray(b.entries)) s.books=b.entries.length;
-  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0);
-  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
-  render(s);
-  try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
-});
-})();
-"""
-
-
 # ---------------------------------------------------------------- README
 README = """# Owen's Little Library
 
@@ -404,11 +396,11 @@ if __name__ == "__main__":
             f.write(reader)
         all_html.append(reader)
 
-    lib = finalize(library_html(books))
+    lib = finalize(library_html(books), nav="books")
     os.makedirs(f"{SITE}/assets", exist_ok=True)
     with open(f"{SITE}/index.html", "w", encoding="utf-8") as f:
         f.write(lib)
-    log_page = finalize(reading_log_html())
+    log_page = finalize(reading_log_html(), nav="points")
     os.makedirs(f"{SITE}/reading-log", exist_ok=True)
     with open(f"{SITE}/reading-log/index.html", "w", encoding="utf-8") as f:
         f.write(log_page)
@@ -416,20 +408,44 @@ if __name__ == "__main__":
     write_icons()  # PWA icon（存在即跳過）
     with open(f"{SITE}/manifest.webmanifest", "w", encoding="utf-8") as f:
         f.write(MANIFEST)
-    drink_page = finalize(drink_log_html())
+    drink_page = finalize(drink_log_html(), nav="points")
     os.makedirs(f"{SITE}/drink-log", exist_ok=True)
     with open(f"{SITE}/drink-log/index.html", "w", encoding="utf-8") as f:
         f.write(drink_page)
-    jump_page = finalize(jump_log_html())
+    jump_page = finalize(jump_log_html(), nav="points")
     os.makedirs(f"{SITE}/jump-log", exist_ok=True)
     with open(f"{SITE}/jump-log/index.html", "w", encoding="utf-8") as f:
         f.write(jump_page)
+
+    # 點數 hub 與遊戲區
+    points_page = finalize(points_html(), nav="points")
+    os.makedirs(f"{SITE}/points", exist_ok=True)
+    with open(f"{SITE}/points/index.html", "w", encoding="utf-8") as f:
+        f.write(points_page)
+    games_page = finalize(games_index_html(), nav="games")
+    os.makedirs(f"{SITE}/games", exist_ok=True)
+    with open(f"{SITE}/games/index.html", "w", encoding="utf-8") as f:
+        f.write(games_page)
+    # 生字資料（全書 vocab＋書中例句，去除標記）供遊戲用
+    import re as _re
+    vocab_data = []
+    for b in books:
+        for w in (b.get("vocab") or []):
+            plain = _re.sub(r"<[^>]+>", "", html.unescape(vocab_sentence(b["pages"], w)))
+            vocab_data.append({"w": w, "s": plain})
+    wm_page = finalize(word_match_html(vocab_data), nav="games")
+    os.makedirs(f"{SITE}/games/word-match", exist_ok=True)
+    with open(f"{SITE}/games/word-match/index.html", "w", encoding="utf-8") as f:
+        f.write(wm_page)
+
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
 
     # font subset: every unique char used across the site (incl. unescaped entities)
     chars = set(html.unescape(lib) + README + html.unescape(log_page)
-                + html.unescape(drink_page) + html.unescape(jump_page))
+                + html.unescape(drink_page) + html.unescape(jump_page)
+                + html.unescape(points_page) + html.unescape(games_page)
+                + html.unescape(wm_page))
     for r in all_html:
         chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
