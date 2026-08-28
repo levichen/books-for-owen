@@ -3,7 +3,7 @@
 - behavior_target: 課堂內容太簡單時的自大反應（喊 "So easy!"、炫耀、覺得都會了就不聽課）——安裝「抓住炫耀 → 想起我只是先出發 → 當小老師幫忙」的重新框架腳本；核心設計：**不否認他的能力**（能力是真的、且來自練習），把「想被看見」的需求從炫耀改道到「小老師」的榮譽身份（2026-08 背景：三年全美＋1.5 年珠心算，上小一後部分課程對他太簡單）
 - cue_phrase: "Little teacher!"（完整口訣：Catch my brag → Remember my head start → Help like a teacher）
 - new_vocabulary: [easy, brag]
-- status: draft
+- status: published（PDF + site，2026-08）
 - 角色：Tr. Mina（老師，真實人物——小幫手要經她同意）；還在學的同學用**不具名 kid()**（不把真實朋友固定在「不會」的位置）
 - 與既有口訣的分工：**Save it!** = 有「答案」想搶說（內容衝出口）；**Quiet cheer** = 「興奮」想爆音；**Little teacher** = 「我都會了」的優越感想衝出口——嘴巴家族第三兄弟，處理的是心態不是音量。與 **Ask first** 連動：幫忙前先問（p6③ 與家長頁明文呼應）
 - 核心意象：**同一條跑道**——大家跑同一條學習之路，Owen 只是**先出發**（head start），後面的朋友正在跑來，不是跑不到；「會的人」在路邊當加油的小老師，不是站在前面嘲笑
