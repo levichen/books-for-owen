@@ -9,7 +9,7 @@ HOME_JS = """
 (function(){
 'use strict';
 var API='__API__';
-var PTS={'小安素':2,'保久乳':1,'水':1};
+var PTS={'小安素':3,'保久乳':1,'水':1};
 function fmt(n){return n.toLocaleString('en-US');}
 function line(total, goal, unit){
   if(total===0) return '每滿 '+fmt(goal)+' '+unit+'換禮物 \\u{1F381}';

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """牛奶點數頁（site/drink-log/）：記錄 Owen 每天喝的牛奶/水，累點換禮物。
 
-點數規則：小安素 2 點、保久乳 1 點、水 1 點；每滿 100 點換一個禮物（循環里程碑）。
+點數規則：小安素 3 點（2026-08-28 由 2 點調升）、保久乳 1 點、水 1 點；每滿 100 點換一個禮物（循環里程碑）。
+點數為前端顯示時計算（後端只存品項），調整點值會回溯生效於歷史紀錄。
 後端：與閱讀紀錄共用同一個 Apps Script API，但資料在試算表的 drinks 工作表、
 action 用 drink_add/drink_del——後端未更新前操作會留在離線佇列，不會誤寫閱讀紀錄。
 """
@@ -89,7 +90,7 @@ const API = '__API__';
 const GOAL = __GOAL__;
 const CACHE_KEY = 'owen-drink-cache-v1';
 const QUEUE_KEY = 'owen-drink-queue-v1';
-const KIND_INFO = { '小安素': { pts: 2, emoji: '\\u{1F9C3}' }, '保久乳': { pts: 1, emoji: '\\u{1F95B}' }, '水': { pts: 1, emoji: '\\u{1F4A7}' } };
+const KIND_INFO = { '小安素': { pts: 3, emoji: '\\u{1F9C3}' }, '保久乳': { pts: 1, emoji: '\\u{1F95B}' }, '水': { pts: 1, emoji: '\\u{1F4A7}' } };
 function ptsOf(k) { return KIND_INFO[k] ? KIND_INFO[k].pts : 1; }
 function emojiOf(k) { return KIND_INFO[k] ? KIND_INFO[k].emoji : '\\u{1F37C}'; }
 
@@ -338,7 +339,7 @@ def drink_log_html():
 <div class="card">
   <div class="date-row"><input type="date" id="in-date" required></div>
   <div class="drink-row" id="drink-btns">
-    <button class="drink-btn" data-kind="小安素">&#129475; 小安素<span class="pts">+2 點</span></button>
+    <button class="drink-btn" data-kind="小安素">&#129475; 小安素<span class="pts">+3 點</span></button>
     <button class="drink-btn" data-kind="保久乳">&#129371; 保久乳<span class="pts">+1 點</span></button>
     <button class="drink-btn" data-kind="水">&#128167; 一瓶水<span class="pts">+1 點</span></button>
   </div>

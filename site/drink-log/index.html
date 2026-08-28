@@ -100,7 +100,7 @@ footer{text-align:center;color:#9AB0C4;font-size:13px;margin-top:30px}
 <div class="card">
   <div class="date-row"><input type="date" id="in-date" required></div>
   <div class="drink-row" id="drink-btns">
-    <button class="drink-btn" data-kind="小安素">&#129475; 小安素<span class="pts">+2 點</span></button>
+    <button class="drink-btn" data-kind="小安素">&#129475; 小安素<span class="pts">+3 點</span></button>
     <button class="drink-btn" data-kind="保久乳">&#129371; 保久乳<span class="pts">+1 點</span></button>
     <button class="drink-btn" data-kind="水">&#128167; 一瓶水<span class="pts">+1 點</span></button>
   </div>
@@ -129,7 +129,7 @@ const API = 'https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY7
 const GOAL = 100;
 const CACHE_KEY = 'owen-drink-cache-v1';
 const QUEUE_KEY = 'owen-drink-queue-v1';
-const KIND_INFO = { '小安素': { pts: 2, emoji: '\u{1F9C3}' }, '保久乳': { pts: 1, emoji: '\u{1F95B}' }, '水': { pts: 1, emoji: '\u{1F4A7}' } };
+const KIND_INFO = { '小安素': { pts: 3, emoji: '\u{1F9C3}' }, '保久乳': { pts: 1, emoji: '\u{1F95B}' }, '水': { pts: 1, emoji: '\u{1F4A7}' } };
 function ptsOf(k) { return KIND_INFO[k] ? KIND_INFO[k].pts : 1; }
 function emojiOf(k) { return KIND_INFO[k] ? KIND_INFO[k].emoji : '\u{1F37C}'; }
 
@@ -342,4 +342,4 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) flus
 document.getElementById('in-date').value = todayStr;
 renderAll();
 flush();
-</script><script>/*#AR#20260827101613*/(function(){var B='20260827101613';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260828091251*/(function(){var B='20260828091251';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

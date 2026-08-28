@@ -228,7 +228,7 @@ footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:40px}
 (function(){
 'use strict';
 var API='https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec';
-var PTS={'小安素':2,'保久乳':1,'水':1};
+var PTS={'小安素':3,'保久乳':1,'水':1};
 function fmt(n){return n.toLocaleString('en-US');}
 function line(total, goal, unit){
   if(total===0) return '每滿 '+fmt(goal)+' '+unit+'換禮物 \u{1F381}';
@@ -254,4 +254,4 @@ Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
 });
 })();
-</script><script>/*#AR#20260827101613*/(function(){var B='20260827101613';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260828091251*/(function(){var B='20260828091251';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
