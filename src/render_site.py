@@ -437,11 +437,6 @@ if __name__ == "__main__":
     os.makedirs(f"{SITE}/games/word-match", exist_ok=True)
     with open(f"{SITE}/games/word-match/index.html", "w", encoding="utf-8") as f:
         f.write(wm_page)
-    from make24 import make24_html
-    m24_page = inject_pwa(inject_autorefresh(make24_html()))  # 全螢幕對戰頁不掛導覽列
-    os.makedirs(f"{SITE}/games/make-24", exist_ok=True)
-    with open(f"{SITE}/games/make-24/index.html", "w", encoding="utf-8") as f:
-        f.write(m24_page)
 
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
