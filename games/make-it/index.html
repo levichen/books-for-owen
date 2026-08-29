@@ -54,7 +54,7 @@ footer{color:#B8A88F;font-size:12px;margin-top:26px}
 <button id="gear" aria-label="settings">⚙</button>
 <div class="wrap">
   <h1>&#9889; MAKE IT!</h1>
-  <div class="sub">Use all 4 cards with + &minus; &times; &divide; to make the number!</div>
+  <div class="sub">Make the number with + &minus; &times; &divide; &mdash; use as many cards as you need!</div>
   <div class="hud"><span id="timer">0.0s</span><span id="today">TODAY: 0</span><span id="best">TODAY BEST: &mdash;</span><span id="ever">&#127942; EVER: &mdash;</span></div>
   <div class="target"><div class="lbl">MAKE</div><div class="num" id="target-num">24</div></div>
   <div class="cards" id="cards"></div>
@@ -129,42 +129,47 @@ const sfx = {
   soft: () => beep(200, .25, 'sine', .08),
 };
 
-/* ---------- Solver（D-1：中間結果非負整數、除法整除；找一組解） ---------- */
-function solve(vals, target) {
-  let found = null;
-  function rec(items, steps) {
-    if (found) return;
-    if (items.length === 1) {
-      if (items[0] === target) found = steps.slice();
-      return;
-    }
-    const n = items.length;
-    for (let i = 0; i < n && !found; i++) {
-      for (let j = 0; j < n && !found; j++) {
-        if (i === j) continue;
-        const a = items[i], b = items[j];
-        const rest = items.filter((_, k) => k !== i && k !== j);
-        for (const op of ['+', '*', '-', '/']) {
-          if ((op === '+' || op === '*') && i > j) continue;
-          let v;
-          if (op === '+') v = a + b;
-          else if (op === '*') v = a * b;
-          else if (op === '-') { v = a - b; if (v < 0) continue; }
-          else { if (b === 0 || a % b !== 0) continue; v = a / b; }
-          rec(rest.concat([v]), steps.concat([{ left: a, op, right: b, result: v }]));
-          if (found) return;
+/* ---------- Solver（D-1：中間結果非負整數、除法整除）----------
+   規則：不必用完所有牌，任何一步合併結果＝目標即獲勝。
+   iterative deepening 找「最短解」（1→2→3 步），HINT/SHOW ME 教最漂亮的路。 */
+function solveDepth(items, target, depth, steps) {
+  const n = items.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const a = items[i], b = items[j];
+      const rest = items.filter((_, k) => k !== i && k !== j);
+      for (const op of ['+', '*', '-', '/']) {
+        if ((op === '+' || op === '*') && i > j) continue;
+        let v;
+        if (op === '+') v = a + b;
+        else if (op === '*') v = a * b;
+        else if (op === '-') { v = a - b; if (v < 0) continue; }
+        else { if (b === 0 || a % b !== 0) continue; v = a / b; }
+        const next = steps.concat([{ left: a, op, right: b, result: v }]);
+        if (v === target) return next;
+        if (next.length < depth) {
+          const found = solveDepth(rest.concat([v]), target, depth, next);
+          if (found) return found;
         }
       }
     }
   }
-  rec(vals, []);
-  return found;
+  return null;
+}
+function solve(vals, target) {
+  for (let d = 1; d <= 3; d++) {
+    const s = solveDepth(vals, target, d, []);
+    if (s) return s;
+  }
+  return null;
 }
 function newPuzzle() {
   for (let t = 0; t < 12; t++) {
     const target = 1 + Math.floor(Math.random() * 100);  // 目標數 1–100
     for (let tries = 0; tries < 300; tries++) {
       const vals = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 10));
+      if (vals.includes(target)) continue;  // 發牌就有目標數＝白給，跳過
       const sol = solve(vals, target);
       if (sol) return { target, vals, sol };
     }
@@ -254,8 +259,8 @@ function onCard(id) {
     cards = cards.filter(c => c.id !== l.id && c.id !== r.id).concat([{ id: 'c' + (++cardSeq), value: v, fresh: true }]);
     sel = { left: null, op: null };
     sfx.merge();
+    if (v === puzzle.target) return onSolved();  // 不必用完所有牌，湊到就贏
     if (cards.length === 1) {
-      if (cards[0].value === puzzle.target) return onSolved();
       const diff = Math.abs(cards[0].value - puzzle.target);
       $('msg').textContent = diff <= 4 ? 'SO CLOSE! TRY AGAIN' : 'TRY AGAIN';
       $('msg').className = 'msg warn';
@@ -352,4 +357,4 @@ $('next2').onclick = () => { if (!throttled()) startPuzzle(); };
 $('gear').onclick = openSettings;
 renderHud();
 startPuzzle();
-</script><script>/*#AR#20260829140808*/(function(){var B='20260829140808';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260829184434*/(function(){var B='20260829184434';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
