@@ -1,0 +1,365 @@
+# -*- coding: utf-8 -*-
+"""Make It!——單人湊數字計時挑戰（site/games/make-it/）。
+
+由 Make 24 對戰版（v1.3 規格，git 2f15eb3 前）改版：單機、目標數 1–100 隨機、
+不搶答只計時。保留：合併式作答（點左牌→運算符→右牌）、中間結果非負整數＋除法整除、
+HINT、解法演示＋完整英語朗讀（plus/minus/times/divided by/equals）、合成音效。
+題目改為執行期求解：先抽目標數再抽牌組、JS solver 驗證有解（保證可解）。
+"""
+
+STYLE = """
+@font-face { font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+body{font-family:'Huninn',system-ui,sans-serif;background:#FBF4E8;min-height:100vh;color:#4A3B32}
+.wrap{max-width:560px;margin:0 auto;padding:20px 14px 50px;text-align:center}
+h1{font-size:clamp(22px,5vw,30px)}
+.sub{color:#8A7460;font-size:13px;margin:4px 0 12px}
+.hud{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.hud span{font-size:13px;color:#8A7460;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(74,59,50,.08)}
+#timer{color:#E4574C;min-width:86px}
+.target{background:#2E2A3A;color:#fff;border-radius:20px;padding:10px 18px;margin-bottom:14px;
+  display:inline-block;min-width:220px}
+.target .lbl{font-size:12px;color:#B8AECF;letter-spacing:1px}
+.target .num{font-size:44px;line-height:1.1}
+.cards{display:flex;justify-content:center;gap:12px;min-height:104px;margin-bottom:10px}
+button{font-family:inherit;border:none;cursor:pointer}
+.tile{width:72px;height:100px;border-radius:14px;background:#FFF;color:#4A3B32;font-size:32px;
+  box-shadow:0 4px 12px rgba(74,59,50,.15);border:3px solid transparent;transition:transform .12s,opacity .12s}
+.tile:disabled{opacity:.4;cursor:default}
+.tile.sel{border-color:#F0B429;transform:scale(1.06)}
+.tile.hl{border-color:#43A047;box-shadow:0 0 14px rgba(67,160,71,.6)}
+.tile.fresh{animation:pop .24s}
+@keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
+.oprow{display:flex;justify-content:center;gap:16px;margin-bottom:12px}
+.op{width:60px;height:60px;border-radius:50%;background:#FFE9A8;font-size:24px;color:#4A3B32}
+.op:disabled{opacity:.35}
+.op.sel{background:#F0B429;color:#FFF}
+.ctrl{display:flex;justify-content:center;gap:14px;margin-bottom:10px}
+.small{width:60px;height:60px;border-radius:50%;background:#EFE4D4;font-size:18px;color:#8A7460;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.small span{font-size:9px;margin-top:2px}
+.small:disabled{opacity:.35}
+.msg{min-height:26px;font-size:16px;color:#43A047}
+.msg.warn{color:#E08A00}
+.hintline{min-height:20px;font-size:15px;color:#3D7BC4}
+.panel{display:none;background:#fff;border-radius:20px;padding:20px;margin-top:12px;
+  box-shadow:0 8px 26px rgba(74,59,50,.12)}
+.panel.show{display:block}
+.panel .big{font-size:26px}
+.panel .stat{color:#8A7460;font-size:14px;margin-top:6px;line-height:1.7}
+.bigbtn{background:#E4574C;color:#FFF;font-size:18px;border-radius:999px;padding:13px 34px;
+  margin-top:12px;box-shadow:0 6px 16px rgba(228,87,76,.4)}
+.reveal-steps{font-size:17px;color:#4A3B32;line-height:2;text-align:center}
+.reveal-steps b{color:#E4574C}
+#gear{position:fixed;top:10px;right:12px;background:none;font-size:18px;color:#B8A88F}
+footer{color:#B8A88F;font-size:12px;margin-top:26px}
+@media (max-width:420px){ .tile{width:60px;height:84px;font-size:27px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important} }
+"""
+
+GAME_JS = r"""
+'use strict';
+const OP_SYM = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+const OP_WORD = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' };
+let settings = { sound: true, voice: true };
+try { settings = Object.assign(settings, JSON.parse(localStorage.getItem('owen-makeit-settings') || '{}')); } catch (e) {}
+
+/* ---------- 語音 ---------- */
+const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function numWord(n) {
+  if (n < 20) return ONES[n];
+  if (n < 100) return TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+  if (n === 100) return 'one hundred';
+  return String(n);
+}
+function speak(text) {
+  if (!settings.voice) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.82;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- 音效 ---------- */
+let AC = null;
+function beep(freq, dur, type, gain) {
+  if (!settings.sound) return;
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain || 0.12, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const sfx = {
+  deal: () => { beep(420, .08); setTimeout(() => beep(520, .08), 90); },
+  select: () => beep(660, .05, 'triangle'),
+  merge: () => beep(880, .12, 'triangle'),
+  win: () => { beep(660, .12); setTimeout(() => beep(830, .12), 110); setTimeout(() => beep(990, .2), 230); },
+  soft: () => beep(200, .25, 'sine', .08),
+};
+
+/* ---------- Solver（D-1：中間結果非負整數、除法整除；找一組解） ---------- */
+function solve(vals, target) {
+  let found = null;
+  function rec(items, steps) {
+    if (found) return;
+    if (items.length === 1) {
+      if (items[0] === target) found = steps.slice();
+      return;
+    }
+    const n = items.length;
+    for (let i = 0; i < n && !found; i++) {
+      for (let j = 0; j < n && !found; j++) {
+        if (i === j) continue;
+        const a = items[i], b = items[j];
+        const rest = items.filter((_, k) => k !== i && k !== j);
+        for (const op of ['+', '*', '-', '/']) {
+          if ((op === '+' || op === '*') && i > j) continue;
+          let v;
+          if (op === '+') v = a + b;
+          else if (op === '*') v = a * b;
+          else if (op === '-') { v = a - b; if (v < 0) continue; }
+          else { if (b === 0 || a % b !== 0) continue; v = a / b; }
+          rec(rest.concat([v]), steps.concat([{ left: a, op, right: b, result: v }]));
+          if (found) return;
+        }
+      }
+    }
+  }
+  rec(vals, []);
+  return found;
+}
+function newPuzzle() {
+  for (let t = 0; t < 12; t++) {
+    const target = 1 + Math.floor(Math.random() * 100);  // 目標數 1–100
+    for (let tries = 0; tries < 300; tries++) {
+      const vals = Array.from({ length: 4 }, () => 1 + Math.floor(Math.random() * 10));
+      const sol = solve(vals, target);
+      if (sol) return { target, vals, sol };
+    }
+  }
+  return { target: 24, vals: [3, 8, 2, 4], sol: solve([3, 8, 2, 4], 24) };  // 理論上到不了的保底
+}
+
+/* ---------- 狀態 ---------- */
+let puzzle = null, cards = [], sel = { left: null, op: null }, undoStack = [];
+let cardSeq = 0, t0 = null, timerIv = null, playing = false, hintUsed = false;
+let history = [];
+try { history = JSON.parse(localStorage.getItem('owen-makeit-history') || '[]'); } catch (e) {}
+const $ = id => document.getElementById(id);
+function todayStr() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function todayStats() {
+  const t = todayStr();
+  const rows = history.filter(h => h.day === t);
+  return { n: rows.length, best: rows.length ? Math.min(...rows.map(r => r.ms)) : null };
+}
+
+/* ---------- 遊戲流程 ---------- */
+function startPuzzle() {
+  puzzle = newPuzzle();
+  cards = puzzle.vals.map(v => ({ id: 'c' + (++cardSeq), value: v }));
+  sel = { left: null, op: null }; undoStack = []; hintUsed = false;
+  $('win').classList.remove('show'); $('reveal').classList.remove('show');
+  $('target-num').textContent = puzzle.target;
+  $('msg').textContent = ''; $('hintline').textContent = '';
+  playing = true;
+  sfx.deal();
+  speak('Make ' + numWord(puzzle.target) + '!');
+  t0 = Date.now();
+  if (timerIv) clearInterval(timerIv);
+  timerIv = setInterval(() => { $('timer').textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's'; }, 100);
+  render();
+  renderHud();
+}
+function stopTimerNow() { if (timerIv) { clearInterval(timerIv); timerIv = null; } }
+function legalRight(leftCard, op, c) {
+  if (c.id === leftCard.id) return false;
+  const a = leftCard.value, v = c.value;
+  if (op === '-') return a - v >= 0;
+  if (op === '/') return v !== 0 && a % v === 0;
+  return true;
+}
+function opLegal(leftCard, op) { return cards.some(c => legalRight(leftCard, op, c)); }
+function render() {
+  const wrap = $('cards'); wrap.innerHTML = '';
+  cards.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tile' + (sel.left === c.id ? ' sel' : '') + (c.fresh ? ' fresh' : '');
+    btn.textContent = c.value;
+    let dis = !playing;
+    if (!dis && sel.left && sel.op) {
+      const l = cards.find(x => x.id === sel.left);
+      if (!legalRight(l, sel.op, c) && c.id !== sel.left) dis = true;
+    }
+    btn.disabled = dis;
+    btn.onclick = () => onCard(c.id);
+    wrap.appendChild(btn);
+  });
+  const l = sel.left ? cards.find(x => x.id === sel.left) : null;
+  ['+', '-', '*', '/'].forEach(op => {
+    const el = $('op-' + op.charCodeAt(0));
+    el.classList.toggle('sel', sel.op === op);
+    el.disabled = !playing || !l || !opLegal(l, op);
+  });
+  $('undo').disabled = !playing || !undoStack.length;
+  $('reset').disabled = !playing;
+  $('hint').disabled = !playing || hintUsed;
+  $('giveup').disabled = !playing;
+  cards.forEach(c => delete c.fresh);
+}
+let lastTap = 0;
+function throttled() { const t = Date.now(); if (t - lastTap < 250) return true; lastTap = t; return false; }
+function onCard(id) {
+  if (throttled() || !playing) return;
+  if (!sel.left) { sel.left = id; sfx.select(); }
+  else if (id === sel.left) { sel = { left: null, op: null }; }
+  else if (sel.op) {
+    undoStack.push(JSON.stringify(cards));
+    const l = cards.find(c => c.id === sel.left), r = cards.find(c => c.id === id);
+    const v = sel.op === '+' ? l.value + r.value : sel.op === '-' ? l.value - r.value :
+              sel.op === '*' ? l.value * r.value : l.value / r.value;
+    cards = cards.filter(c => c.id !== l.id && c.id !== r.id).concat([{ id: 'c' + (++cardSeq), value: v, fresh: true }]);
+    sel = { left: null, op: null };
+    sfx.merge();
+    if (cards.length === 1) {
+      if (cards[0].value === puzzle.target) return onSolved();
+      const diff = Math.abs(cards[0].value - puzzle.target);
+      $('msg').textContent = diff <= 4 ? 'SO CLOSE! TRY AGAIN' : 'TRY AGAIN';
+      $('msg').className = 'msg warn';
+      sfx.soft();
+    }
+  } else { sel.left = id; sfx.select(); }
+  render();
+}
+function onOp(op) {
+  if (throttled() || !playing || !sel.left) return;
+  sel.op = (sel.op === op ? null : op);
+  sfx.select(); render();
+}
+function onUndo() {
+  if (throttled() || !undoStack.length) return;
+  cards = JSON.parse(undoStack.pop());
+  sel = { left: null, op: null };
+  $('msg').textContent = '';
+  render();
+}
+function onReset() {
+  if (throttled()) return;
+  cards = puzzle.vals.map(v => ({ id: 'c' + (++cardSeq), value: v }));
+  sel = { left: null, op: null }; undoStack = [];
+  $('msg').textContent = '';
+  render();
+}
+function onHint() {
+  if (throttled() || hintUsed || !playing) return;
+  hintUsed = true;
+  const f = puzzle.sol[0];
+  $('hintline').textContent = 'START WITH ' + f.left + ' ' + OP_SYM[f.op] + ' ' + f.right;
+  render();
+}
+function onSolved() {
+  playing = false;
+  stopTimerNow();
+  const ms = Date.now() - t0;
+  sfx.win();
+  speak(numWord(puzzle.target) + '! ' + (Math.random() < 0.5 ? 'Nice!' : 'Great!'));
+  history.unshift({ day: todayStr(), target: puzzle.target, ms });
+  history = history.slice(0, 200);
+  try { localStorage.setItem('owen-makeit-history', JSON.stringify(history)); } catch (e) {}
+  const st = todayStats();
+  $('win-time').textContent = (ms / 1000).toFixed(1) + 's';
+  $('win-stat').innerHTML = 'TODAY: ' + st.n + ' SOLVED' +
+    (st.best != null ? ' &middot; BEST ' + (st.best / 1000).toFixed(1) + 's' : '') +
+    (ms === st.best ? ' &mdash; NEW BEST! ⭐' : '');
+  $('win').classList.add('show');
+  render(); renderHud();
+}
+function onGiveUp() {
+  if (throttled() || !playing) return;
+  playing = false;
+  stopTimerNow();
+  sfx.soft();
+  const steps = puzzle.sol;
+  $('reveal-steps').innerHTML = steps.map(s =>
+    '<div>' + s.left + ' ' + OP_SYM[s.op] + ' ' + s.right + ' = <b>' + s.result + '</b></div>').join('');
+  $('reveal').classList.add('show');
+  render();
+  // 逐步朗讀（每步 2.4s）
+  steps.forEach((s, i) => {
+    setTimeout(() => speak(numWord(s.left) + ' ' + OP_WORD[s.op] + ' ' + numWord(s.right) + ' equals ' + numWord(s.result) + '.'), 400 + i * 2400);
+  });
+}
+function renderHud() {
+  const st = todayStats();
+  $('today').textContent = 'TODAY: ' + st.n;
+  $('best').textContent = st.best != null ? 'BEST: ' + (st.best / 1000).toFixed(1) + 's' : 'BEST: —';
+}
+function openSettings() {
+  const s = prompt('sound on/off?', settings.sound ? 'on' : 'off');
+  if (s !== null) settings.sound = s.trim() !== 'off';
+  const v = prompt('voice on/off?', settings.voice ? 'on' : 'off');
+  if (v !== null) settings.voice = v.trim() !== 'off';
+  try { localStorage.setItem('owen-makeit-settings', JSON.stringify(settings)); } catch (e) {}
+}
+
+/* ---------- 綁定 ---------- */
+['+', '-', '*', '/'].forEach(op => { $('op-' + op.charCodeAt(0)).onclick = () => onOp(op); });
+$('undo').onclick = onUndo;
+$('reset').onclick = onReset;
+$('hint').onclick = onHint;
+$('giveup').onclick = onGiveUp;
+$('next').onclick = () => { if (!throttled()) startPuzzle(); };
+$('next2').onclick = () => { if (!throttled()) startPuzzle(); };
+$('gear').onclick = openSettings;
+renderHud();
+startPuzzle();
+"""
+
+
+def make_it_html():
+    ops = "".join(
+        f'<button class="op" id="op-{ord(op)}">{sym}</button>'
+        for op, sym in [("+", "+"), ("-", "&minus;"), ("*", "&times;"), ("/", "&divide;")])
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Make It!</title>
+<meta name="robots" content="noindex">
+<style>{STYLE}</style></head><body>
+<button id="gear" aria-label="settings">⚙</button>
+<div class="wrap">
+  <h1>&#9889; MAKE IT!</h1>
+  <div class="sub">Use all 4 cards with + &minus; &times; &divide; to make the number!</div>
+  <div class="hud"><span id="timer">0.0s</span><span id="today">TODAY: 0</span><span id="best">BEST: &mdash;</span></div>
+  <div class="target"><div class="lbl">MAKE</div><div class="num" id="target-num">24</div></div>
+  <div class="cards" id="cards"></div>
+  <div class="oprow">{ops}</div>
+  <div class="ctrl">
+    <button class="small" id="hint">&#128161;<span>HINT</span></button>
+    <button class="small" id="undo">&#8617;<span>UNDO</span></button>
+    <button class="small" id="reset">&#10227;<span>RESET</span></button>
+    <button class="small" id="giveup">&#128065;<span>SHOW ME</span></button>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="hintline" id="hintline"></div>
+
+  <div class="panel" id="win">
+    <div class="big">&#127881; YOU MADE IT!</div>
+    <div class="big" id="win-time"></div>
+    <div class="stat" id="win-stat"></div>
+    <button class="bigbtn" id="next">NEXT &#9654;</button>
+  </div>
+
+  <div class="panel" id="reveal">
+    <div class="big">ONE WAY TO MAKE IT</div>
+    <div class="reveal-steps" id="reveal-steps"></div>
+    <button class="bigbtn" id="next2">NEXT &#9654;</button>
+  </div>
+
+  <footer>made with &hearts; by Daddy &amp; Claude</footer>
+</div><script>{GAME_JS}</script></body></html>"""

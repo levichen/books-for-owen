@@ -437,6 +437,11 @@ if __name__ == "__main__":
     os.makedirs(f"{SITE}/games/word-match", exist_ok=True)
     with open(f"{SITE}/games/word-match/index.html", "w", encoding="utf-8") as f:
         f.write(wm_page)
+    from make_it import make_it_html
+    mi_page = finalize(make_it_html(), nav="games")
+    os.makedirs(f"{SITE}/games/make-it", exist_ok=True)
+    with open(f"{SITE}/games/make-it/index.html", "w", encoding="utf-8") as f:
+        f.write(mi_page)
 
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
