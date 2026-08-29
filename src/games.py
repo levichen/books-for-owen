@@ -96,6 +96,15 @@ const VOCAB = __VOCAB__;  // [{w:生字, s:例句}]
 const PAIRS = 6;
 let deck = [], open = [], lock = false, matched = 0, moves = 0, t0 = null, timerId = null;
 
+/* 歷史最佳紀錄（最快秒數／最少步數，永久保存） */
+let best = { ms: null, moves: null };
+try { best = Object.assign(best, JSON.parse(localStorage.getItem('owen-wm-best') || '{}')); } catch (e) {}
+function renderBest() {
+  const el = document.getElementById('bestline');
+  el.textContent = best.ms == null ? '還沒有紀錄，玩一局創紀錄吧！'
+    : '🏆 最快 ' + Math.round(best.ms / 1000) + ' 秒・最少 ' + best.moves + ' 步';
+}
+
 function speak(word) {
   try {
     const u = new SpeechSynthesisUtterance(word);
@@ -160,8 +169,21 @@ function flip(i, el) {
 }
 function finish() {
   clearInterval(timerId); timerId = null;
-  const secs = Math.round((Date.now() - t0) / 1000);
+  const ms = Date.now() - t0;
+  const secs = Math.round(ms / 1000);
+  const recTime = best.ms == null || ms < best.ms;
+  const recMoves = best.moves == null || moves < best.moves;
+  if (recTime) best.ms = ms;
+  if (recMoves) best.moves = moves;
+  if (recTime || recMoves) {
+    try { localStorage.setItem('owen-wm-best', JSON.stringify(best)); } catch (e) {}
+  }
   document.getElementById('win-stat').textContent = '用了 ' + secs + ' 秒、' + moves + ' 步';
+  document.getElementById('win-rec').textContent =
+    recTime && recMoves ? '🏆 新紀錄！最快又最少步！'
+    : recTime ? '🏆 新紀錄！史上最快！'
+    : recMoves ? '🏆 新紀錄！史上最少步！' : '';
+  renderBest();
   document.getElementById('win').style.display = 'block';
 }
 document.getElementById('grid').addEventListener('click', ev => {
@@ -170,6 +192,7 @@ document.getElementById('grid').addEventListener('click', ev => {
   flip(+el.dataset.i, el);
 });
 document.getElementById('again').addEventListener('click', newGame);
+renderBest();
 newGame();
 """
 
@@ -184,12 +207,13 @@ def word_match_html(vocab):
 <style>{WM_STYLE}</style></head><body><div class="wrap">
 <h1>&#127183; 生字翻翻樂</h1>
 <div class="sub">翻牌找出兩張一樣的生字——翻開會唸給你聽 &#128264;</div>
-<div class="hud"><span id="time">0 秒</span><span id="moves">0 步</span></div>
+<div class="hud"><span id="time">0 秒</span><span id="moves">0 步</span><span id="bestline"></span></div>
 <div class="grid" id="grid"></div>
 <div class="sentence" id="sentence"></div>
 <div class="win" id="win">
   <div class="big">&#127881; 全部配對成功！</div>
   <div class="stat" id="win-stat"></div>
+  <div class="stat" id="win-rec" style="color:#E4574C"></div>
   <button class="again" id="again">再玩一次</button>
 </div>
 <footer>made with &hearts; by Daddy &amp; Claude</footer>

@@ -32,12 +32,13 @@ footer{text-align:center;color:#B8A88F;font-size:12px;margin-top:26px}
 </style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/">&#127873; 點數</a><a href="/books-for-owen/games/" class="on">&#127918; 遊戲</a></nav><div class="wrap">
 <h1>&#127183; 生字翻翻樂</h1>
 <div class="sub">翻牌找出兩張一樣的生字——翻開會唸給你聽 &#128264;</div>
-<div class="hud"><span id="time">0 秒</span><span id="moves">0 步</span></div>
+<div class="hud"><span id="time">0 秒</span><span id="moves">0 步</span><span id="bestline"></span></div>
 <div class="grid" id="grid"></div>
 <div class="sentence" id="sentence"></div>
 <div class="win" id="win">
   <div class="big">&#127881; 全部配對成功！</div>
   <div class="stat" id="win-stat"></div>
+  <div class="stat" id="win-rec" style="color:#E4574C"></div>
   <button class="again" id="again">再玩一次</button>
 </div>
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
@@ -46,6 +47,15 @@ footer{text-align:center;color:#B8A88F;font-size:12px;margin-top:26px}
 const VOCAB = [{"w": "itchy", "s": "My mouth feels itchy. My body feels hot."}, {"w": "superpower", "s": "STOP! I use my superpower…"}, {"w": "pocket", "s": "I save my answer in my brain pocket!"}, {"w": "jumpy", "s": "My feet feel jumpy!"}, {"w": "glue", "s": "I glue my feet to my spot!"}, {"w": "cheer", "s": "I cheer for my friends!"}, {"w": "strike", "s": "Strike one! Strike two!"}, {"w": "quit", "s": "I want to quit the game!"}, {"w": "home run", "s": "CRACK! Home run!"}, {"w": "bounce", "s": "My body wants to bounce!"}, {"w": "tiptoe", "s": "or I tiptoe out and play."}, {"w": "whisper", "s": "I whisper, “Good morning, Mommy!”"}, {"w": "puppy", "s": "My brain is like a puppy."}, {"w": "giggle", "s": "We giggle and giggle."}, {"w": "catch", "s": "I catch my puppy brain!"}, {"w": "freeze", "s": "I FREEZE like ice!"}, {"w": "whistle", "s": "Daddy blows the whistle."}, {"w": "wiggly", "s": "My body feels wiggly!"}, {"w": "statue", "s": "Statue time!"}, {"w": "dryer", "s": "Whoosh! The dryer is loud and warm."}, {"w": "thirsty", "s": "I get SO thirsty!"}, {"w": "germs", "s": "Anne's bottle has Anne's germs."}, {"w": "bottle", "s": "Bottles sit in a row."}, {"w": "magic", "s": "My magic words hide away!"}, {"w": "paddle", "s": ""}, {"w": "pickleball", "s": "I play pickleball with Daddy!"}, {"w": "turtle", "s": "I am a turtle!"}, {"w": "check", "s": "Point and check."}, {"w": "zoom", "s": "My pencil zooms!"}, {"w": "volume", "s": "I turn my volume down!"}, {"w": "buzzy", "s": "My body feels buzzy!"}, {"w": "splash", "s": "Splash! Water in my mouth!"}, {"w": "breath", "s": "I zoom! My breath goes fast, fast!"}, {"w": "coach", "s": "This is Coach Bear!"}, {"w": "patience", "s": "Patience power!"}, {"w": "volcano", "s": "My volcano starts to bubble!"}, {"w": "tiles", "s": "Game night! We play tiles."}, {"w": "rip", "s": "I pull. Anne pulls. RIP!"}, {"w": "tape", "s": "We tape the book together."}, {"w": "carry", "s": "I want to carry it for her!"}, {"w": "owl", "s": "I get my owl eyes!"}, {"w": "timer", "s": "The timer goes tick, tick, tick."}, {"w": "contest", "s": "I practice for my math contest!"}, {"w": "store", "s": "We go to the store."}, {"w": "phone", "s": "Daddy's phone is Daddy's."}, {"w": "touch", "s": "I want to touch them all!"}, {"w": "elevator", "s": "School is done! Elevator down—three, two, one!"}, {"w": "inside", "s": "No Mommy? Stay inside."}, {"w": "fly", "s": "My feet fly first!"}, {"w": "zip", "s": "I zip and turn my ears ON!"}, {"w": "chat", "s": "I chat. I play. I blah-blah."}, {"w": "test", "s": "On my test, they jump out to help!"}, {"w": "shout", "s": "A shout jumps up my throat!"}, {"w": "squeeze", "s": "Squeeze my fists tight!"}, {"w": "fist", "s": "Squeeze my fists tight!"}, {"w": "easy", "s": "This is easy for me!"}, {"w": "brag", "s": "Catch my brag—zip!"}];  // [{w:生字, s:例句}]
 const PAIRS = 6;
 let deck = [], open = [], lock = false, matched = 0, moves = 0, t0 = null, timerId = null;
+
+/* 歷史最佳紀錄（最快秒數／最少步數，永久保存） */
+let best = { ms: null, moves: null };
+try { best = Object.assign(best, JSON.parse(localStorage.getItem('owen-wm-best') || '{}')); } catch (e) {}
+function renderBest() {
+  const el = document.getElementById('bestline');
+  el.textContent = best.ms == null ? '還沒有紀錄，玩一局創紀錄吧！'
+    : '🏆 最快 ' + Math.round(best.ms / 1000) + ' 秒・最少 ' + best.moves + ' 步';
+}
 
 function speak(word) {
   try {
@@ -111,8 +121,21 @@ function flip(i, el) {
 }
 function finish() {
   clearInterval(timerId); timerId = null;
-  const secs = Math.round((Date.now() - t0) / 1000);
+  const ms = Date.now() - t0;
+  const secs = Math.round(ms / 1000);
+  const recTime = best.ms == null || ms < best.ms;
+  const recMoves = best.moves == null || moves < best.moves;
+  if (recTime) best.ms = ms;
+  if (recMoves) best.moves = moves;
+  if (recTime || recMoves) {
+    try { localStorage.setItem('owen-wm-best', JSON.stringify(best)); } catch (e) {}
+  }
   document.getElementById('win-stat').textContent = '用了 ' + secs + ' 秒、' + moves + ' 步';
+  document.getElementById('win-rec').textContent =
+    recTime && recMoves ? '🏆 新紀錄！最快又最少步！'
+    : recTime ? '🏆 新紀錄！史上最快！'
+    : recMoves ? '🏆 新紀錄！史上最少步！' : '';
+  renderBest();
   document.getElementById('win').style.display = 'block';
 }
 document.getElementById('grid').addEventListener('click', ev => {
@@ -121,5 +144,6 @@ document.getElementById('grid').addEventListener('click', ev => {
   flip(+el.dataset.i, el);
 });
 document.getElementById('again').addEventListener('click', newGame);
+renderBest();
 newGame();
-</script><script>/*#AR#20260829135923*/(function(){var B='20260829135923';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260829140808*/(function(){var B='20260829140808';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

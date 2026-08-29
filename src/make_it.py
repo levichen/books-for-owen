@@ -152,6 +152,8 @@ let puzzle = null, cards = [], sel = { left: null, op: null }, undoStack = [];
 let cardSeq = 0, t0 = null, timerIv = null, playing = false, hintUsed = false;
 let history = [];
 try { history = JSON.parse(localStorage.getItem('owen-makeit-history') || '[]'); } catch (e) {}
+let allBest = null;  // 歷代最佳 {ms, target}，永久保存（不受 history 上限影響）
+try { allBest = JSON.parse(localStorage.getItem('owen-makeit-best') || 'null'); } catch (e) {}
 const $ = id => document.getElementById(id);
 function todayStr() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
 function todayStats() {
@@ -272,11 +274,16 @@ function onSolved() {
   history.unshift({ day: todayStr(), target: puzzle.target, ms });
   history = history.slice(0, 200);
   try { localStorage.setItem('owen-makeit-history', JSON.stringify(history)); } catch (e) {}
+  const newAllTime = !allBest || ms < allBest.ms;
+  if (newAllTime) {
+    allBest = { ms, target: puzzle.target };
+    try { localStorage.setItem('owen-makeit-best', JSON.stringify(allBest)); } catch (e) {}
+  }
   const st = todayStats();
   $('win-time').textContent = (ms / 1000).toFixed(1) + 's';
   $('win-stat').innerHTML = 'TODAY: ' + st.n + ' SOLVED' +
     (st.best != null ? ' &middot; BEST ' + (st.best / 1000).toFixed(1) + 's' : '') +
-    (ms === st.best ? ' &mdash; NEW BEST! ⭐' : '');
+    (newAllTime ? ' &mdash; NEW ALL-TIME BEST! 🏆' : (ms === st.best ? ' &mdash; NEW BEST TODAY! ⭐' : ''));
   $('win').classList.add('show');
   render(); renderHud();
 }
@@ -298,7 +305,8 @@ function onGiveUp() {
 function renderHud() {
   const st = todayStats();
   $('today').textContent = 'TODAY: ' + st.n;
-  $('best').textContent = st.best != null ? 'BEST: ' + (st.best / 1000).toFixed(1) + 's' : 'BEST: —';
+  $('best').textContent = st.best != null ? 'TODAY BEST: ' + (st.best / 1000).toFixed(1) + 's' : 'TODAY BEST: —';
+  $('ever').textContent = allBest ? '🏆 EVER: ' + (allBest.ms / 1000).toFixed(1) + 's' : '🏆 EVER: —';
 }
 function openSettings() {
   const s = prompt('sound on/off?', settings.sound ? 'on' : 'off');
@@ -335,7 +343,7 @@ def make_it_html():
 <div class="wrap">
   <h1>&#9889; MAKE IT!</h1>
   <div class="sub">Use all 4 cards with + &minus; &times; &divide; to make the number!</div>
-  <div class="hud"><span id="timer">0.0s</span><span id="today">TODAY: 0</span><span id="best">BEST: &mdash;</span></div>
+  <div class="hud"><span id="timer">0.0s</span><span id="today">TODAY: 0</span><span id="best">TODAY BEST: &mdash;</span><span id="ever">&#127942; EVER: &mdash;</span></div>
   <div class="target"><div class="lbl">MAKE</div><div class="num" id="target-num">24</div></div>
   <div class="cards" id="cards"></div>
   <div class="oprow">{ops}</div>
