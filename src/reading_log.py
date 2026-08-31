@@ -159,6 +159,21 @@ function migrateOld() {
   try { localStorage.removeItem(OLD_KEY); } catch (e) {}
 }
 
+/* 表現扣分（penalty 工作表，三本共用）：total 顯示時扣除 */
+let penalty = 0;
+try { penalty = parseInt(localStorage.getItem('owen-penalty-cache') || '0', 10) || 0; } catch (e) {}
+function fetchPenalty() {
+  fetch(API + '?mode=counter&sheet=penalty', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(j => {
+      if (j && j.ok && Array.isArray(j.items)) {
+        penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
+        try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
+        renderProgress();
+      }
+    }).catch(() => {});
+}
+
 /* 顯示用資料 = 雲端快照 + 佇列樂觀套用 */
 function currentEntries() {
   let out = serverEntries.slice();
@@ -245,7 +260,7 @@ function setStatus(state) {
   else { el.className = 'bad'; el.textContent = '連不上雲端，先顯示上次資料'; }
 }
 function renderProgress() {
-  const total = currentEntries().length;
+  const total = Math.max(0, currentEntries().length - penalty);
   const cycles = Math.floor(total / GOAL);            // 已完成的百本輪數 = 可換禮物數
   const justHit = total > 0 && total % GOAL === 0;    // 剛好停在整百
   const inCycle = justHit ? GOAL : total % GOAL;      // 本輪進度（整百時顯示滿環）
@@ -266,6 +281,9 @@ function renderProgress() {
     html += '<div class="left">第 ' + cycles + ' 個 ' + GOAL + ' 本達成！先去換禮物，下一輪繼續 &#127881;</div>';
   } else {
     html += '<div class="left">再讀 <b>' + (GOAL - total % GOAL) + '</b> 本換第 ' + (cycles + 1) + ' 個禮物 &#127873;</div>';
+  }
+  if (penalty > 0) {
+    html += '<div class="left" style="color:#B0563F">&#9888;&#65039; 表現扣分 &minus;' + penalty + '</div>';
   }
   gift.innerHTML = html;
   // 里程碑膠囊：顯示當前這一輪的四個絕對里程碑（例：125/150/175/200 本）
@@ -372,6 +390,7 @@ document.getElementById('in-date').value = todayStr;
 migrateOld();
 renderAll();
 flush();
+fetchPenalty();
 """
 
 

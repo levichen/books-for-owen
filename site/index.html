@@ -253,14 +253,18 @@ function render(s){
 }
 try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}
 function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
-Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
-  var b=rs[0],d=rs[1],j=rs[2];
-  var s={};
-  if(b&&b.ok&&Array.isArray(b.entries)) s.books=b.entries.length;
-  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0);
-  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps'), jget(API+'?mode=counter&sheet=penalty')]).then(function(rs){
+  var b=rs[0],d=rs[1],j=rs[2],p=rs[3];
+  var pen=0;
+  if(p&&p.ok&&Array.isArray(p.items)) pen=p.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+  try{localStorage.setItem('owen-penalty-cache', String(pen));}catch(e){}
+  var s={penalty:pen};
+  if(b&&b.ok&&Array.isArray(b.entries)) s.books=Math.max(0, b.entries.length-pen);
+  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=Math.max(0, d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0)-pen);
+  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=Math.max(0, j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0)-pen);
   render(s);
+  if(typeof window.onPenaltyData==='function') window.onPenaltyData(p);
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
 });
 })();
-</script><script>/*#AR#20260829184434*/(function(){var B='20260829184434';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260831100226*/(function(){var B='20260831100226';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

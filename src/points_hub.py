@@ -25,13 +25,17 @@ function render(s){
 }
 try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}
 function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
-Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps')]).then(function(rs){
-  var b=rs[0],d=rs[1],j=rs[2];
-  var s={};
-  if(b&&b.ok&&Array.isArray(b.entries)) s.books=b.entries.length;
-  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0);
-  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps'), jget(API+'?mode=counter&sheet=penalty')]).then(function(rs){
+  var b=rs[0],d=rs[1],j=rs[2],p=rs[3];
+  var pen=0;
+  if(p&&p.ok&&Array.isArray(p.items)) pen=p.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+  try{localStorage.setItem('owen-penalty-cache', String(pen));}catch(e){}
+  var s={penalty:pen};
+  if(b&&b.ok&&Array.isArray(b.entries)) s.books=Math.max(0, b.entries.length-pen);
+  if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=Math.max(0, d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0)-pen);
+  if(j&&j.ok&&Array.isArray(j.items)) s.jumps=Math.max(0, j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0)-pen);
   render(s);
+  if(typeof window.onPenaltyData==='function') window.onPenaltyData(p);
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
 });
 })();
@@ -52,12 +56,67 @@ h1{font-size:clamp(24px,5vw,34px);text-align:center}
 .pcard.drinks .s b{color:#3D7BC4}
 .pcard.jumps .s b{color:#43A047}
 .pcard .go{float:right;color:#B8A88F;font-size:14px;margin-top:4px}
+/* 家長區：表現扣分 */
+.pen-card{background:#FBF1EC;border:2px dashed #E0B8A8;border-radius:22px;padding:18px 22px;margin-top:28px}
+.pen-card .t{font-size:16px;color:#8A5A48}
+.pen-card .s{font-size:13px;color:#A8887A;margin-top:6px;line-height:1.6}
+.pen-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+button{font-family:inherit;border:none;cursor:pointer}
+.pen-btn{background:#B0563F;color:#fff;border-radius:999px;padding:10px 20px;font-size:14px}
+.pen-undo{background:#EFE0D8;color:#8A5A48;border-radius:999px;padding:10px 20px;font-size:14px}
+.pen-msg{font-size:13px;color:#B0563F;margin-top:8px;min-height:18px}
 footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
+"""
+
+PENALTY_JS = """
+(function(){
+'use strict';
+var API='__API__';
+var items=[];
+function gate(){
+  var x=11+Math.floor(Math.random()*19), y=3+Math.floor(Math.random()*7);
+  var a=prompt('家長確認 🔒  '+x+' × '+y+' = ?');
+  return a!==null && parseInt(a,10)===x*y;
+}
+function renderPen(){
+  var sum=items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
+  document.getElementById('pen-stat').textContent = sum>0
+    ? '目前累計扣分：已扣 '+items.length+' 次、三本各 −'+sum
+    : '目前沒有扣分紀錄';
+  document.getElementById('pen-undo').disabled = !items.length;
+}
+window.onPenaltyData = function(p){
+  if(p&&p.ok&&Array.isArray(p.items)){ items=p.items; renderPen(); }
+};
+function msg(t){ document.getElementById('pen-msg').textContent=t; }
+document.getElementById('pen-add').onclick=function(){
+  if(!gate()){ msg('驗證未通過'); return; }
+  msg('記錄中…');
+  var today=(function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})(new Date());
+  fetch(API,{method:'POST',body:JSON.stringify({action:'counter_add',sheet:'penalty',date:today,value:10})})
+    .then(function(r){return r.json()}).then(function(j){
+      if(j&&j.ok&&Array.isArray(j.items)){ items=j.items; renderPen(); msg('已扣分：三本各 −10'); setTimeout(function(){location.reload()},1200); }
+      else msg('失敗：'+(j&&j.error||'連線問題'));
+    }).catch(function(){ msg('連不上雲端，稍後再試'); });
+};
+document.getElementById('pen-undo').onclick=function(){
+  if(!items.length) return;
+  if(!gate()){ msg('驗證未通過'); return; }
+  msg('撤銷中…');
+  var last=items[items.length-1];
+  fetch(API,{method:'POST',body:JSON.stringify({action:'counter_del',sheet:'penalty',id:last.id})})
+    .then(function(r){return r.json()}).then(function(j){
+      if(j&&j.ok&&Array.isArray(j.items)){ items=j.items; renderPen(); msg('已撤銷最近一筆扣分'); setTimeout(function(){location.reload()},1200); }
+      else msg('失敗：'+(j&&j.error||'連線問題'));
+    }).catch(function(){ msg('連不上雲端，稍後再試'); });
+};
+renderPen();
+})();
 """
 
 
 def points_html():
-    js = HOME_JS.replace("__API__", API_URL)
+    js = HOME_JS.replace("__API__", API_URL) + PENALTY_JS.replace("__API__", API_URL)
     return f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen 的點數</title>
@@ -77,6 +136,17 @@ def points_html():
 <a class="pcard jumps" href="../jump-log/"><span class="go">前往 &rarr;</span>
   <div class="t">&#129336; 跳繩次數</div>
   <span class="s" id="sum-jumps">每滿 10,000 次換禮物 &#127873;</span></a>
+
+<div class="pen-card">
+  <div class="t">&#9888;&#65039; 表現扣分（家長區）</div>
+  <div class="s">表現不好時按一下：<b>閱讀、牛奶、跳繩三本各扣 10 分</b>。按錯可撤銷最近一筆。<br>
+  <span id="pen-stat">讀取中&hellip;</span></div>
+  <div class="pen-btns">
+    <button class="pen-btn" id="pen-add">三本各扣 10 分</button>
+    <button class="pen-undo" id="pen-undo" disabled>撤銷最近一筆</button>
+  </div>
+  <div class="pen-msg" id="pen-msg"></div>
+</div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
 </div><script>{js}</script></body></html>"""

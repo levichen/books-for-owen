@@ -132,6 +132,21 @@ function currentEntries() {
 function byDate(date) { return currentEntries().filter(e => e.date === date); }
 function pointsOf(list) { return list.reduce((s, e) => s + ptsOf(e.kind), 0); }
 
+/* 表現扣分（penalty 工作表，三本共用）：total 顯示時扣除 */
+let penalty = 0;
+try { penalty = parseInt(localStorage.getItem('owen-penalty-cache') || '0', 10) || 0; } catch (e) {}
+function fetchPenalty() {
+  fetch(API + '?mode=counter&sheet=penalty', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(j => {
+      if (j && j.ok && Array.isArray(j.items)) {
+        penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
+        try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
+        renderProgress();
+      }
+    }).catch(() => {});
+}
+
 /* ---------- 同步 ---------- */
 function apiFetch(opts) {
   const ctrl = new AbortController();
@@ -209,7 +224,7 @@ function setStatus(state) {
   else { el.className = 'bad'; el.textContent = '連不上雲端，先顯示上次資料'; }
 }
 function renderProgress() {
-  const total = pointsOf(currentEntries());
+  const total = Math.max(0, pointsOf(currentEntries()) - penalty);
   const cycles = Math.floor(total / GOAL);
   const justHit = total > 0 && total % GOAL === 0;
   const inCycle = justHit ? GOAL : total % GOAL;
@@ -230,6 +245,9 @@ function renderProgress() {
     html += '<div class="left">第 ' + cycles + ' 個 ' + GOAL + ' 點達成！先去換禮物，下一輪繼續 &#127881;</div>';
   } else {
     html += '<div class="left">再喝 <b>' + (GOAL - total % GOAL) + '</b> 點換第 ' + (cycles + 1) + ' 個禮物 &#127873;</div>';
+  }
+  if (penalty > 0) {
+    html += '<div class="left" style="color:#B0563F">&#9888;&#65039; 表現扣分 &minus;' + penalty + '</div>';
   }
   gift.innerHTML = html;
   const base = justHit ? (cycles - 1) * GOAL : cycles * GOAL;
@@ -303,6 +321,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) flus
 document.getElementById('in-date').value = todayStr;
 renderAll();
 flush();
+fetchPenalty();
 """
 
 
