@@ -1,0 +1,417 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>單字小考</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face { font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+body{font-family:'Huninn',system-ui,sans-serif;background:#F3F0FA;min-height:100vh;color:#3B3352}
+.wrap{max-width:560px;margin:0 auto;padding:20px 14px 50px;text-align:center}
+h1{font-size:clamp(22px,5vw,30px)}
+.sub{color:#7E749A;font-size:13px;margin:4px 0 12px}
+.hud{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.hud span{font-size:13px;color:#7E749A;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(59,51,82,.08)}
+.hud span.src{color:#9A90B8}
+button{font-family:inherit;border:none;cursor:pointer}
+.panel{background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(59,51,82,.10);padding:22px 18px;margin-bottom:16px}
+.bigbtn{background:#6C4DD6;color:#fff;font-size:20px;border-radius:999px;padding:14px 34px;margin-top:10px;
+  box-shadow:0 4px 0 #4E36A6}
+.bigbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #4E36A6}
+.bigbtn.alt{background:#fff;color:#6C4DD6;border:2px solid #6C4DD6;box-shadow:none;font-size:16px;padding:10px 24px}
+.stat{color:#7E749A;font-size:14px;margin-top:8px;line-height:1.7}
+.units{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
+.chip{background:#EAE5F7;color:#6C4DD6;border-radius:999px;padding:6px 14px;font-size:13px}
+.chip.on{background:#6C4DD6;color:#fff}
+.boxes{display:flex;gap:6px;justify-content:center;margin-top:10px;font-size:13px;color:#7E749A;flex-wrap:wrap}
+.boxes b{color:#3B3352}
+
+/* --- 題目 --- */
+.progress{display:flex;gap:4px;margin-bottom:14px}
+.progress i{flex:1;height:8px;border-radius:4px;background:#E2DCF3}
+.progress i.ok{background:#4CB77A}.progress i.ng{background:#E4574C}.progress i.cur{background:#B8A9F0}
+.qtype{font-size:13px;color:#7E749A;margin-bottom:6px}
+.prompt{font-size:clamp(30px,8vw,44px);line-height:1.3;margin:8px 0 14px;min-height:56px}
+.speaker{background:#6C4DD6;color:#fff;width:84px;height:84px;border-radius:50%;font-size:40px;margin:6px auto 12px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #4E36A6}
+.speaker:active{transform:translateY(2px);box-shadow:0 2px 0 #4E36A6}
+.zh-hint{font-size:20px;color:#3B3352;margin-bottom:10px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{background:#F7F5FC;border:2px solid #E2DCF3;border-radius:16px;padding:16px 8px;font-size:22px;color:#3B3352}
+.choice.ok{background:#E3F6EA;border-color:#4CB77A}
+.choice.ng{background:#FDE7E4;border-color:#E4574C}
+.choice:disabled{cursor:default}
+.slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px;min-height:52px}
+.slot{width:44px;height:52px;border-bottom:4px solid #C9BFEA;font-size:28px;display:flex;align-items:center;justify-content:center;color:#3B3352}
+.slot.gap{width:18px;border:none}
+.slot.ok{border-color:#4CB77A}.slot.ng{border-color:#E4574C;color:#E4574C}
+.tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tile{width:48px;height:54px;background:#fff;border:2px solid #C9BFEA;border-radius:12px;font-size:26px;color:#3B3352;
+  box-shadow:0 3px 0 #C9BFEA}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 #C9BFEA}
+.tile.used{opacity:.25;pointer-events:none}
+.tools{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.tool{background:#EAE5F7;color:#6C4DD6;border-radius:999px;padding:8px 18px;font-size:14px}
+.tool:disabled{opacity:.4}
+.feedback{font-size:18px;min-height:28px;margin-top:12px}
+.feedback.ok{color:#2E9B5F}.feedback.ng{color:#E4574C}
+.feedback b{font-size:24px}
+
+/* --- 結果 --- */
+.score{font-size:64px;line-height:1;color:#6C4DD6}
+.stars{font-size:34px;letter-spacing:4px;margin:6px 0}
+.wrongs{text-align:left;margin-top:12px;border-top:1px dashed #E2DCF3;padding-top:10px}
+.wrongs .w{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:17px}
+.wrongs .w small{color:#7E749A;font-size:14px}
+.wrongs .w button{background:#EAE5F7;border-radius:999px;width:34px;height:34px;font-size:16px}
+.rec{color:#E4574C;font-size:16px;margin-top:8px}
+
+/* --- 單字卡 --- */
+.card{background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(59,51,82,.10);padding:34px 18px;margin-bottom:14px;
+  min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.card .en{font-size:clamp(34px,9vw,48px)}
+.card .zh{font-size:24px;color:#7E749A}
+.card .sp{background:#EAE5F7;color:#6C4DD6;border-radius:999px;padding:8px 18px;font-size:16px}
+.cardnav{display:flex;gap:10px;justify-content:center}
+.hidden{display:none !important}
+footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
+</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/">&#127873; 點數</a><a href="/books-for-owen/games/" class="on">&#127918; 遊戲</a></nav><div class="wrap">
+<h1>&#128221; 單字小考</h1>
+<div class="sub">每天 10 題：中文選英文＋聽音拼字，錯的字明天會再出現</div>
+
+<div id="home">
+  <div class="hud"><span id="count"></span><span id="best"></span><span class="src" id="src"></span></div>
+  <div class="panel">
+    <div class="units" id="units"></div>
+    <div class="boxes" id="boxes"></div>
+    <button class="bigbtn" id="start">開始小考 &#9654;</button>
+    <div><button class="bigbtn alt" id="cards-btn">先翻單字卡 &#128264;</button></div>
+    <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
+  </div>
+</div>
+
+<div id="quiz" class="hidden">
+  <div class="progress" id="progress"></div>
+  <div class="panel">
+    <div class="qtype"><span id="qtype"></span>　<span id="qnum"></span></div>
+    <div id="choiceQ">
+      <div class="prompt" id="prompt"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+    <div id="spellQ" class="hidden">
+      <button class="speaker" id="replay">&#128264;</button>
+      <div class="zh-hint" id="zhHint"></div>
+      <div class="slots" id="slots"></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="tools"><button class="tool" id="undo">&#9003; 退一格</button></div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="bigbtn hidden" id="next">下一題 &#9654;</button>
+  </div>
+</div>
+
+<div id="result" class="hidden">
+  <div class="panel">
+    <div class="score" id="score"></div>
+    <div class="stars" id="stars"></div>
+    <div class="stat" id="rstat"></div>
+    <div class="rec" id="rrec"></div>
+    <div class="wrongs" id="wrongs"></div>
+    <button class="bigbtn" id="again">再考一次 &#9654;</button>
+    <div><button class="bigbtn alt" id="home2">回首頁</button></div>
+  </div>
+</div>
+
+<div id="cards" class="hidden">
+  <div class="hud"><span id="cardNum"></span></div>
+  <div class="card" id="card">
+    <div class="en" id="cardEn"></div>
+    <div class="zh" id="cardZh"></div>
+    <button class="sp" id="cardSay">&#128264; 再唸一次</button>
+  </div>
+  <div class="cardnav">
+    <button class="bigbtn alt" id="cardPrev">&#9664; 上一張</button>
+    <button class="bigbtn alt" id="cardNext">下一張 &#9654;</button>
+  </div>
+  <div><button class="tool" id="cardHome" style="margin-top:14px">回首頁</button></div>
+</div>
+
+<footer>made with &hearts; by Daddy &amp; Claude</footer>
+</div><script>
+'use strict';
+const API = 'https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec';
+const SEED = [["family", "家人", "U1"], ["grandmother", "奶奶；外婆", "U1"], ["grandfather", "爺爺；外公", "U1"], ["father", "爸爸", "U1"], ["mother", "媽媽", "U1"], ["brother", "哥哥；弟弟", "U1"], ["sister", "姊姊；妹妹", "U1"], ["friend", "朋友", "U1"], ["predict", "預料、預測", "U1"], ["it has", "它有；牠有", "U1"], ["I have", "我有", "U1"], ["live", "住；居住", "U1"], ["families", "家庭（複數）", "U1"], ["each other", "互相", "U1"], ["the same", "相同的", "U1"], ["kinds of", "種類", "U1"], ["meet", "認識；遇見", "U1"], ["important", "重要的", "U1"], ["together", "一起", "U1"], ["share", "分享", "U1"], ["favorite", "最喜歡的", "U1"], ["I", "我", "U1"], ["am", "是（與 I 連用）", "U1"], ["you", "你；你們", "U1"], ["we", "我們", "U1"], ["they", "他們", "U1"]];
+const QUIZ_SIZE = 10;
+const CHOICE_COUNT = 4;
+const WORDS_CACHE = 'owen-words-cache-v1';
+const STATE_KEY = 'owen-wq-state-v1';    // {word: {box, seen, wrong}}
+const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, days:n}
+const UNIT_KEY = 'owen-wq-unit';
+const $ = id => document.getElementById(id);
+
+/* ---------- 本機儲存 ---------- */
+function lsGetObj(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return (v && typeof v === 'object') ? v : fallback; }
+  catch (e) { console.error('read', key, e); return fallback; }
+}
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { console.error('write', key, e); } }
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* ---------- 單字資料 ---------- */
+function normWords(list) {
+  const seen = new Set(), out = [];
+  for (const w of list || []) {
+    const word = String((w && w.word) || '').trim(), zh = String((w && w.zh) || '').trim(), unit = String((w && w.unit) || '').trim();
+    if (!word || !zh || word.length > 40 || !/^[A-Za-z][A-Za-z' -]*$/.test(word)) continue;
+    const key = word.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key); out.push({ word, zh, unit });
+  }
+  return out;
+}
+let words = normWords(lsGetObj(WORDS_CACHE, null) || SEED.map(a => ({ word: a[0], zh: a[1], unit: a[2] })));
+let source = lsGetObj(WORDS_CACHE, null) ? 'cache' : 'seed';
+let unit = (function () { try { return localStorage.getItem(UNIT_KEY) || 'ALL'; } catch (e) { return 'ALL'; } })();
+
+function fetchWords() {
+  return fetch(API + '?mode=words', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(j => {
+      if (!j || !j.ok || !Array.isArray(j.words)) throw new Error((j && j.error) || 'bad response');
+      const fresh = normWords(j.words);
+      if (fresh.length) { words = fresh; lsSet(WORDS_CACHE, fresh); source = 'cloud'; }
+      else source = 'empty';
+      renderHome();
+    })
+    .catch(err => { console.warn('words fetch failed', err); source = source === 'cache' ? 'cache' : 'seed'; renderHome(); });
+}
+function unitsOf() { return Array.from(new Set(words.map(w => w.unit).filter(Boolean))); }
+function pool() { return unit === 'ALL' ? words : words.filter(w => w.unit === unit); }
+
+/* ---------- 熟練度（Leitner 三盒）---------- */
+let state = lsGetObj(STATE_KEY, {});
+function boxOf(w) { const s = state[w.word.toLowerCase()]; return s ? (s.box | 0) : 0; }
+function mark(w, correct) {
+  const k = w.word.toLowerCase(), old = state[k] || { box: 0, seen: 0, wrong: 0 };
+  const next = { box: correct ? Math.min(2, old.box + 1) : 0, seen: old.seen + 1, wrong: old.wrong + (correct ? 0 : 1), last: todayStr() };
+  state = Object.assign({}, state, { [k]: next });
+  lsSet(STATE_KEY, state);
+}
+function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function pickQuiz() {
+  const p = pool();
+  const b0 = shuffle(p.filter(w => boxOf(w) === 0)), b1 = shuffle(p.filter(w => boxOf(w) === 1)), b2 = shuffle(p.filter(w => boxOf(w) === 2));
+  const chosen = b0.concat(b1, b2).slice(0, QUIZ_SIZE);
+  return shuffle(chosen);
+}
+
+/* ---------- 語音 / 音效 ---------- */
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.8;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+}
+let AC = null;
+function beep(freq, dur, type, gain) {
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain || 0.12, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const sfx = {
+  tap: () => beep(660, .05, 'triangle'),
+  ok: () => { beep(660, .1); setTimeout(() => beep(880, .14), 100); },
+  ng: () => beep(200, .3, 'sine', .1),
+  win: () => { beep(660, .12); setTimeout(() => beep(830, .12), 110); setTimeout(() => beep(990, .2), 230); },
+};
+
+/* ---------- 畫面切換 ---------- */
+function show(id) { for (const p of ['home', 'quiz', 'result', 'cards']) $(p).classList.toggle('hidden', p !== id); }
+
+/* ---------- 首頁 ---------- */
+let best = lsGetObj(BEST_KEY, {});
+function renderHome() {
+  const p = pool();
+  const units = unitsOf();
+  $('units').innerHTML = units.length > 1
+    ? ['ALL'].concat(units).map(u => '<button class="chip' + (u === unit ? ' on' : '') + '" data-u="' + u + '">' + (u === 'ALL' ? '全部' : u) + '</button>').join('')
+    : '';
+  const n0 = p.filter(w => boxOf(w) === 0).length, n1 = p.filter(w => boxOf(w) === 1).length, n2 = p.filter(w => boxOf(w) === 2).length;
+  $('boxes').innerHTML = '<span>&#127793; 還在學 <b>' + n0 + '</b></span><span>&#127807; 快會了 <b>' + n1 + '</b></span><span>&#127794; 已經會 <b>' + n2 + '</b></span>';
+  $('count').textContent = p.length + ' 個單字';
+  const srcText = { cloud: '☁️ 雲端單字表', cache: '☁️ 雲端單字表（快取）', seed: '📘 內建 Unit 1', empty: '📘 內建 Unit 1（雲端表是空的）' }[source] || '';
+  $('src').textContent = srcText;
+  const t = best.today && best.today.date === todayStr() ? best.today.score : null;
+  $('best').innerHTML = (t !== null ? 'TODAY: ' + t + ' 分　' : '') + (best.allTime ? '🏆 EVER: ' + best.allTime.score + ' 分' : '🏆 EVER: —');
+  $('start').disabled = p.length < 2;
+  $('start').textContent = p.length < 2 ? '單字不夠' : '開始小考 ▶';
+}
+$('units').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  unit = b.dataset.u; try { localStorage.setItem(UNIT_KEY, unit); } catch (err) {}
+  renderHome();
+});
+
+/* ---------- 小考 ---------- */
+let quiz = null;  // {items:[{w,type}], i, results:[bool], wrongs:[w]}
+function startQuiz() {
+  const chosen = pickQuiz();
+  if (chosen.length < 2) return;
+  const types = shuffle(chosen.map((_, i) => i < CHOICE_COUNT ? 'choice' : 'spell'));
+  quiz = { items: chosen.map((w, i) => ({ w, type: types[i] })), i: 0, results: [], wrongs: [] };
+  show('quiz');
+  renderQuestion();
+}
+function renderProgress() {
+  $('progress').innerHTML = quiz.items.map((_, i) =>
+    '<i class="' + (i < quiz.results.length ? (quiz.results[i] ? 'ok' : 'ng') : (i === quiz.i ? 'cur' : '')) + '"></i>').join('');
+}
+function renderQuestion() {
+  renderProgress();
+  $('feedback').textContent = ''; $('feedback').className = 'feedback';
+  $('next').classList.add('hidden');
+  const item = quiz.items[quiz.i];
+  $('qnum').textContent = (quiz.i + 1) + ' / ' + quiz.items.length;
+  $('choiceQ').classList.toggle('hidden', item.type !== 'choice');
+  $('spellQ').classList.toggle('hidden', item.type !== 'spell');
+  if (item.type === 'choice') renderChoice(item.w); else renderSpell(item.w);
+}
+
+function renderChoice(w) {
+  $('qtype').textContent = '中文選英文';
+  $('prompt').textContent = w.zh;
+  const others = shuffle(words.filter(x => x.word !== w.word)).slice(0, 3);
+  const opts = shuffle([w].concat(others));
+  $('choices').innerHTML = opts.map(o => '<button class="choice" data-w="' + o.word.replace(/"/g, '&quot;') + '">' + o.word + '</button>').join('');
+}
+$('choices').addEventListener('click', e => {
+  const b = e.target.closest('.choice'); if (!b || b.disabled) return;
+  const w = quiz.items[quiz.i].w, correct = b.dataset.w === w.word;
+  for (const c of $('choices').querySelectorAll('.choice')) { c.disabled = true; if (c.dataset.w === w.word) c.classList.add('ok'); }
+  if (!correct) b.classList.add('ng');
+  answer(correct);
+});
+
+let spell = null;  // {letters:[], picks:[idx], target}
+function renderSpell(w) {
+  $('qtype').textContent = '聽音拼字';
+  $('zhHint').textContent = w.zh;
+  const letters = w.word.split('');
+  const tileIdx = letters.map((c, i) => c === ' ' ? -1 : i).filter(i => i >= 0);
+  spell = { w, letters, order: shuffle(tileIdx), picks: [] };
+  $('tiles').innerHTML = spell.order.map(i => '<button class="tile" data-i="' + i + '">' + letters[i] + '</button>').join('');
+  renderSlots();
+  setTimeout(() => speak(w.word), 250);
+}
+function renderSlots() {
+  const filled = spell.picks.map(i => spell.letters[i]);
+  let k = 0;
+  $('slots').innerHTML = spell.letters.map(c => {
+    if (c === ' ') return '<span class="slot gap"></span>';
+    const ch = filled[k++]; return '<span class="slot">' + (ch === undefined ? '' : ch) + '</span>';
+  }).join('');
+  for (const t of $('tiles').querySelectorAll('.tile')) t.classList.toggle('used', spell.picks.indexOf(+t.dataset.i) >= 0);
+  $('undo').disabled = !spell.picks.length;
+}
+$('tiles').addEventListener('click', e => {
+  const t = e.target.closest('.tile'); if (!t || !spell || t.classList.contains('used')) return;
+  sfx.tap();
+  spell = Object.assign({}, spell, { picks: spell.picks.concat([+t.dataset.i]) });
+  renderSlots();
+  if (spell.picks.length === spell.order.length) checkSpell();
+});
+$('undo').onclick = () => { if (!spell || !spell.picks.length) return; spell = Object.assign({}, spell, { picks: spell.picks.slice(0, -1) }); renderSlots(); };
+$('replay').onclick = () => { if (spell) speak(spell.w.word); };
+function checkSpell() {
+  const typed = spell.picks.map(i => spell.letters[i]).join('');
+  const target = spell.letters.filter(c => c !== ' ').join('');
+  const correct = typed.toLowerCase() === target.toLowerCase();
+  const slots = $('slots').querySelectorAll('.slot:not(.gap)');
+  slots.forEach((s, k) => s.classList.add(typed[k].toLowerCase() === target[k].toLowerCase() ? 'ok' : 'ng'));
+  for (const t of $('tiles').querySelectorAll('.tile')) t.classList.add('used');
+  $('undo').disabled = true;
+  answer(correct);
+}
+
+function answer(correct) {
+  const w = quiz.items[quiz.i].w;
+  mark(w, correct);
+  quiz = Object.assign({}, quiz, { results: quiz.results.concat([correct]), wrongs: correct ? quiz.wrongs : quiz.wrongs.concat([w]) });
+  renderProgress();
+  const fb = $('feedback');
+  fb.className = 'feedback ' + (correct ? 'ok' : 'ng');
+  fb.innerHTML = correct ? '&#10004; 答對了！' : '&#10006; 是 <b>' + w.word + '</b>';
+  if (correct) sfx.ok(); else sfx.ng();
+  setTimeout(() => speak(w.word), 300);
+  $('next').textContent = quiz.i + 1 >= quiz.items.length ? '看成績 ★' : '下一題 ▶';
+  $('next').classList.remove('hidden');
+}
+$('next').onclick = () => {
+  if (quiz.i + 1 >= quiz.items.length) return finish();
+  quiz = Object.assign({}, quiz, { i: quiz.i + 1 });
+  renderQuestion();
+};
+
+/* ---------- 成績 ---------- */
+function finish() {
+  const n = quiz.items.length, right = quiz.results.filter(Boolean).length;
+  const score = Math.round(right / n * 100);
+  const today = todayStr();
+  const prevToday = (best.today && best.today.date === today) ? best.today.score : null;
+  const newToday = prevToday === null || score > prevToday;
+  const newAll = !best.allTime || score > best.allTime.score;
+  best = {
+    today: newToday ? { date: today, score } : best.today,
+    allTime: newAll ? { score, date: today } : best.allTime,
+    plays: (best.plays || 0) + 1,
+  };
+  lsSet(BEST_KEY, best);
+  show('result');
+  $('score').textContent = score;
+  $('stars').textContent = score === 100 ? '⭐⭐⭐' : score >= 80 ? '⭐⭐' : score >= 60 ? '⭐' : '💪';
+  $('rstat').textContent = right + ' / ' + n + ' 題答對';
+  $('rrec').textContent = score === 100 ? '🏆 滿分！全部都會了！' : newAll && best.plays > 1 ? '🏆 歷代最佳紀錄！' : newToday && prevToday !== null ? '⭐ 今天的新紀錄！' : '';
+  $('wrongs').innerHTML = quiz.wrongs.length
+    ? '<div class="stat">這些字明天會再考你一次：</div>' + quiz.wrongs.map(w =>
+        '<div class="w"><button data-say="' + w.word.replace(/"/g, '&quot;') + '">&#128264;</button><span>' + w.word + '</span><small>' + w.zh + '</small></div>').join('')
+    : '';
+  if (score === 100) sfx.win(); else if (score >= 60) sfx.ok();
+}
+$('wrongs').addEventListener('click', e => { const b = e.target.closest('button[data-say]'); if (b) speak(b.dataset.say); });
+$('again').onclick = startQuiz;
+$('home2').onclick = () => { renderHome(); show('home'); };
+
+/* ---------- 單字卡（預習）---------- */
+let card = { list: [], i: 0, flipped: false };
+function startCards() {
+  const p = pool();
+  card = { list: p.slice().sort((a, b) => boxOf(a) - boxOf(b)), i: 0, flipped: false };
+  show('cards'); renderCard();
+}
+function renderCard() {
+  const w = card.list[card.i];
+  $('cardEn').textContent = w.word;
+  $('cardZh').textContent = card.flipped ? w.zh : '（點一下看意思）';
+  $('cardNum').textContent = (card.i + 1) + ' / ' + card.list.length;
+  speak(w.word);
+}
+$('card').onclick = () => { card = Object.assign({}, card, { flipped: !card.flipped }); renderCard(); };
+$('cardSay').onclick = e => { e.stopPropagation(); speak(card.list[card.i].word); };
+$('cardPrev').onclick = () => { card = Object.assign({}, card, { i: (card.i - 1 + card.list.length) % card.list.length, flipped: false }); renderCard(); };
+$('cardNext').onclick = () => { card = Object.assign({}, card, { i: (card.i + 1) % card.list.length, flipped: false }); renderCard(); };
+$('cardHome').onclick = () => { renderHome(); show('home'); };
+
+$('start').onclick = startQuiz;
+$('cards-btn').onclick = startCards;
+renderHome();
+fetchWords();
+</script><script>/*#AR#20260905071349*/(function(){var B='20260905071349';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

@@ -442,6 +442,11 @@ if __name__ == "__main__":
     os.makedirs(f"{SITE}/games/make-it", exist_ok=True)
     with open(f"{SITE}/games/make-it/index.html", "w", encoding="utf-8") as f:
         f.write(mi_page)
+    from word_quiz import word_quiz_html
+    wq_page = finalize(word_quiz_html(), nav="games")
+    os.makedirs(f"{SITE}/games/word-quiz", exist_ok=True)
+    with open(f"{SITE}/games/word-quiz/index.html", "w", encoding="utf-8") as f:
+        f.write(wq_page)
 
     with open(f"{SITE}/README.md", "w", encoding="utf-8") as f:
         f.write(README)
@@ -450,7 +455,7 @@ if __name__ == "__main__":
     chars = set(html.unescape(lib) + README + html.unescape(log_page)
                 + html.unescape(drink_page) + html.unescape(jump_page)
                 + html.unescape(points_page) + html.unescape(games_page)
-                + html.unescape(wm_page))
+                + html.unescape(wm_page) + html.unescape(wq_page))
     for r in all_html:
         chars |= set(html.unescape(r))
     chars |= set("0123456789/ ")
