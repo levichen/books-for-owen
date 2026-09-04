@@ -34,7 +34,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .speaker{background:#6C4DD6;color:#fff;width:84px;height:84px;border-radius:50%;font-size:40px;margin:6px auto 12px;
   display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #4E36A6}
 .speaker:active{transform:translateY(2px);box-shadow:0 2px 0 #4E36A6}
-.zh-hint{font-size:20px;color:#3B3352;margin-bottom:10px}
+.zh-hint{font-size:26px;color:#3B3352;margin-bottom:10px}
 .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .choice{background:#F7F5FC;border:2px solid #E2DCF3;border-radius:16px;padding:16px 8px;font-size:22px;color:#3B3352}
 .choice.ok{background:#E3F6EA;border-color:#4CB77A}
@@ -61,7 +61,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .stars{font-size:34px;letter-spacing:4px;margin:6px 0}
 .wrongs{text-align:left;margin-top:12px;border-top:1px dashed #E2DCF3;padding-top:10px}
 .wrongs .w{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:17px}
-.wrongs .w small{color:#7E749A;font-size:14px}
+.wrongs .w small{color:#7E749A;font-size:17px}
 .wrongs .w button{background:#EAE5F7;border-radius:999px;width:34px;height:34px;font-size:16px}
 .rec{color:#E4574C;font-size:16px;margin-top:8px}
 
@@ -69,9 +69,16 @@ button{font-family:inherit;border:none;cursor:pointer}
 .card{background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(59,51,82,.10);padding:34px 18px;margin-bottom:14px;
   min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .card .en{font-size:clamp(34px,9vw,48px)}
-.card .zh{font-size:24px;color:#7E749A}
+.card .zh{font-size:30px;color:#7E749A}
 .card .sp{background:#EAE5F7;color:#6C4DD6;border-radius:999px;padding:8px 18px;font-size:16px}
 .cardnav{display:flex;gap:10px;justify-content:center}
+/* 直式注音在字右側（台灣課本式），em 單位跟著容器字級縮放 */
+.zc{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .14em 0 0}
+.zc .h{font-size:1em;line-height:1.25}
+.zc .zy{display:inline-flex;flex-direction:column;justify-content:center;margin-left:.06em}
+.zc .zy i{font-style:normal;font-size:.42em;line-height:1.15;color:#7E749A;text-align:center;font-family:'Huninn',system-ui,sans-serif}
+.zc .tn{font-size:.46em;color:#7E749A;align-self:center;line-height:1;font-family:'Huninn',system-ui,sans-serif}
+.bigbtn .zc .zy i,.bigbtn .zc .tn,.chip .zc .zy i,.chip .zc .tn{color:inherit;opacity:.85}
 .hidden{display:none !important}
 footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
 </style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/">&#127873; 點數</a><a href="/books-for-owen/games/" class="on">&#127918; 遊戲</a></nav><div class="wrap">
@@ -84,7 +91,7 @@ footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
     <div class="units" id="units"></div>
     <div class="boxes" id="boxes"></div>
     <button class="bigbtn" id="start">開始小考 &#9654;</button>
-    <div><button class="bigbtn alt" id="cards-btn">先翻單字卡 &#128264;</button></div>
+    <div><button class="bigbtn alt" id="cards-btn" data-zh="先翻單字卡 🔈"></button></div>
     <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
   </div>
 </div>
@@ -102,7 +109,7 @@ footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
       <div class="zh-hint" id="zhHint"></div>
       <div class="slots" id="slots"></div>
       <div class="tiles" id="tiles"></div>
-      <div class="tools"><button class="tool" id="undo">&#9003; 退一格</button></div>
+      <div class="tools"><button class="tool" id="undo" data-zh="⌫ 退一格"></button></div>
     </div>
     <div class="feedback" id="feedback"></div>
     <button class="bigbtn hidden" id="next">下一題 &#9654;</button>
@@ -116,8 +123,8 @@ footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
     <div class="stat" id="rstat"></div>
     <div class="rec" id="rrec"></div>
     <div class="wrongs" id="wrongs"></div>
-    <button class="bigbtn" id="again">再考一次 &#9654;</button>
-    <div><button class="bigbtn alt" id="home2">回首頁</button></div>
+    <button class="bigbtn" id="again" data-zh="再考一次 ▶"></button>
+    <div><button class="bigbtn alt" id="home2" data-zh="回首頁"></button></div>
   </div>
 </div>
 
@@ -126,13 +133,13 @@ footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
   <div class="card" id="card">
     <div class="en" id="cardEn"></div>
     <div class="zh" id="cardZh"></div>
-    <button class="sp" id="cardSay">&#128264; 再唸一次</button>
+    <button class="sp" id="cardSay" data-zh="🔈 再唸一次"></button>
   </div>
   <div class="cardnav">
-    <button class="bigbtn alt" id="cardPrev">&#9664; 上一張</button>
-    <button class="bigbtn alt" id="cardNext">下一張 &#9654;</button>
+    <button class="bigbtn alt" id="cardPrev" data-zh="◀ 上一張"></button>
+    <button class="bigbtn alt" id="cardNext" data-zh="下一張 ▶"></button>
   </div>
-  <div><button class="tool" id="cardHome" style="margin-top:14px">回首頁</button></div>
+  <div><button class="tool" id="cardHome" style="margin-top:14px" data-zh="回首頁"></button></div>
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
@@ -234,6 +241,32 @@ const sfx = {
   win: () => { beep(660, .12); setTimeout(() => beep(830, .12), 110); setTimeout(() => beep(990, .2), 230); },
 };
 
+/* ---------- 注音（小一還看不懂國字：題目、答案、提示全部逐字上 ruby）---------- */
+let ZY = null;
+function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function zyHtml(zy) {
+  const last = zy.slice(-1);
+  const tone = 'ˊˇˋ'.includes(last) ? last : '';
+  const light = last === '˙';
+  const syms = (tone || light) ? zy.slice(0, -1) : zy;
+  let col = light ? '<i>˙</i>' : '';
+  for (const c of syms) col += '<i>' + c + '</i>';
+  return '<span class="zy">' + col + '</span>' + (tone ? '<span class="tn">' + tone + '</span>' : '');
+}
+function ruby(text) {
+  let out = '';
+  for (const ch of String(text)) {
+    out += (ZY && ZY[ch]) ? '<span class="zc"><span class="h">' + esc(ch) + '</span>' + zyHtml(ZY[ch]) + '</span>' : esc(ch);
+  }
+  return out;
+}
+function setZh(el, text) { el.dataset.zh = text; el.innerHTML = ruby(text); }
+function refreshRuby() { for (const el of document.querySelectorAll('[data-zh]')) el.innerHTML = ruby(el.dataset.zh); }
+fetch('../../assets/zhuyin.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(m => { if (m) { ZY = m; refreshRuby(); } })
+  .catch(err => console.error('zhuyin load failed', err));
+
 /* ---------- 畫面切換 ---------- */
 function show(id) { for (const p of ['home', 'quiz', 'result', 'cards']) $(p).classList.toggle('hidden', p !== id); }
 
@@ -253,7 +286,7 @@ function renderHome() {
   const t = best.today && best.today.date === todayStr() ? best.today.score : null;
   $('best').innerHTML = (t !== null ? 'TODAY: ' + t + ' 分　' : '') + (best.allTime ? '🏆 EVER: ' + best.allTime.score + ' 分' : '🏆 EVER: —');
   $('start').disabled = p.length < 2;
-  $('start').textContent = p.length < 2 ? '單字不夠' : '開始小考 ▶';
+  setZh($('start'), p.length < 2 ? '單字不夠' : '開始小考 ▶');
 }
 $('units').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
@@ -287,8 +320,8 @@ function renderQuestion() {
 }
 
 function renderChoice(w) {
-  $('qtype').textContent = '中文選英文';
-  $('prompt').textContent = w.zh;
+  setZh($('qtype'), '中文選英文');
+  setZh($('prompt'), w.zh);
   const others = shuffle(words.filter(x => x.word !== w.word)).slice(0, 3);
   const opts = shuffle([w].concat(others));
   $('choices').innerHTML = opts.map(o => '<button class="choice" data-w="' + o.word.replace(/"/g, '&quot;') + '">' + o.word + '</button>').join('');
@@ -303,8 +336,8 @@ $('choices').addEventListener('click', e => {
 
 let spell = null;  // {letters:[], picks:[idx], target}
 function renderSpell(w) {
-  $('qtype').textContent = '聽音拼字';
-  $('zhHint').textContent = w.zh;
+  setZh($('qtype'), '聽音拼字');
+  setZh($('zhHint'), w.zh);
   const letters = w.word.split('');
   const tileIdx = letters.map((c, i) => c === ' ' ? -1 : i).filter(i => i >= 0);
   spell = { w, letters, order: shuffle(tileIdx), picks: [] };
@@ -349,10 +382,10 @@ function answer(correct) {
   renderProgress();
   const fb = $('feedback');
   fb.className = 'feedback ' + (correct ? 'ok' : 'ng');
-  fb.innerHTML = correct ? '&#10004; 答對了！' : '&#10006; 是 <b>' + w.word + '</b>';
+  fb.innerHTML = correct ? '&#10004; ' + ruby('答對了！') : '&#10006; ' + ruby('是') + ' <b>' + esc(w.word) + '</b>';
   if (correct) sfx.ok(); else sfx.ng();
   setTimeout(() => speak(w.word), 300);
-  $('next').textContent = quiz.i + 1 >= quiz.items.length ? '看成績 ★' : '下一題 ▶';
+  setZh($('next'), quiz.i + 1 >= quiz.items.length ? '看成績 ★' : '下一題 ▶');
   $('next').classList.remove('hidden');
 }
 $('next').onclick = () => {
@@ -378,11 +411,11 @@ function finish() {
   show('result');
   $('score').textContent = score;
   $('stars').textContent = score === 100 ? '⭐⭐⭐' : score >= 80 ? '⭐⭐' : score >= 60 ? '⭐' : '💪';
-  $('rstat').textContent = right + ' / ' + n + ' 題答對';
-  $('rrec').textContent = score === 100 ? '🏆 滿分！全部都會了！' : newAll && best.plays > 1 ? '🏆 歷代最佳紀錄！' : newToday && prevToday !== null ? '⭐ 今天的新紀錄！' : '';
+  setZh($('rstat'), right + ' / ' + n + ' 題答對');
+  setZh($('rrec'), score === 100 ? '🏆 滿分！全部都會了！' : newAll && best.plays > 1 ? '🏆 歷代最佳紀錄！' : newToday && prevToday !== null ? '⭐ 今天的新紀錄！' : '');
   $('wrongs').innerHTML = quiz.wrongs.length
-    ? '<div class="stat">這些字明天會再考你一次：</div>' + quiz.wrongs.map(w =>
-        '<div class="w"><button data-say="' + w.word.replace(/"/g, '&quot;') + '">&#128264;</button><span>' + w.word + '</span><small>' + w.zh + '</small></div>').join('')
+    ? '<div class="stat">' + ruby('這些字明天會再考你一次：') + '</div>' + quiz.wrongs.map(w =>
+        '<div class="w"><button data-say="' + w.word.replace(/"/g, '&quot;') + '">&#128264;</button><span>' + esc(w.word) + '</span><small data-zh="' + esc(w.zh).replace(/"/g, '&quot;') + '">' + ruby(w.zh) + '</small></div>').join('')
     : '';
   if (score === 100) sfx.win(); else if (score >= 60) sfx.ok();
 }
@@ -400,7 +433,7 @@ function startCards() {
 function renderCard() {
   const w = card.list[card.i];
   $('cardEn').textContent = w.word;
-  $('cardZh').textContent = card.flipped ? w.zh : '（點一下看意思）';
+  setZh($('cardZh'), card.flipped ? w.zh : '（點一下看意思）');
   $('cardNum').textContent = (card.i + 1) + ' / ' + card.list.length;
   speak(w.word);
 }
@@ -412,6 +445,7 @@ $('cardHome').onclick = () => { renderHome(); show('home'); };
 
 $('start').onclick = startQuiz;
 $('cards-btn').onclick = startCards;
+refreshRuby();
 renderHome();
 fetchWords();
-</script><script>/*#AR#20260905071349*/(function(){var B='20260905071349';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260905072141*/(function(){var B='20260905072141';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
