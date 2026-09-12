@@ -15,7 +15,7 @@ import json
 
 from reading_log import API_URL
 
-# 學校 Unit 1 單字表（2026-09 照片轉錄）——試算表沒資料時的備援
+# 學校單字表（照片轉錄）——試算表沒資料時的備援。Unit 1 兩頁（2026-09-05、09-12）、Unit 2（09-12）
 SEED_WORDS = [
     ("family", "家人", "U1"), ("grandmother", "奶奶；外婆", "U1"), ("grandfather", "爺爺；外公", "U1"),
     ("father", "爸爸", "U1"), ("mother", "媽媽", "U1"), ("brother", "哥哥；弟弟", "U1"),
@@ -26,6 +26,21 @@ SEED_WORDS = [
     ("together", "一起", "U1"), ("share", "分享", "U1"), ("favorite", "最喜歡的", "U1"),
     ("I", "我", "U1"), ("am", "是（與 I 連用）", "U1"), ("you", "你；你們", "U1"),
     ("we", "我們", "U1"), ("they", "他們", "U1"),
+    ("are", "是（與 you, we, they 連用）", "U1"), ("he", "他", "U1"), ("she", "她", "U1"),
+    ("it", "它；牠", "U1"), ("is", "是（與 he, she, it 連用）", "U1"),
+    ("uncle", "伯父；叔叔；姑丈；姨丈；舅舅", "U1"), ("aunt", "伯母；嬸嬸；姑姑；阿姨；舅媽", "U1"),
+    ("daughter", "女兒", "U1"), ("parents", "父母親", "U1"), ("son", "兒子", "U1"),
+    ("cousin", "堂（表）兄弟姊妹", "U1"), ("opposite", "相反的", "U1"), ("old", "老的", "U1"),
+    ("young", "年輕的", "U1"), ("small", "小的", "U1"), ("big", "大的", "U1"),
+    ("cold", "冷的", "U1"), ("hot", "熱的", "U1"),
+    ("elephant", "大象", "U2"), ("tortoise", "陸龜", "U2"), ("lonely", "孤獨的", "U2"),
+    ("sad", "傷心的", "U2"), ("scared", "驚嚇的、害怕的", "U2"), ("eat", "吃", "U2"),
+    ("play", "玩耍", "U2"), ("sleep", "睡覺", "U2"), ("look at", "看", "U2"),
+    ("find", "找到", "U2"), ("Let's go", "讓我們一起走", "U2"), ("run away", "逃走、跑走", "U2"),
+    ("are scared of", "害怕某物", "U2"), ("this", "這", "U2"), ("that", "那", "U2"),
+    ("these", "這些", "U2"), ("those", "那些", "U2"), ("hamster", "倉鼠", "U2"),
+    ("goldfish", "金魚", "U2"), ("bird", "小鳥", "U2"), ("rabbit", "兔子", "U2"),
+    ("lizard", "蜥蜴", "U2"), ("kitten", "小貓", "U2"),
 ]
 
 QUIZ_SIZE = 10
@@ -72,6 +87,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px;min-height:52px}
 .slot{width:44px;height:52px;border-bottom:4px solid #C9BFEA;font-size:28px;display:flex;align-items:center;justify-content:center;color:#3B3352}
 .slot.gap{width:18px;border:none}
+.slot.fixed{width:22px;border:none;color:#9A90B8}
 .slot.ok{border-color:#4CB77A}.slot.ng{border-color:#E4574C;color:#E4574C}
 .tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .tile{width:48px;height:54px;background:#fff;border:2px solid #C9BFEA;border-radius:12px;font-size:26px;color:#3B3352;
@@ -303,12 +319,13 @@ $('choices').addEventListener('click', e => {
   answer(correct);
 });
 
-let spell = null;  // {letters:[], picks:[idx], target}
+let spell = null;  // {w, letters:[], order:[idx], picks:[idx]}
+function isLetter(c) { return /^[A-Za-z]$/.test(c); }
 function renderSpell(w) {
   setZh($('qtype'), '聽音拼字');
   setZh($('zhHint'), w.zh);
   const letters = w.word.split('');
-  const tileIdx = letters.map((c, i) => c === ' ' ? -1 : i).filter(i => i >= 0);
+  const tileIdx = letters.map((c, i) => isLetter(c) ? i : -1).filter(i => i >= 0);
   spell = { w, letters, order: shuffle(tileIdx), picks: [] };
   $('tiles').innerHTML = spell.order.map(i => '<button class="tile" data-i="' + i + '">' + letters[i] + '</button>').join('');
   renderSlots();
@@ -319,7 +336,8 @@ function renderSlots() {
   let k = 0;
   $('slots').innerHTML = spell.letters.map(c => {
     if (c === ' ') return '<span class="slot gap"></span>';
-    const ch = filled[k++]; return '<span class="slot">' + (ch === undefined ? '' : ch) + '</span>';
+    if (!isLetter(c)) return '<span class="slot fixed">' + esc(c) + '</span>';
+    const ch = filled[k++]; return '<span class="slot">' + (ch === undefined ? '' : esc(ch)) + '</span>';
   }).join('');
   for (const t of $('tiles').querySelectorAll('.tile')) t.classList.toggle('used', spell.picks.indexOf(+t.dataset.i) >= 0);
   $('undo').disabled = !spell.picks.length;
@@ -335,9 +353,9 @@ $('undo').onclick = () => { if (!spell || !spell.picks.length) return; spell = O
 $('replay').onclick = () => { if (spell) speak(spell.w.word); };
 function checkSpell() {
   const typed = spell.picks.map(i => spell.letters[i]).join('');
-  const target = spell.letters.filter(c => c !== ' ').join('');
+  const target = spell.letters.filter(isLetter).join('');
   const correct = typed.toLowerCase() === target.toLowerCase();
-  const slots = $('slots').querySelectorAll('.slot:not(.gap)');
+  const slots = $('slots').querySelectorAll('.slot:not(.gap):not(.fixed)');
   slots.forEach((s, k) => s.classList.add(typed[k].toLowerCase() === target[k].toLowerCase() ? 'ok' : 'ng'));
   for (const t of $('tiles').querySelectorAll('.tile')) t.classList.add('used');
   $('undo').disabled = true;
