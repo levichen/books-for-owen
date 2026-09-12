@@ -23,8 +23,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .units{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
 .chip{background:#EAE5F7;color:#6C4DD6;border-radius:999px;padding:6px 14px;font-size:13px}
 .chip.on{background:#6C4DD6;color:#fff}
-.boxes{display:flex;gap:6px;justify-content:center;margin-top:10px;font-size:13px;color:#7E749A;flex-wrap:wrap}
-.boxes b{color:#3B3352}
+.boxes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.box{background:#F7F5FC;border-radius:14px;padding:10px 2px 8px}
+.box .ic{font-size:22px;line-height:1}
+.box .n{font-size:26px;line-height:1.1;color:#3B3352;margin:4px 0 2px}
+.box .lb{font-size:15px;color:#7E749A;line-height:1.3}
+.box .lb .zc{margin-right:.08em}
+@media (max-width:480px){.boxes{grid-template-columns:repeat(2,1fr)}.box{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 8px}.box .n{margin:0}}
 
 /* --- 題目 --- */
 .progress{display:flex;gap:4px;margin-bottom:14px}
@@ -87,8 +92,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .steps > span.on{background:#6C4DD6;color:#fff}
 .steps > span.done{background:#E3F6EA;color:#2E9B5F}
 .steps > span .zc .zy i,.steps > span .zc .tn{color:inherit;opacity:.8}
-.plan{font-size:17px;line-height:1.9;margin:6px 0 4px}
-.plan b{color:#6C4DD6}
+.plan{font-size:18px;line-height:1.5;margin:6px 0 4px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.plan .pl{display:flex;align-items:center;gap:8px}
+.plan .pl .num{background:#6C4DD6;color:#fff;border-radius:999px;min-width:34px;padding:2px 10px;font-size:18px}
 .donebox{background:#E3F6EA;color:#2E9B5F;border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:10px}
 .card .zh.dim{color:#B8AEDC}
 .cardbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -436,15 +442,17 @@ function renderHome() {
     : '';
   const n0 = p.filter(w => introOf(w) && boxOf(w) === 0).length, n1 = p.filter(w => boxOf(w) === 1).length, n2 = p.filter(w => boxOf(w) === 2).length;
   const nNew = p.filter(w => !introOf(w)).length;
-  $('boxes').innerHTML = '<span>&#128218; ' + ruby('還沒學') + ' <b>' + nNew + '</b></span><span>&#127793; ' + ruby('不熟') + ' <b>' + n0 + '</b></span><span>&#127807; ' + ruby('快會了') + ' <b>' + n1 + '</b></span><span>&#127794; ' + ruby('已經會') + ' <b>' + n2 + '</b></span>';
+  const box = (ic, n, lb) => '<div class="box"><div class="ic">' + ic + '</div><div class="n">' + n + '</div><div class="lb">' + ruby(lb) + '</div></div>';
+  $('boxes').innerHTML = box('&#128218;', nNew, '還沒學') + box('&#127793;', n0, '不熟') + box('&#127807;', n1, '快會了') + box('&#127794;', n2, '已經會');
   $('count').textContent = p.length + ' 個單字';
   $('src').textContent = { cloud: '☁️ 雲端單字表', cache: '☁️ 雲端單字表（快取）', seed: '📘 內建單字表', empty: '📘 內建單字表（雲端表是空的）' }[source] || '';
   const t = best.today && best.today.date === today ? best.today.score : null;
   $('best').innerHTML = (t !== null ? 'TODAY: ' + t + ' 分　' : '') + (best.allTime ? '🏆 EVER: ' + best.allTime.score + ' 分' : '🏆 EVER: —');
-  $('plan').innerHTML = ruby('今天：') +
-    (pl.fresh.length ? ruby('學') + ' <b>' + pl.fresh.length + '</b> ' + ruby('個新字') + '　' : '') +
-    (pl.weak.length ? ruby('複習') + ' <b>' + pl.weak.length + '</b> ' + ruby('個不熟的字') + '　' : '') +
-    (pl.quizN >= 2 ? ruby('小考') + ' <b>' + pl.quizN + '</b> ' + ruby('題') : '');
+  const pline = (ic, lb, n, unitLb) => '<div class="pl"><span>' + ic + ' ' + ruby(lb) + '</span><span class="num">' + n + '</span><span>' + ruby(unitLb) + '</span></div>';
+  $('plan').innerHTML =
+    (pl.fresh.length ? pline('&#128218;', '學新字', pl.fresh.length, '個') : '') +
+    (pl.weak.length ? pline('&#127793;', '複習不熟', pl.weak.length, '個') : '') +
+    (pl.quizN >= 2 ? pline('&#128221;', '小考', pl.quizN, '題') : '');
   $('donebox').classList.toggle('hidden', t === null);
   if (t !== null) $('donebox').innerHTML = '&#10004; ' + ruby('今天的小考做過了：') + t + ' ' + ruby('分。再練一次也可以！');
   const canStart = pl.fresh.length > 0 || pl.weak.length > 0 || pl.quizN >= 2;
@@ -661,4 +669,4 @@ refreshRuby();
 renderHome();
 fetchWords();
 fetchProgress();
-</script><script>/*#AR#20260912103806*/(function(){var B='20260912103806';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260912181149*/(function(){var B='20260912181149';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
