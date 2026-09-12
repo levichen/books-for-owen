@@ -88,8 +88,6 @@ button{font-family:inherit;border:none;cursor:pointer}
 .steps > span .zc .zy i,.steps > span .zc .tn{color:inherit;opacity:.8}
 .plan{font-size:17px;line-height:1.9;margin:6px 0 4px}
 .plan b{color:#6C4DD6}
-.setting{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#9A90B8}
-.setting .chip{padding:4px 12px;font-size:13px}
 .donebox{background:#E3F6EA;color:#2E9B5F;border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:10px}
 .card .zh.dim{color:#B8AEDC}
 .cardbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -110,7 +108,6 @@ footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
     <div class="boxes" id="boxes"></div>
     <button class="bigbtn" id="start"></button>
     <div><button class="bigbtn alt" id="free-btn" data-zh="翻不熟的字 🔈"></button></div>
-    <div class="setting" id="newn"></div>
     <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
   </div>
 </div>
@@ -174,7 +171,6 @@ const WORDS_CACHE = 'owen-words-cache-v1';
 const STATE_KEY = 'owen-wq-state-v1';    // {wordLower: {box, seen, wrong, last, intro}}
 const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, plays}
 const UNIT_KEY = 'owen-wq-unit';
-const NEWN_KEY = 'owen-wq-newperday';
 const $ = id => document.getElementById(id);
 
 /* ---------- 本機儲存 ---------- */
@@ -205,7 +201,7 @@ function normWords(list) {
 let words = normWords(lsGetObj(WORDS_CACHE, null) || SEED.map(a => ({ word: a[0], zh: a[1], unit: a[2] })));
 let source = lsGetObj(WORDS_CACHE, null) ? 'cache' : 'seed';
 let unit = lsGetStr(UNIT_KEY, 'ALL');
-let newPerDay = Math.max(1, Math.min(20, parseInt(lsGetStr(NEWN_KEY, String(NEW_PER_DAY)), 10) || NEW_PER_DAY));
+const newPerDay = NEW_PER_DAY;
 
 function fetchWords() {
   return fetch(API + '?mode=words', { cache: 'no-store' })
@@ -358,7 +354,6 @@ function renderHome() {
     (pl.quizN >= 2 ? ruby('小考') + ' <b>' + pl.quizN + '</b> ' + ruby('題') : '');
   $('donebox').classList.toggle('hidden', t === null);
   if (t !== null) $('donebox').innerHTML = '&#10004; ' + ruby('今天的小考做過了：') + t + ' ' + ruby('分。再練一次也可以！');
-  $('newn').innerHTML = ruby('每天新字') + '：' + [3, 5, 8, 10].map(n => '<button class="chip' + (n === newPerDay ? ' on' : '') + '" data-n="' + n + '">' + n + '</button>').join('');
   const canStart = pl.fresh.length > 0 || pl.weak.length > 0 || pl.quizN >= 2;
   $('start').disabled = !canStart;
   setZh($('start'), canStart ? '開始今天的練習 ▶' : '單字不夠');
@@ -367,10 +362,6 @@ function renderHome() {
 $('units').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   unit = b.dataset.u; lsSetStr(UNIT_KEY, unit); renderHome();
-});
-$('newn').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if (!b) return;
-  newPerDay = +b.dataset.n; lsSetStr(NEWN_KEY, String(newPerDay)); renderHome();
 });
 
 /* ---------- 每日流程：學新字 → 複習不熟 → 小考 ---------- */
@@ -591,4 +582,4 @@ $('free-btn').onclick = startFree;
 refreshRuby();
 renderHome();
 fetchWords();
-</script><script>/*#AR#20260912102502*/(function(){var B='20260912102502';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260912103000*/(function(){var B='20260912103000';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
