@@ -11,7 +11,10 @@
 熟練度（簡化 Leitner）：答對 box+1（最高 2）、答錯回 box 0；字只能靠小考答對離開弱字堆，
 卡片上的「會了」不改熟練度（六歲自評不可靠）。
 題型：zh→en 四選一（約 4 成）、聽音拼字用字母磚（其餘），不打字、全靠點。
-成績 0–100 存今日最佳與歷代最佳（比照 Make It!）。狀態全在 localStorage（單機）。
+成績 0–100 存今日最佳與歷代最佳（比照 Make It!）。
+跨裝置同步（2026-09-12）：熟練度與最佳成績存試算表 kv_words 工作表（通用鍵值 API：GET ?mode=kv&sheet=kv_words、
+POST kv_set items:{key:jsonString}）。開頁先讀雲端與本機合併（seen 多者勝、再比 last、同則雲端勝），
+本機每次改動進佇列、0.8 秒後合併成一次 POST；離線或後端未更新時佇列保留，回線自動補傳。
 """
 
 import json
@@ -61,6 +64,7 @@ h1{font-size:clamp(22px,5vw,30px)}
 .hud{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .hud > span{font-size:13px;color:#7E749A;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(59,51,82,.08)}
 .hud > span.src{color:#9A90B8}
+.hud > span.sync.ok{color:#2E9B5F}.hud > span.sync.busy{color:#7E749A}.hud > span.sync.off,.hud > span.sync.stale,.hud > span.sync.bad{color:#B0563F}
 button{font-family:inherit;border:none;cursor:pointer}
 .panel{background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(59,51,82,.10);padding:22px 18px;margin-bottom:16px}
 .bigbtn{background:#6C4DD6;color:#fff;font-size:20px;border-radius:999px;padding:14px 34px;margin-top:10px;
@@ -157,6 +161,8 @@ const WORDS_CACHE = 'owen-words-cache-v1';
 const STATE_KEY = 'owen-wq-state-v1';    // {wordLower: {box, seen, wrong, last, intro}}
 const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, plays}
 const UNIT_KEY = 'owen-wq-unit';
+const PROG_SHEET = 'kv_words';            // 雲端進度工作表（通用鍵值 API）
+const PQUEUE_KEY = 'owen-wq-pqueue-v1';   // 待上傳 {key: jsonString}
 const $ = id => document.getElementById(id);
 
 /* ---------- 本機儲存 ---------- */
@@ -221,7 +227,7 @@ function migrateState(st) {
 function stOf(w) { return state[w.word.toLowerCase()] || null; }
 function boxOf(w) { const s = stOf(w); return s ? (s.box | 0) : 0; }
 function introOf(w) { const s = stOf(w); return s ? (s.intro || null) : null; }
-function saveState(k, next) { state = Object.assign({}, state, { [k]: next }); lsSet(STATE_KEY, state); }
+function saveState(k, next) { state = Object.assign({}, state, { [k]: next }); lsSet(STATE_KEY, state); enqueue(k, next); }
 function introduce(w) {
   const k = w.word.toLowerCase(), old = state[k] || { box: 0, seen: 0, wrong: 0 };
   if (old.intro) return;
@@ -232,6 +238,98 @@ function mark(w, correct) {
   saveState(k, { box: correct ? Math.min(2, old.box + 1) : 0, seen: old.seen + 1, wrong: old.wrong + (correct ? 0 : 1), last: todayStr(), intro: old.intro || todayStr() });
 }
 function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+
+/* ---------- 跨裝置同步：kv_words 工作表 ----------
+   本機先寫、進佇列，0.8 秒後合併成一次 kv_set；開頁 GET 全部後與本機合併。 */
+let pqueue = lsGetObj(PQUEUE_KEY, {});
+let syncStatus = 'idle', flushTimer = null, flushing = false;
+function setSync(st, msg) {
+  syncStatus = st;
+  const el = $('sync'); if (!el) return;
+  el.textContent = msg; el.className = 'sync ' + st;
+}
+function enqueue(key, val) {
+  pqueue = Object.assign({}, pqueue, { [key]: JSON.stringify(val) });
+  lsSet(PQUEUE_KEY, pqueue);
+  scheduleFlush();
+}
+function scheduleFlush() { clearTimeout(flushTimer); flushTimer = setTimeout(flush, 800); }
+async function flush() {
+  if (flushing) return;
+  const batch = pqueue;
+  if (!Object.keys(batch).length) return;
+  flushing = true;
+  setSync('busy', '⏳ 同步中');
+  try {
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'kv_set', sheet: PROG_SHEET, items: batch }) });
+    const j = await r.json();
+    if (j && j.ok) {
+      const rest = {};
+      for (const k of Object.keys(pqueue)) if (pqueue[k] !== batch[k]) rest[k] = pqueue[k];   // 傳送期間又改過的保留
+      pqueue = rest; lsSet(PQUEUE_KEY, pqueue);
+      setSync('ok', '☁️ 進度已同步');
+      if (Object.keys(pqueue).length) scheduleFlush();
+    } else if (j && j.error === 'unknown action') {
+      setSync('stale', '⚠️ 雲端待更新，進度先存這台');
+    } else {
+      setSync('bad', '⚠️ 同步失敗：' + ((j && j.error) || '未知錯誤'));
+    }
+  } catch (err) {
+    console.warn('progress flush failed', err);
+    setSync('off', '📵 離線，回線後自動補傳');
+  } finally { flushing = false; }
+}
+function newer(a, b) {   // 兩筆同一字的紀錄挑較新的：seen 多者勝 → last 晚者勝 → 平手取 b
+  if (!a) return b; if (!b) return a;
+  if ((a.seen | 0) !== (b.seen | 0)) return (a.seen | 0) > (b.seen | 0) ? a : b;
+  if (String(a.last || '') !== String(b.last || '')) return String(a.last || '') > String(b.last || '') ? a : b;
+  return b;
+}
+function mergeBest(local, remote) {
+  if (!remote) return local; if (!local || !local.allTime) return Object.assign({}, remote);
+  const allTime = (!remote.allTime || (local.allTime.score > remote.allTime.score)) ? local.allTime : remote.allTime;
+  let today = local.today;
+  if (remote.today && (!today || remote.today.date > today.date || (remote.today.date === today.date && remote.today.score > today.score))) today = remote.today;
+  return { allTime, today, plays: Math.max(local.plays || 0, remote.plays || 0) };
+}
+function mergeRemote(items) {
+  let merged = {}, changedLocal = false;
+  const keys = new Set(Object.keys(state).concat(Object.keys(items).filter(k => k !== 'best')));
+  for (const k of keys) {
+    let remote = null;
+    try { remote = items[k] ? JSON.parse(items[k]) : null; } catch (e) { remote = null; }
+    const local = state[k] || null;
+    const chosen = newer(local, remote);         // 平手時雲端勝
+    merged[k] = chosen;
+    if (JSON.stringify(chosen) !== JSON.stringify(local)) changedLocal = true;
+    if (JSON.stringify(chosen) !== (items[k] || null) && !(k in pqueue)) enqueue(k, chosen);   // 本機較新 → 補傳
+  }
+  state = merged;
+  if (changedLocal) lsSet(STATE_KEY, state);
+  let remoteBest = null;
+  try { remoteBest = items.best ? JSON.parse(items.best) : null; } catch (e) { remoteBest = null; }
+  const mb = mergeBest(best, remoteBest);
+  if (JSON.stringify(mb) !== JSON.stringify(best)) { best = mb; lsSet(BEST_KEY, best); }
+  if (JSON.stringify(mb) !== (items.best || null) && !('best' in pqueue) && best.allTime) enqueue('best', best);
+}
+function fetchProgress() {
+  return fetch(API + '?mode=kv&sheet=' + PROG_SHEET, { cache: 'no-store' })
+    .then(r => r.json())
+    .then(j => {
+      if (j && j.ok && j.entries) { setSync('stale', '⚠️ 雲端待更新，進度先存這台'); return; }   // 舊後端
+      if (!j || !j.ok || !j.items || typeof j.items !== 'object') throw new Error((j && j.error) || 'bad response');
+      mergeRemote(j.items);
+      renderHome();
+      if (Object.keys(pqueue).length) flush(); else setSync('ok', '☁️ 進度已同步');
+    })
+    .catch(err => {
+      console.warn('progress fetch failed', err);
+      setSync('off', '📵 讀不到雲端進度，先用這台的');
+      if (Object.keys(pqueue).length) flush();
+    });
+}
+window.addEventListener('online', () => { if (Object.keys(pqueue).length) flush(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Object.keys(pqueue).length) flush(); });
 
 /* ---------- 今日計畫 ---------- */
 function plan() {
@@ -531,7 +629,7 @@ function finish() {
     allTime: newAll ? { score, date: today } : best.allTime,
     plays: (best.plays || 0) + 1,
   };
-  lsSet(BEST_KEY, best);
+  lsSet(BEST_KEY, best); enqueue('best', best);
   flow = null;
   renderSteps(-1);
   show('result');
@@ -553,6 +651,7 @@ $('start').onclick = startFlow;
 refreshRuby();
 renderHome();
 fetchWords();
+fetchProgress();
 """
 
 
@@ -573,7 +672,7 @@ def word_quiz_html():
 <div class="steps hidden" id="steps"></div>
 
 <div id="home">
-  <div class="hud"><span id="count"></span><span id="best"></span><span class="src" id="src"></span></div>
+  <div class="hud"><span id="count"></span><span id="best"></span><span class="src" id="src"></span><span class="sync" id="sync">⏳ 讀取雲端進度</span></div>
   <div class="panel">
     <div class="units" id="units"></div>
     <div class="donebox hidden" id="donebox"></div>
