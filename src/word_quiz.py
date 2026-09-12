@@ -4,11 +4,14 @@
 單字來源：試算表 `words` 工作表（欄位 word / zh / unit），透過 Apps Script GET ?mode=words 取得，
 本機快取；抓不到或工作表空白時退回內建 SEED_WORDS（學校 Unit 1）。
 
-出題採簡化 Leitner 三盒：每個字的熟練度 box 0/1/2 存 localStorage。
-答錯→box 0、答對→box+1（最高 2）。每輪 10 題先抽 box 0（新字＋錯過的字），
-再 box 1，最後從 box 2 抽查——「錯的字明天會再出現」。
-題型：zh→en 四選一（4 題）、聽音拼字用字母磚（6 題），不打字、全靠點。
-成績 0–100 存今日最佳與歷代最佳（比照 Make It!）。
+每日流程三步（同一入口，2026-09-12 由「考試優先」改版）：
+  1. 學新字：每天照單元順序介紹 N 個新字（預設 5，可調），卡片＝英文＋中文＋朗讀，按「會了」才算已介紹
+  2. 複習不熟：弱字堆＝已介紹且 box 0 的舊字，翻卡＋「再看一次」排回堆尾；上限 10 張
+  3. 小考：只考已介紹過的字，優先 答錯過 → 今天新字 → 快會了 → 已經會；10 題（不足則全考）
+熟練度（簡化 Leitner）：答對 box+1（最高 2）、答錯回 box 0；字只能靠小考答對離開弱字堆，
+卡片上的「會了」不改熟練度（六歲自評不可靠）。
+題型：zh→en 四選一（約 4 成）、聽音拼字用字母磚（其餘），不打字、全靠點。
+成績 0–100 存今日最佳與歷代最佳（比照 Make It!）。狀態全在 localStorage（單機）。
 """
 
 import json
@@ -44,7 +47,9 @@ SEED_WORDS = [
 ]
 
 QUIZ_SIZE = 10
-CHOICE_COUNT = 4   # zh→en 題數（其餘為拼字題）
+CHOICE_RATIO = 0.4   # zh→en 題數比例（其餘為拼字題）
+NEW_PER_DAY = 5      # 每天預設新字數
+REVIEW_CAP = 10      # 每天複習弱字上限
 
 STYLE = """
 @font-face { font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }
@@ -54,8 +59,8 @@ body{font-family:'Huninn',system-ui,sans-serif;background:#F3F0FA;min-height:100
 h1{font-size:clamp(22px,5vw,30px)}
 .sub{color:#7E749A;font-size:13px;margin:4px 0 12px}
 .hud{display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.hud span{font-size:13px;color:#7E749A;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(59,51,82,.08)}
-.hud span.src{color:#9A90B8}
+.hud > span{font-size:13px;color:#7E749A;background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 2px 8px rgba(59,51,82,.08)}
+.hud > span.src{color:#9A90B8}
 button{font-family:inherit;border:none;cursor:pointer}
 .panel{background:#fff;border-radius:22px;box-shadow:0 8px 26px rgba(59,51,82,.10);padding:22px 18px;margin-bottom:16px}
 .bigbtn{background:#6C4DD6;color:#fff;font-size:20px;border-radius:999px;padding:14px 34px;margin-top:10px;
@@ -124,6 +129,20 @@ button{font-family:inherit;border:none;cursor:pointer}
 .zc .zy i{font-style:normal;font-size:.42em;line-height:1.15;color:#7E749A;text-align:center;font-family:'Huninn',system-ui,sans-serif}
 .zc .tn{font-size:.46em;color:#7E749A;align-self:center;line-height:1;font-family:'Huninn',system-ui,sans-serif}
 .bigbtn .zc .zy i,.bigbtn .zc .tn,.chip .zc .zy i,.chip .zc .tn{color:inherit;opacity:.85}
+/* --- 步驟指示 / 今日計畫 --- */
+.steps{display:flex;justify-content:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.steps > span{font-size:13px;color:#9A90B8;background:#EAE5F7;border-radius:999px;padding:5px 12px;white-space:nowrap}
+.steps > span.on{background:#6C4DD6;color:#fff}
+.steps > span.done{background:#E3F6EA;color:#2E9B5F}
+.steps > span .zc .zy i,.steps > span .zc .tn{color:inherit;opacity:.8}
+.plan{font-size:17px;line-height:1.9;margin:6px 0 4px}
+.plan b{color:#6C4DD6}
+.setting{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#9A90B8}
+.setting .chip{padding:4px 12px;font-size:13px}
+.donebox{background:#E3F6EA;color:#2E9B5F;border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:10px}
+.card .zh.dim{color:#B8AEDC}
+.cardbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cardbtns .bigbtn{margin-top:0}
 .hidden{display:none !important}
 footer{text-align:center;color:#9A90B8;font-size:13px;margin-top:30px}
 """
@@ -133,11 +152,14 @@ GAME_JS = r"""
 const API = '__API__';
 const SEED = __SEED__;
 const QUIZ_SIZE = __QUIZ_SIZE__;
-const CHOICE_COUNT = __CHOICE_COUNT__;
+const CHOICE_RATIO = __CHOICE_RATIO__;
+const NEW_PER_DAY = __NEW_PER_DAY__;
+const REVIEW_CAP = __REVIEW_CAP__;
 const WORDS_CACHE = 'owen-words-cache-v1';
-const STATE_KEY = 'owen-wq-state-v1';    // {word: {box, seen, wrong}}
-const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, days:n}
+const STATE_KEY = 'owen-wq-state-v1';    // {wordLower: {box, seen, wrong, last, intro}}
+const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, plays}
 const UNIT_KEY = 'owen-wq-unit';
+const NEWN_KEY = 'owen-wq-newperday';
 const $ = id => document.getElementById(id);
 
 /* ---------- 本機儲存 ---------- */
@@ -146,6 +168,8 @@ function lsGetObj(key, fallback) {
   catch (e) { console.error('read', key, e); return fallback; }
 }
 function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { console.error('write', key, e); } }
+function lsGetStr(key, fallback) { try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
+function lsSetStr(key, val) { try { localStorage.setItem(key, val); } catch (e) { console.error('write', key, e); } }
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -165,7 +189,8 @@ function normWords(list) {
 }
 let words = normWords(lsGetObj(WORDS_CACHE, null) || SEED.map(a => ({ word: a[0], zh: a[1], unit: a[2] })));
 let source = lsGetObj(WORDS_CACHE, null) ? 'cache' : 'seed';
-let unit = (function () { try { return localStorage.getItem(UNIT_KEY) || 'ALL'; } catch (e) { return 'ALL'; } })();
+let unit = lsGetStr(UNIT_KEY, 'ALL');
+let newPerDay = Math.max(1, Math.min(20, parseInt(lsGetStr(NEWN_KEY, String(NEW_PER_DAY)), 10) || NEW_PER_DAY));
 
 function fetchWords() {
   return fetch(API + '?mode=words', { cache: 'no-store' })
@@ -177,26 +202,63 @@ function fetchWords() {
       else source = 'empty';
       renderHome();
     })
-    .catch(err => { console.warn('words fetch failed', err); source = source === 'cache' ? 'cache' : 'seed'; renderHome(); });
+    .catch(err => { console.warn('words fetch failed', err); renderHome(); });
 }
 function unitsOf() { return Array.from(new Set(words.map(w => w.unit).filter(Boolean))); }
 function pool() { return unit === 'ALL' ? words : words.filter(w => w.unit === unit); }
 
-/* ---------- 熟練度（Leitner 三盒）---------- */
-let state = lsGetObj(STATE_KEY, {});
-function boxOf(w) { const s = state[w.word.toLowerCase()]; return s ? (s.box | 0) : 0; }
-function mark(w, correct) {
+/* ---------- 熟練度（簡化 Leitner）＋「已介紹」 ----------
+   box 0 不熟／1 快會了／2 已經會。intro＝第一次在卡片按「會了」的日期；小考只考 intro 過的字。
+   舊版資料（沒有 intro 但 seen>0）視為已介紹，日期取 last。 */
+let state = migrateState(lsGetObj(STATE_KEY, {}));
+function migrateState(st) {
+  let changed = false; const out = {};
+  for (const k of Object.keys(st)) {
+    const s = st[k];
+    if (s && s.seen > 0 && !s.intro) { out[k] = Object.assign({}, s, { intro: s.last || todayStr() }); changed = true; }
+    else out[k] = s;
+  }
+  if (changed) lsSet(STATE_KEY, out);
+  return out;
+}
+function stOf(w) { return state[w.word.toLowerCase()] || null; }
+function boxOf(w) { const s = stOf(w); return s ? (s.box | 0) : 0; }
+function introOf(w) { const s = stOf(w); return s ? (s.intro || null) : null; }
+function saveState(k, next) { state = Object.assign({}, state, { [k]: next }); lsSet(STATE_KEY, state); }
+function introduce(w) {
   const k = w.word.toLowerCase(), old = state[k] || { box: 0, seen: 0, wrong: 0 };
-  const next = { box: correct ? Math.min(2, old.box + 1) : 0, seen: old.seen + 1, wrong: old.wrong + (correct ? 0 : 1), last: todayStr() };
-  state = Object.assign({}, state, { [k]: next });
-  lsSet(STATE_KEY, state);
+  if (old.intro) return;
+  saveState(k, Object.assign({}, old, { intro: todayStr(), last: todayStr() }));
+}
+function mark(w, correct) {
+  const k = w.word.toLowerCase(), old = state[k] || { box: 0, seen: 0, wrong: 0, intro: todayStr() };
+  saveState(k, { box: correct ? Math.min(2, old.box + 1) : 0, seen: old.seen + 1, wrong: old.wrong + (correct ? 0 : 1), last: todayStr(), intro: old.intro || todayStr() });
 }
 function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+
+/* ---------- 今日計畫 ---------- */
+function plan() {
+  const p = pool(), today = todayStr();
+  const introduced = p.filter(w => introOf(w));
+  const introducedToday = introduced.filter(w => introOf(w) === today);
+  const allowance = Math.max(0, newPerDay - introducedToday.length);
+  const fresh = p.filter(w => !introOf(w)).slice(0, allowance);            // 照單元／表格順序介入
+  const weak = introduced.filter(w => introOf(w) !== today && boxOf(w) === 0)
+    .sort((a, b) => String((stOf(a) || {}).last || '') < String((stOf(b) || {}).last || '') ? -1 : 1)
+    .slice(0, REVIEW_CAP);
+  const quizPool = introduced.length + fresh.length;                        // 學完新字後可考的字數
+  return { fresh, weak, quizN: Math.min(QUIZ_SIZE, quizPool), introduced };
+}
 function pickQuiz() {
-  const p = pool();
-  const b0 = shuffle(p.filter(w => boxOf(w) === 0)), b1 = shuffle(p.filter(w => boxOf(w) === 1)), b2 = shuffle(p.filter(w => boxOf(w) === 2));
-  const chosen = b0.concat(b1, b2).slice(0, QUIZ_SIZE);
-  return shuffle(chosen);
+  const p = pool().filter(w => introOf(w)), today = todayStr();
+  const wrongOld = p.filter(w => boxOf(w) === 0 && introOf(w) !== today);
+  const fresh = p.filter(w => introOf(w) === today);
+  const b1 = p.filter(w => boxOf(w) === 1), b2 = p.filter(w => boxOf(w) === 2);
+  const seen = new Set(), out = [];
+  for (const list of [shuffle(wrongOld), shuffle(fresh), shuffle(b1), shuffle(b2)]) {
+    for (const w of list) { if (!seen.has(w.word)) { seen.add(w.word); out.push(w); } }
+  }
+  return shuffle(out.slice(0, QUIZ_SIZE));
 }
 
 /* ---------- 語音 / 音效 ---------- */
@@ -253,39 +315,126 @@ fetch('../../assets/zhuyin.json')
   .catch(err => console.error('zhuyin load failed', err));
 
 /* ---------- 畫面切換 ---------- */
-function show(id) { for (const p of ['home', 'quiz', 'result', 'cards']) $(p).classList.toggle('hidden', p !== id); }
+function show(id) { for (const p of ['home', 'cards', 'quiz', 'result']) $(p).classList.toggle('hidden', p !== id); }
+const STEP_NAMES = ['學新字', '複習不熟', '小考'];
+function renderSteps(cur) {
+  $('steps').innerHTML = STEP_NAMES.map((n, i) =>
+    '<span class="' + (i < cur ? 'done' : i === cur ? 'on' : '') + '">' + (i + 1) + ' ' + ruby(n) + '</span>').join('');
+  $('steps').classList.toggle('hidden', cur < 0);
+}
 
 /* ---------- 首頁 ---------- */
 let best = lsGetObj(BEST_KEY, {});
 function renderHome() {
-  const p = pool();
-  const units = unitsOf();
+  const p = pool(), units = unitsOf(), pl = plan(), today = todayStr();
   $('units').innerHTML = units.length > 1
-    ? ['ALL'].concat(units).map(u => '<button class="chip' + (u === unit ? ' on' : '') + '" data-u="' + u + '">' + (u === 'ALL' ? '全部' : u) + '</button>').join('')
+    ? ['ALL'].concat(units).map(u => '<button class="chip' + (u === unit ? ' on' : '') + '" data-u="' + u + '">' + (u === 'ALL' ? ruby('全部') : u) + '</button>').join('')
     : '';
-  const n0 = p.filter(w => boxOf(w) === 0).length, n1 = p.filter(w => boxOf(w) === 1).length, n2 = p.filter(w => boxOf(w) === 2).length;
-  $('boxes').innerHTML = '<span>&#127793; 還在學 <b>' + n0 + '</b></span><span>&#127807; 快會了 <b>' + n1 + '</b></span><span>&#127794; 已經會 <b>' + n2 + '</b></span>';
+  const n0 = p.filter(w => introOf(w) && boxOf(w) === 0).length, n1 = p.filter(w => boxOf(w) === 1).length, n2 = p.filter(w => boxOf(w) === 2).length;
+  const nNew = p.filter(w => !introOf(w)).length;
+  $('boxes').innerHTML = '<span>&#128218; ' + ruby('還沒學') + ' <b>' + nNew + '</b></span><span>&#127793; ' + ruby('不熟') + ' <b>' + n0 + '</b></span><span>&#127807; ' + ruby('快會了') + ' <b>' + n1 + '</b></span><span>&#127794; ' + ruby('已經會') + ' <b>' + n2 + '</b></span>';
   $('count').textContent = p.length + ' 個單字';
-  const srcText = { cloud: '☁️ 雲端單字表', cache: '☁️ 雲端單字表（快取）', seed: '📘 內建 Unit 1', empty: '📘 內建 Unit 1（雲端表是空的）' }[source] || '';
-  $('src').textContent = srcText;
-  const t = best.today && best.today.date === todayStr() ? best.today.score : null;
+  $('src').textContent = { cloud: '☁️ 雲端單字表', cache: '☁️ 雲端單字表（快取）', seed: '📘 內建單字表', empty: '📘 內建單字表（雲端表是空的）' }[source] || '';
+  const t = best.today && best.today.date === today ? best.today.score : null;
   $('best').innerHTML = (t !== null ? 'TODAY: ' + t + ' 分　' : '') + (best.allTime ? '🏆 EVER: ' + best.allTime.score + ' 分' : '🏆 EVER: —');
-  $('start').disabled = p.length < 2;
-  setZh($('start'), p.length < 2 ? '單字不夠' : '開始小考 ▶');
+  $('plan').innerHTML = ruby('今天：') +
+    (pl.fresh.length ? ruby('學') + ' <b>' + pl.fresh.length + '</b> ' + ruby('個新字') + '　' : '') +
+    (pl.weak.length ? ruby('複習') + ' <b>' + pl.weak.length + '</b> ' + ruby('個不熟的字') + '　' : '') +
+    (pl.quizN >= 2 ? ruby('小考') + ' <b>' + pl.quizN + '</b> ' + ruby('題') : '');
+  $('donebox').classList.toggle('hidden', t === null);
+  if (t !== null) $('donebox').innerHTML = '&#10004; ' + ruby('今天的小考做過了：') + t + ' ' + ruby('分。再練一次也可以！');
+  $('newn').innerHTML = ruby('每天新字') + '：' + [3, 5, 8, 10].map(n => '<button class="chip' + (n === newPerDay ? ' on' : '') + '" data-n="' + n + '">' + n + '</button>').join('');
+  const canStart = pl.fresh.length > 0 || pl.weak.length > 0 || pl.quizN >= 2;
+  $('start').disabled = !canStart;
+  setZh($('start'), canStart ? '開始今天的練習 ▶' : '單字不夠');
+  $('free-btn').disabled = !pl.introduced.length;
 }
 $('units').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  unit = b.dataset.u; try { localStorage.setItem(UNIT_KEY, unit); } catch (err) {}
-  renderHome();
+  unit = b.dataset.u; lsSetStr(UNIT_KEY, unit); renderHome();
 });
+$('newn').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  newPerDay = +b.dataset.n; lsSetStr(NEWN_KEY, String(newPerDay)); renderHome();
+});
+
+/* ---------- 每日流程：學新字 → 複習不熟 → 小考 ---------- */
+let flow = null;  // {step}
+function startFlow() {
+  flow = { step: 0 };
+  runStep();
+}
+function runStep() {
+  if (!flow) return;
+  const pl = plan();
+  if (flow.step === 0) {
+    if (pl.fresh.length) return startDeck({ mode: 'learn', list: pl.fresh, step: 0, title: '學新字' });
+    flow = { step: 1 };
+  }
+  if (flow.step === 1) {
+    if (pl.weak.length) return startDeck({ mode: 'review', list: pl.weak, step: 1, title: '複習不熟的字' });
+    flow = { step: 2 };
+  }
+  if (flow.step === 2) {
+    if (plan().quizN >= 2) return startQuiz(2);
+    flow = null; renderHome(); show('home');
+  }
+}
+function advanceFlow() { if (!flow) return; flow = { step: flow.step + 1 }; runStep(); }
+
+/* ---------- 卡片堆（學新字／複習／自由翻）---------- */
+let deck = null;  // {mode, list, i, title, step}
+function startDeck(opts) {
+  deck = Object.assign({ i: 0 }, opts);
+  renderSteps(typeof opts.step === 'number' ? opts.step : -1);
+  show('cards');
+  renderCard();
+}
+function renderCard() {
+  if (!deck || deck.i >= deck.list.length) return;
+  const w = deck.list[deck.i];
+  setZh($('cardTitle'), deck.title);
+  $('cardNum').textContent = (deck.i + 1) + ' / ' + deck.list.length;
+  $('cardEn').textContent = w.word;
+  setZh($('cardZh'), w.zh);
+  setZh($('cardKnow'), deck.mode === 'learn' ? '會了 ✓' : '記得 ✓');
+  $('cardHome').classList.toggle('hidden', deck.mode !== 'free');
+  speak(w.word);
+}
+$('cardSay').onclick = () => { if (deck) speak(deck.list[deck.i].word); };
+$('cardAgain').onclick = () => {   // 再看一次：排到堆尾，稍後再出現
+  if (!deck) return;
+  sfx.tap();
+  const w = deck.list[deck.i];
+  const rest = deck.list.slice(0, deck.i).concat(deck.list.slice(deck.i + 1), [w]);
+  deck = Object.assign({}, deck, { list: rest });
+  renderCard();
+};
+$('cardKnow').onclick = () => {
+  if (!deck) return;
+  sfx.ok();
+  const w = deck.list[deck.i];
+  if (deck.mode === 'learn') introduce(w);     // 只有「學新字」的會了＝已介紹；不改熟練度
+  if (deck.i + 1 >= deck.list.length) return deckDone();
+  deck = Object.assign({}, deck, { i: deck.i + 1 });
+  renderCard();
+};
+function deckDone() {
+  const mode = deck.mode; deck = null;
+  if (mode === 'free') { renderHome(); show('home'); return; }
+  advanceFlow();
+}
+$('cardHome').onclick = () => { deck = null; flow = null; renderHome(); show('home'); };
 
 /* ---------- 小考 ---------- */
 let quiz = null;  // {items:[{w,type}], i, results:[bool], wrongs:[w]}
-function startQuiz() {
+function startQuiz(step) {
   const chosen = pickQuiz();
-  if (chosen.length < 2) return;
-  const types = shuffle(chosen.map((_, i) => i < CHOICE_COUNT ? 'choice' : 'spell'));
+  if (chosen.length < 2) { flow = null; renderHome(); show('home'); return; }
+  const nChoice = Math.round(chosen.length * CHOICE_RATIO);
+  const types = shuffle(chosen.map((_, i) => i < nChoice ? 'choice' : 'spell'));
   quiz = { items: chosen.map((w, i) => ({ w, type: types[i] })), i: 0, results: [], wrongs: [] };
+  renderSteps(typeof step === 'number' ? step : -1);
   show('quiz');
   renderQuestion();
 }
@@ -309,7 +458,7 @@ function renderChoice(w) {
   setZh($('prompt'), w.zh);
   const others = shuffle(words.filter(x => x.word !== w.word)).slice(0, 3);
   const opts = shuffle([w].concat(others));
-  $('choices').innerHTML = opts.map(o => '<button class="choice" data-w="' + o.word.replace(/"/g, '&quot;') + '">' + o.word + '</button>').join('');
+  $('choices').innerHTML = opts.map(o => '<button class="choice" data-w="' + esc(o.word).replace(/"/g, '&quot;') + '">' + esc(o.word) + '</button>').join('');
 }
 $('choices').addEventListener('click', e => {
   const b = e.target.closest('.choice'); if (!b || b.disabled) return;
@@ -395,43 +544,35 @@ function finish() {
     plays: (best.plays || 0) + 1,
   };
   lsSet(BEST_KEY, best);
+  flow = null;
+  renderSteps(-1);
   show('result');
   $('score').textContent = score;
   $('stars').textContent = score === 100 ? '⭐⭐⭐' : score >= 80 ? '⭐⭐' : score >= 60 ? '⭐' : '💪';
   setZh($('rstat'), right + ' / ' + n + ' 題答對');
   setZh($('rrec'), score === 100 ? '🏆 滿分！全部都會了！' : newAll && best.plays > 1 ? '🏆 歷代最佳紀錄！' : newToday && prevToday !== null ? '⭐ 今天的新紀錄！' : '');
   $('wrongs').innerHTML = quiz.wrongs.length
-    ? '<div class="stat">' + ruby('這些字明天會再考你一次：') + '</div>' + quiz.wrongs.map(w =>
-        '<div class="w"><button data-say="' + w.word.replace(/"/g, '&quot;') + '">&#128264;</button><span>' + esc(w.word) + '</span><small data-zh="' + esc(w.zh).replace(/"/g, '&quot;') + '">' + ruby(w.zh) + '</small></div>').join('')
-    : '';
+    ? '<div class="stat">' + ruby('這些字明天會再複習、再考一次：') + '</div>' + quiz.wrongs.map(w =>
+        '<div class="w"><button data-say="' + esc(w.word).replace(/"/g, '&quot;') + '">&#128264;</button><span>' + esc(w.word) + '</span><small data-zh="' + esc(w.zh).replace(/"/g, '&quot;') + '">' + ruby(w.zh) + '</small></div>').join('')
+    : '<div class="stat">' + ruby('今天的練習完成了，明天再來！👋') + '</div>';
   if (score === 100) sfx.win(); else if (score >= 60) sfx.ok();
 }
 $('wrongs').addEventListener('click', e => { const b = e.target.closest('button[data-say]'); if (b) speak(b.dataset.say); });
-$('again').onclick = startQuiz;
+$('again').onclick = () => startQuiz(-1);
 $('home2').onclick = () => { renderHome(); show('home'); };
 
-/* ---------- 單字卡（預習）---------- */
-let card = { list: [], i: 0, flipped: false };
-function startCards() {
-  const p = pool();
-  card = { list: p.slice().sort((a, b) => boxOf(a) - boxOf(b)), i: 0, flipped: false };
-  show('cards'); renderCard();
+/* ---------- 自由翻卡：不熟的字優先，沒有就翻全部已介紹的 ---------- */
+function startFree() {
+  const p = pool().filter(w => introOf(w));
+  const weak = p.filter(w => boxOf(w) === 0);
+  const list = (weak.length ? weak : p).slice().sort((a, b) => boxOf(a) - boxOf(b));
+  if (!list.length) return;
+  flow = null;
+  startDeck({ mode: 'free', list, step: -1, title: weak.length ? '翻不熟的字' : '翻單字卡' });
 }
-function renderCard() {
-  const w = card.list[card.i];
-  $('cardEn').textContent = w.word;
-  setZh($('cardZh'), card.flipped ? w.zh : '（點一下看意思）');
-  $('cardNum').textContent = (card.i + 1) + ' / ' + card.list.length;
-  speak(w.word);
-}
-$('card').onclick = () => { card = Object.assign({}, card, { flipped: !card.flipped }); renderCard(); };
-$('cardSay').onclick = e => { e.stopPropagation(); speak(card.list[card.i].word); };
-$('cardPrev').onclick = () => { card = Object.assign({}, card, { i: (card.i - 1 + card.list.length) % card.list.length, flipped: false }); renderCard(); };
-$('cardNext').onclick = () => { card = Object.assign({}, card, { i: (card.i + 1) % card.list.length, flipped: false }); renderCard(); };
-$('cardHome').onclick = () => { renderHome(); show('home'); };
 
-$('start').onclick = startQuiz;
-$('cards-btn').onclick = startCards;
+$('start').onclick = startFlow;
+$('free-btn').onclick = startFree;
 refreshRuby();
 renderHome();
 fetchWords();
@@ -442,24 +583,44 @@ def word_quiz_html():
     js = (GAME_JS.replace("__API__", API_URL)
           .replace("__SEED__", json.dumps(SEED_WORDS, ensure_ascii=False))
           .replace("__QUIZ_SIZE__", str(QUIZ_SIZE))
-          .replace("__CHOICE_COUNT__", str(CHOICE_COUNT)))
+          .replace("__CHOICE_RATIO__", str(CHOICE_RATIO))
+          .replace("__NEW_PER_DAY__", str(NEW_PER_DAY))
+          .replace("__REVIEW_CAP__", str(REVIEW_CAP)))
     return f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>單字小考</title>
 <meta name="robots" content="noindex">
 <style>{STYLE}</style></head><body><div class="wrap">
 <h1>&#128221; 單字小考</h1>
-<div class="sub">每天 10 題：中文選英文＋聽音拼字，錯的字明天會再出現</div>
+<div class="sub">每天三步：學新字 → 複習不熟 → 小考 10 題，錯的字會一直回來</div>
+<div class="steps hidden" id="steps"></div>
 
 <div id="home">
   <div class="hud"><span id="count"></span><span id="best"></span><span class="src" id="src"></span></div>
   <div class="panel">
     <div class="units" id="units"></div>
+    <div class="donebox hidden" id="donebox"></div>
+    <div class="plan" id="plan"></div>
     <div class="boxes" id="boxes"></div>
-    <button class="bigbtn" id="start">開始小考 &#9654;</button>
-    <div><button class="bigbtn alt" id="cards-btn" data-zh="先翻單字卡 🔈"></button></div>
+    <button class="bigbtn" id="start"></button>
+    <div><button class="bigbtn alt" id="free-btn" data-zh="翻不熟的字 🔈"></button></div>
+    <div class="setting" id="newn"></div>
     <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
   </div>
+</div>
+
+<div id="cards" class="hidden">
+  <div class="hud"><span id="cardTitle"></span><span id="cardNum"></span></div>
+  <div class="card">
+    <div class="en" id="cardEn"></div>
+    <div class="zh" id="cardZh"></div>
+    <button class="sp" id="cardSay" data-zh="🔈 再唸一次"></button>
+  </div>
+  <div class="cardbtns">
+    <button class="bigbtn alt" id="cardAgain" data-zh="再看一次 ↻"></button>
+    <button class="bigbtn" id="cardKnow"></button>
+  </div>
+  <div><button class="tool hidden" id="cardHome" style="margin-top:14px" data-zh="回首頁"></button></div>
 </div>
 
 <div id="quiz" class="hidden">
@@ -478,7 +639,7 @@ def word_quiz_html():
       <div class="tools"><button class="tool" id="undo" data-zh="⌫ 退一格"></button></div>
     </div>
     <div class="feedback" id="feedback"></div>
-    <button class="bigbtn hidden" id="next">下一題 &#9654;</button>
+    <button class="bigbtn hidden" id="next"></button>
   </div>
 </div>
 
@@ -492,20 +653,6 @@ def word_quiz_html():
     <button class="bigbtn" id="again" data-zh="再考一次 ▶"></button>
     <div><button class="bigbtn alt" id="home2" data-zh="回首頁"></button></div>
   </div>
-</div>
-
-<div id="cards" class="hidden">
-  <div class="hud"><span id="cardNum"></span></div>
-  <div class="card" id="card">
-    <div class="en" id="cardEn"></div>
-    <div class="zh" id="cardZh"></div>
-    <button class="sp" id="cardSay" data-zh="🔈 再唸一次"></button>
-  </div>
-  <div class="cardnav">
-    <button class="bigbtn alt" id="cardPrev" data-zh="◀ 上一張"></button>
-    <button class="bigbtn alt" id="cardNext" data-zh="下一張 ▶"></button>
-  </div>
-  <div><button class="tool" id="cardHome" style="margin-top:14px" data-zh="回首頁"></button></div>
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
