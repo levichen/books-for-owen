@@ -343,7 +343,6 @@ function renderHome() {
   const canStart = pl.fresh.length > 0 || pl.weak.length > 0 || pl.quizN >= 2;
   $('start').disabled = !canStart;
   setZh($('start'), canStart ? '開始今天的練習 ▶' : '單字不夠');
-  $('free-btn').disabled = !pl.introduced.length;
 }
 $('units').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
@@ -374,8 +373,8 @@ function runStep() {
 }
 function advanceFlow() { if (!flow) return; flow = { step: flow.step + 1 }; runStep(); }
 
-/* ---------- 卡片堆（學新字／複習／自由翻）---------- */
-let deck = null;  // {mode, list, i, title, step}
+/* ---------- 卡片堆（學新字／複習）---------- */
+let deck = null;  // {mode:'learn'|'review', list, i, title, step}
 function startDeck(opts) {
   deck = Object.assign({ i: 0 }, opts);
   renderSteps(typeof opts.step === 'number' ? opts.step : -1);
@@ -390,7 +389,6 @@ function renderCard() {
   $('cardEn').textContent = w.word;
   setZh($('cardZh'), w.zh);
   setZh($('cardKnow'), deck.mode === 'learn' ? '會了 ✓' : '記得 ✓');
-  $('cardHome').classList.toggle('hidden', deck.mode !== 'free');
   speak(w.word);
 }
 $('cardSay').onclick = () => { if (deck) speak(deck.list[deck.i].word); };
@@ -412,11 +410,9 @@ $('cardKnow').onclick = () => {
   renderCard();
 };
 function deckDone() {
-  const mode = deck.mode; deck = null;
-  if (mode === 'free') { renderHome(); show('home'); return; }
+  deck = null;
   advanceFlow();
 }
-$('cardHome').onclick = () => { deck = null; flow = null; renderHome(); show('home'); };
 
 /* ---------- 小考 ---------- */
 let quiz = null;  // {items:[{w,type}], i, results:[bool], wrongs:[w]}
@@ -553,18 +549,7 @@ $('wrongs').addEventListener('click', e => { const b = e.target.closest('button[
 $('again').onclick = () => startQuiz(-1);
 $('home2').onclick = () => { renderHome(); show('home'); };
 
-/* ---------- 自由翻卡：不熟的字優先，沒有就翻全部已介紹的 ---------- */
-function startFree() {
-  const p = pool().filter(w => introOf(w));
-  const weak = p.filter(w => boxOf(w) === 0);
-  const list = (weak.length ? weak : p).slice().sort((a, b) => boxOf(a) - boxOf(b));
-  if (!list.length) return;
-  flow = null;
-  startDeck({ mode: 'free', list, step: -1, title: weak.length ? '翻不熟的字' : '翻單字卡' });
-}
-
 $('start').onclick = startFlow;
-$('free-btn').onclick = startFree;
 refreshRuby();
 renderHome();
 fetchWords();
@@ -595,7 +580,6 @@ def word_quiz_html():
     <div class="plan" id="plan"></div>
     <div class="boxes" id="boxes"></div>
     <button class="bigbtn" id="start"></button>
-    <div><button class="bigbtn alt" id="free-btn" data-zh="翻不熟的字 🔈"></button></div>
     <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
   </div>
 </div>
@@ -611,7 +595,6 @@ def word_quiz_html():
     <button class="bigbtn alt" id="cardAgain" data-zh="再看一次 ↻"></button>
     <button class="bigbtn" id="cardKnow"></button>
   </div>
-  <div><button class="tool hidden" id="cardHome" style="margin-top:14px" data-zh="回首頁"></button></div>
 </div>
 
 <div id="quiz" class="hidden">
