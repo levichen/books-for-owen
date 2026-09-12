@@ -5,7 +5,7 @@
 本機快取；抓不到或工作表空白時退回內建 SEED_WORDS（學校 Unit 1）。
 
 每日流程三步（同一入口，2026-09-12 由「考試優先」改版）：
-  1. 學新字：每天照單元順序介紹 N 個新字（預設 5，可調），卡片＝英文＋中文＋朗讀，按「會了」才算已介紹
+  1. 學新字：每天照單元順序介紹 5 個新字（固定，不讓使用者選），卡片＝英文＋中文＋朗讀，按「會了」才算已介紹
   2. 複習不熟：弱字堆＝已介紹且 box 0 的舊字，翻卡＋「再看一次」排回堆尾；上限 10 張
   3. 小考：只考已介紹過的字，優先 答錯過 → 今天新字 → 快會了 → 已經會；10 題（不足則全考）
 熟練度（簡化 Leitner）：答對 box+1（最高 2）、答錯回 box 0；字只能靠小考答對離開弱字堆，
@@ -48,7 +48,7 @@ SEED_WORDS = [
 
 QUIZ_SIZE = 10
 CHOICE_RATIO = 0.4   # zh→en 題數比例（其餘為拼字題）
-NEW_PER_DAY = 5      # 每天預設新字數
+NEW_PER_DAY = 5      # 每天新字數（固定）
 REVIEW_CAP = 10      # 每天複習弱字上限
 
 STYLE = """
@@ -137,8 +137,6 @@ button{font-family:inherit;border:none;cursor:pointer}
 .steps > span .zc .zy i,.steps > span .zc .tn{color:inherit;opacity:.8}
 .plan{font-size:17px;line-height:1.9;margin:6px 0 4px}
 .plan b{color:#6C4DD6}
-.setting{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#9A90B8}
-.setting .chip{padding:4px 12px;font-size:13px}
 .donebox{background:#E3F6EA;color:#2E9B5F;border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:10px}
 .card .zh.dim{color:#B8AEDC}
 .cardbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -159,7 +157,6 @@ const WORDS_CACHE = 'owen-words-cache-v1';
 const STATE_KEY = 'owen-wq-state-v1';    // {wordLower: {box, seen, wrong, last, intro}}
 const BEST_KEY = 'owen-wq-best-v1';      // {allTime:{score,date}, today:{date,score}, plays}
 const UNIT_KEY = 'owen-wq-unit';
-const NEWN_KEY = 'owen-wq-newperday';
 const $ = id => document.getElementById(id);
 
 /* ---------- 本機儲存 ---------- */
@@ -190,7 +187,7 @@ function normWords(list) {
 let words = normWords(lsGetObj(WORDS_CACHE, null) || SEED.map(a => ({ word: a[0], zh: a[1], unit: a[2] })));
 let source = lsGetObj(WORDS_CACHE, null) ? 'cache' : 'seed';
 let unit = lsGetStr(UNIT_KEY, 'ALL');
-let newPerDay = Math.max(1, Math.min(20, parseInt(lsGetStr(NEWN_KEY, String(NEW_PER_DAY)), 10) || NEW_PER_DAY));
+const newPerDay = NEW_PER_DAY;
 
 function fetchWords() {
   return fetch(API + '?mode=words', { cache: 'no-store' })
@@ -343,7 +340,6 @@ function renderHome() {
     (pl.quizN >= 2 ? ruby('小考') + ' <b>' + pl.quizN + '</b> ' + ruby('題') : '');
   $('donebox').classList.toggle('hidden', t === null);
   if (t !== null) $('donebox').innerHTML = '&#10004; ' + ruby('今天的小考做過了：') + t + ' ' + ruby('分。再練一次也可以！');
-  $('newn').innerHTML = ruby('每天新字') + '：' + [3, 5, 8, 10].map(n => '<button class="chip' + (n === newPerDay ? ' on' : '') + '" data-n="' + n + '">' + n + '</button>').join('');
   const canStart = pl.fresh.length > 0 || pl.weak.length > 0 || pl.quizN >= 2;
   $('start').disabled = !canStart;
   setZh($('start'), canStart ? '開始今天的練習 ▶' : '單字不夠');
@@ -352,10 +348,6 @@ function renderHome() {
 $('units').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   unit = b.dataset.u; lsSetStr(UNIT_KEY, unit); renderHome();
-});
-$('newn').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if (!b) return;
-  newPerDay = +b.dataset.n; lsSetStr(NEWN_KEY, String(newPerDay)); renderHome();
 });
 
 /* ---------- 每日流程：學新字 → 複習不熟 → 小考 ---------- */
@@ -604,7 +596,6 @@ def word_quiz_html():
     <div class="boxes" id="boxes"></div>
     <button class="bigbtn" id="start"></button>
     <div><button class="bigbtn alt" id="free-btn" data-zh="翻不熟的字 🔈"></button></div>
-    <div class="setting" id="newn"></div>
     <div class="stat">單字表在爸媽的試算表 words 分頁，加了新字重新開頁面就會更新</div>
   </div>
 </div>
