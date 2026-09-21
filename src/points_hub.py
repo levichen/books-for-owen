@@ -65,6 +65,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .pen-btn{background:#B0563F;color:#fff;border-radius:999px;padding:10px 20px;font-size:14px}
 .pen-undo{background:#EFE0D8;color:#8A5A48;border-radius:999px;padding:10px 20px;font-size:14px}
 .pen-msg{font-size:13px;color:#B0563F;margin-top:8px;min-height:18px}
+.pen-list{list-style:none;margin-top:14px;border-top:1px dashed #E0B8A8;padding-top:10px}
+.pen-list li{display:flex;gap:10px;align-items:baseline;padding:6px 0;font-size:14px;color:#6E4A3C;border-bottom:1px dashed #F0DDD4}
+.pen-list li:last-child{border-bottom:none}
+.pen-list .d{color:#A8887A;font-size:13px;flex:0 0 auto}
+.pen-list .v{color:#B0563F;flex:0 0 auto}
+.pen-list .r{flex:1;word-break:break-all}
+.pen-list .r.none{color:#C4A99C}
 footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
 """
 
@@ -72,7 +79,21 @@ PENALTY_JS = """
 (function(){
 'use strict';
 var API='__API__';
-var items=[];
+var REASON_SHEET='kv_penalty';   // 扣分原因：key＝penalty 列 id，value＝{reason,date}
+var items=[], reasons={};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fetchReasons(){
+  return fetch(API+'?mode=kv&sheet='+REASON_SHEET,{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){
+    if(j&&j.ok&&j.items&&typeof j.items==='object'){ reasons=j.items; renderPen(); }
+  }).catch(function(e){ console.warn('reasons fetch failed', e); });
+}
+function reasonOf(id){
+  try{ var v=JSON.parse(reasons[id]||'null'); return (v&&v.reason)?String(v.reason):''; }catch(e){ return ''; }
+}
+function saveReason(id, reason, date){
+  var body={action:'kv_set',sheet:REASON_SHEET,items:{}}; body.items[id]=JSON.stringify({reason:reason,date:date});
+  return fetch(API,{method:'POST',body:JSON.stringify(body)}).then(function(r){return r.json()});
+}
 function gate(){
   var x=11+Math.floor(Math.random()*19), y=3+Math.floor(Math.random()*7);
   var a=prompt('家長確認 🔒  '+x+' × '+y+' = ?');
@@ -84,6 +105,12 @@ function renderPen(){
     ? '目前累計扣分：已扣 '+items.length+' 次、三本各 −'+sum
     : '目前沒有扣分紀錄';
   document.getElementById('pen-undo').disabled = !items.length;
+  var rows=items.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0}).map(function(e){
+    var r=reasonOf(e.id);
+    return '<li><span class="d">'+esc(e.date)+'</span><span class="v">−'+esc(e.value)+'</span>'+
+      (r?'<span class="r">'+esc(r)+'</span>':'<span class="r none">（未填原因）</span>')+'</li>';
+  });
+  document.getElementById('pen-list').innerHTML = rows.join('');
 }
 window.onPenaltyData = function(p){
   if(p&&p.ok&&Array.isArray(p.items)){ items=p.items; renderPen(); }
@@ -91,12 +118,19 @@ window.onPenaltyData = function(p){
 function msg(t){ document.getElementById('pen-msg').textContent=t; }
 document.getElementById('pen-add').onclick=function(){
   if(!gate()){ msg('驗證未通過'); return; }
+  var reason=prompt('扣分原因（會列在清單上，最多 100 字）');
+  if(reason===null){ msg('已取消'); return; }
+  reason=String(reason).trim().slice(0,100);
   msg('記錄中…');
   var today=(function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})(new Date());
+  var before={}; items.forEach(function(e){before[e.id]=1});
   fetch(API,{method:'POST',body:JSON.stringify({action:'counter_add',sheet:'penalty',date:today,value:10})})
     .then(function(r){return r.json()}).then(function(j){
-      if(j&&j.ok&&Array.isArray(j.items)){ items=j.items; renderPen(); msg('已扣分：三本各 −10'); setTimeout(function(){location.reload()},1200); }
-      else msg('失敗：'+(j&&j.error||'連線問題'));
+      if(!(j&&j.ok&&Array.isArray(j.items))){ msg('失敗：'+(j&&j.error||'連線問題')); return; }
+      items=j.items; renderPen();
+      var added=items.filter(function(e){return !before[e.id]}); var id=added.length?added[added.length-1].id:null;
+      var p = (id&&reason) ? saveReason(id, reason, today).then(function(k){ if(k&&k.ok){ reasons[id]=JSON.stringify({reason:reason,date:today}); renderPen(); } else msg('扣分成功但原因未存：'+(k&&k.error||'?')); }).catch(function(){ msg('扣分成功但原因未存（連線問題）'); }) : Promise.resolve();
+      p.then(function(){ msg('已扣分：三本各 −10'); setTimeout(function(){location.reload()},1200); });
     }).catch(function(){ msg('連不上雲端，稍後再試'); });
 };
 document.getElementById('pen-undo').onclick=function(){
@@ -111,6 +145,7 @@ document.getElementById('pen-undo').onclick=function(){
     }).catch(function(){ msg('連不上雲端，稍後再試'); });
 };
 renderPen();
+fetchReasons();
 })();
 """
 
@@ -139,13 +174,14 @@ def points_html():
 
 <div class="pen-card">
   <div class="t">&#9888;&#65039; 表現扣分（家長區）</div>
-  <div class="s">表現不好時按一下：<b>閱讀、牛奶、跳繩三本各扣 10 分</b>。按錯可撤銷最近一筆。<br>
+  <div class="s">表現不好時按一下：<b>閱讀、牛奶、跳繩三本各扣 10 分</b>，會問扣分原因並列在下方。按錯可撤銷最近一筆。<br>
   <span id="pen-stat">讀取中&hellip;</span></div>
   <div class="pen-btns">
     <button class="pen-btn" id="pen-add">三本各扣 10 分</button>
     <button class="pen-undo" id="pen-undo" disabled>撤銷最近一筆</button>
   </div>
   <div class="pen-msg" id="pen-msg"></div>
+  <ul class="pen-list" id="pen-list"></ul>
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
