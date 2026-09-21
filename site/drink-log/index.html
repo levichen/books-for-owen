@@ -73,6 +73,22 @@ button{font-family:inherit;border:none;cursor:pointer}
 .del{background:#F0F6FB;color:#6B8299;padding:6px 12px;font-size:13px;border-radius:999px}
 .empty{color:#9AB0C4;font-size:14px}
 footer{text-align:center;color:#9AB0C4;font-size:13px;margin-top:30px}
+
+/* --- 扣分紀錄小卡 --- */
+.pen-box{border:2px dashed #E0B8A8;background:#FBF1EC}
+.pen-title{font-size:17px;color:#8A5A48}
+.pen-note{font-size:13px;color:#A8887A;margin-top:4px}
+.pen-list{list-style:none;margin-top:10px}
+.pen-list li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-top:1px dashed #F0DDD4;font-size:17px;color:#6E4A3C}
+.pen-list .d{color:#A8887A;font-size:13px;flex:0 0 auto}
+.pen-list .v{color:#B0563F;flex:0 0 auto}
+.pen-list .r{flex:1;line-height:1.6}
+.pen-list .r.none{color:#C4A99C}
+.pz{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .14em 0 0}
+.pz .h{font-size:1em;line-height:1.25}
+.pz .y{display:inline-flex;flex-direction:column;justify-content:center;margin-left:.06em}
+.pz .y i{font-style:normal;font-size:.42em;line-height:1.15;color:#A8887A;text-align:center;font-family:'Huninn',system-ui,sans-serif}
+.pz .t{font-size:.46em;color:#A8887A;align-self:center;line-height:1;font-family:'Huninn',system-ui,sans-serif}
 </style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/" class="on">&#127873; 點數</a><a href="/books-for-owen/games/">&#127918; 遊戲</a></nav><div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#129475; Owen 的牛奶點數</h1>
@@ -95,6 +111,12 @@ footer{text-align:center;color:#9AB0C4;font-size:13px;margin-top:30px}
       <div class="milestones" id="miles"></div>
     </div>
   </div>
+</div>
+
+<div class="card pen-box" id="pen-box" hidden>
+  <div class="pen-title" id="pen-title">&#9888;&#65039; 扣分紀錄</div>
+  <div class="pen-note" id="pen-note">每一筆：閱讀、牛奶、跳繩三本各扣 10 分</div>
+  <ul class="pen-list" id="pen-list"></ul>
 </div>
 
 <div class="card">
@@ -182,6 +204,7 @@ function fetchPenalty() {
         penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
         try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
         renderProgress();
+        if (window.PenaltyWidget) window.PenaltyWidget.setItems(j.items);
       }
     }).catch(() => {});
 }
@@ -361,4 +384,43 @@ document.getElementById('in-date').value = todayStr;
 renderAll();
 flush();
 fetchPenalty();
-</script><script>/*#AR#20260921145942*/(function(){var B='20260921145942';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+
+window.PenaltyWidget = (function () {
+  'use strict';
+  var API = 'https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec', items = null, reasons = null, ZY = null;
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function zyHtml(zy) {
+    var last = zy.slice(-1), tone = 'ˊˇˋ'.indexOf(last) >= 0 ? last : '', light = last === '˙';
+    var syms = (tone || light) ? zy.slice(0, -1) : zy, col = light ? '<i>˙</i>' : '';
+    for (var i = 0; i < syms.length; i++) col += '<i>' + syms[i] + '</i>';
+    return '<span class="y">' + col + '</span>' + (tone ? '<span class="t">' + tone + '</span>' : '');
+  }
+  function ruby(text) {
+    var out = '';
+    for (var ch of String(text)) out += (ZY && ZY[ch]) ? '<span class="pz"><span class="h">' + esc(ch) + '</span>' + zyHtml(ZY[ch]) + '</span>' : esc(ch);
+    return out;
+  }
+  function reasonOf(id) {
+    try { var v = JSON.parse((reasons && reasons[id]) || 'null'); return (v && v.reason) ? String(v.reason) : ''; } catch (e) { return ''; }
+  }
+  function render() {
+    var box = document.getElementById('pen-box'); if (!box) return;
+    if (!items || !items.length) { box.hidden = true; return; }
+    box.hidden = false;
+    document.getElementById('pen-title').innerHTML = '&#9888;&#65039; ' + ruby('扣分紀錄');
+    document.getElementById('pen-note').innerHTML = ruby('每一筆：閱讀、牛奶、跳繩三本各扣 10 分');
+    var rows = items.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; }).map(function (e) {
+      var r = reasonOf(e.id);
+      return '<li><span class="d">' + esc(e.date) + '</span><span class="v">−' + esc(e.value) + '</span>' +
+        (r ? '<span class="r">' + ruby(r) + '</span>' : '<span class="r none">' + ruby('（未填原因）') + '</span>') + '</li>';
+    });
+    document.getElementById('pen-list').innerHTML = rows.join('');
+  }
+  fetch('../assets/zhuyin.json').then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (m) { if (m) { ZY = m; render(); } }).catch(function (e) { console.error('zhuyin load failed', e); });
+  fetch(API + '?mode=kv&sheet=kv_penalty', { cache: 'no-store' }).then(function (r) { return r.json(); })
+    .then(function (j) { if (j && j.ok && j.items && typeof j.items === 'object') { reasons = j.items; render(); } })
+    .catch(function (e) { console.warn('penalty reasons fetch failed', e); });
+  return { setItems: function (list) { items = Array.isArray(list) ? list : []; render(); } };
+})();
+</script><script>/*#AR#20260921150431*/(function(){var B='20260921150431';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

@@ -31,6 +31,8 @@ def write_zhuyin_asset(path):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(m, f, ensure_ascii=False, separators=(",", ":"))
 
+from penalty_widget import PEN_CSS, PEN_HTML, penalty_js
+
 API_URL = "https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec"  # 2026-08-25 新部署（含 drinks）
 
 STYLE = """
@@ -170,6 +172,7 @@ function fetchPenalty() {
         penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
         try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
         renderProgress();
+        if (window.PenaltyWidget) window.PenaltyWidget.setItems(j.items);
       }
     }).catch(() => {});
 }
@@ -400,7 +403,7 @@ def reading_log_html():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen 的閱讀紀錄</title>
 <meta name="robots" content="noindex">
-<style>{STYLE}</style></head><body><div class="wrap">
+<style>{STYLE}{PEN_CSS}</style></head><body><div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#128214; Owen 的閱讀紀錄</h1>
 <div class="sub">每天讀的書都記下來，每滿 {GOAL} 本換一個禮物 &#127873;</div>
@@ -423,7 +426,7 @@ def reading_log_html():
     </div>
   </div>
 </div>
-
+{PEN_HTML}
 <div class="card">
   <form id="add-form" class="form-row">
     <input type="date" id="in-date" required>
@@ -449,4 +452,4 @@ def reading_log_html():
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
-</div><script>{script}</script></body></html>"""
+</div><script>{script}{penalty_js(API_URL)}</script></body></html>"""

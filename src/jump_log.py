@@ -7,6 +7,7 @@
 """
 
 from reading_log import API_URL
+from penalty_widget import PEN_CSS, PEN_HTML, penalty_js
 
 GOAL = 10000  # 每累積 10000 次換一個禮物
 SHEET = "jumps"
@@ -138,6 +139,7 @@ function fetchPenalty() {
         penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
         try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
         renderProgress();
+        if (window.PenaltyWidget) window.PenaltyWidget.setItems(j.items);
       }
     }).catch(() => {});
 }
@@ -332,7 +334,7 @@ def jump_log_html():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen 的跳繩次數</title>
 <meta name="robots" content="noindex">
-<style>{STYLE}</style></head><body><div class="wrap">
+<style>{STYLE}{PEN_CSS}</style></head><body><div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#129336; Owen 的跳繩次數</h1>
 <div class="sub">每天跳的都記下來，每滿 10,000 次換一個禮物 &#127873;</div>
@@ -355,7 +357,7 @@ def jump_log_html():
     </div>
   </div>
 </div>
-
+{PEN_HTML}
 <div class="card">
   <form id="add-form" class="form-row">
     <input type="date" id="in-date" required>
@@ -381,4 +383,4 @@ def jump_log_html():
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
-</div><script>{script}</script></body></html>"""
+</div><script>{script}{penalty_js(API_URL)}</script></body></html>"""
