@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""點數 hub 頁（site/points/）：三個計數器的入口＋即時進度總覽。
+"""點數 hub 頁（site/points/）：三個計數器的入口＋即時進度總覽＋家長區表現扣分（無大人鎖，2026-09-21 移除）。
 未來新計數器都掛這一頁。HOME_JS 同時供首頁預覽按鈕使用。"""
 
 from reading_log import API_URL
@@ -94,11 +94,6 @@ function saveReason(id, reason, date){
   var body={action:'kv_set',sheet:REASON_SHEET,items:{}}; body.items[id]=JSON.stringify({reason:reason,date:date});
   return fetch(API,{method:'POST',body:JSON.stringify(body)}).then(function(r){return r.json()});
 }
-function gate(){
-  var x=11+Math.floor(Math.random()*19), y=3+Math.floor(Math.random()*7);
-  var a=prompt('家長確認 🔒  '+x+' × '+y+' = ?');
-  return a!==null && parseInt(a,10)===x*y;
-}
 function renderPen(){
   var sum=items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
   document.getElementById('pen-stat').textContent = sum>0
@@ -117,7 +112,6 @@ window.onPenaltyData = function(p){
 };
 function msg(t){ document.getElementById('pen-msg').textContent=t; }
 document.getElementById('pen-add').onclick=function(){
-  if(!gate()){ msg('驗證未通過'); return; }
   var reason=prompt('扣分原因（會列在清單上，最多 100 字）');
   if(reason===null){ msg('已取消'); return; }
   reason=String(reason).trim().slice(0,100);
@@ -135,7 +129,7 @@ document.getElementById('pen-add').onclick=function(){
 };
 document.getElementById('pen-undo').onclick=function(){
   if(!items.length) return;
-  if(!gate()){ msg('驗證未通過'); return; }
+  if(!confirm('確定撤銷最近一筆扣分？')) return;
   msg('撤銷中…');
   var last=items[items.length-1];
   fetch(API,{method:'POST',body:JSON.stringify({action:'counter_del',sheet:'penalty',id:last.id})})
