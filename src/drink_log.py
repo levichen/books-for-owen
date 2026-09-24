@@ -26,6 +26,7 @@ h1{font-size:clamp(24px,5vw,34px);text-align:center}
 .status{display:flex;justify-content:center;margin-bottom:14px}
 .status span{font-size:12px;color:#6B8299;background:#E2ECF5;border-radius:999px;padding:4px 12px}
 .status span.ok{background:#E4F2E4;color:#4C7A4C}
+.pendbar{background:#FFF3CD;color:#7A5A00;border:1px solid #F0D98A;border-radius:14px;padding:10px 14px;font-size:14px;text-align:center;margin-bottom:14px}
 .status span.bad{background:#FDEAE0;color:#B0563F}
 
 /* --- 進度區 --- */
@@ -53,6 +54,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .drink-btn{flex:1 1 150px;background:#3D7BC4;color:#fff;border-radius:16px;padding:16px 10px;
   font-size:17px;line-height:1.4;box-shadow:0 6px 16px rgba(61,123,196,.30)}
 .drink-btn .pts{display:block;font-size:13px;opacity:.85}
+.drink-btn:disabled{opacity:.55;cursor:wait;transform:none}
 .drink-btn:active{transform:scale(.97)}
 .drink-btn:disabled{opacity:.55;cursor:wait}
 .hint{color:#9AB0C4;font-size:12px;margin-top:10px}
@@ -120,7 +122,8 @@ let selected = todayStr;
 function localDateStr(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-function newTmpId() { return 'tmp-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+/* 手機端先產生唯一 id 一起送出：重送／雙擊／逾時重試都不會多一筆（後端同 id 直接回「已有」） */
+function newTmpId() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
 
 function currentEntries() {
   let out = serverEntries.slice();
@@ -136,24 +139,26 @@ function pointsOf(list) { return list.reduce((s, e) => s + ptsOf(e.kind), 0); }
 /* 表現扣分（penalty 工作表，三本共用）：total 顯示時扣除 */
 let penalty = 0;
 try { penalty = parseInt(localStorage.getItem('owen-penalty-cache') || '0', 10) || 0; } catch (e) {}
-function fetchPenalty() {
-  fetch(API + '?mode=counter&sheet=penalty', { cache: 'no-store' })
-    .then(r => r.json())
-    .then(j => {
-      if (j && j.ok && Array.isArray(j.items)) {
-        penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
-        try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
-        renderProgress();
-        if (window.PenaltyWidget) window.PenaltyWidget.setItems(j.items);
-      }
-    }).catch(() => {});
+function applyPenalty(items, reasons) {
+  if (!Array.isArray(items)) return;
+  penalty = items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
+  try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
+  if (window.PenaltyWidget) { window.PenaltyWidget.setItems(items); if (reasons) window.PenaltyWidget.setReasons(reasons); }
+}
+/* mode=all 回應：一次拿到本頁紀錄＋扣分＋扣分原因（舊後端沒有這些欄位 → 回 false 視為待更新） */
+function applyAll(resp) {
+  if (!resp || !resp.ok || !Array.isArray(resp.drinks)) return false;
+  serverEntries = resp.drinks;
+  lsSet(CACHE_KEY, serverEntries);
+  applyPenalty(resp.penalty, resp.penalty_reasons);
+  return true;
 }
 
 /* ---------- 同步 ---------- */
 function apiFetch(opts) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 20000);
-  const url = (opts && opts.method === 'POST') ? API : API + '?mode=drinks';
+  const url = (opts && opts.method === 'POST') ? API : API + '?mode=all';
   return fetch(url, Object.assign({ signal: ctrl.signal }, opts))
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
     .finally(() => clearTimeout(timer));
@@ -166,7 +171,7 @@ async function flush() {
     while (queue.length) {
       const op = queue[0];
       const body = op.action === 'drink_add'
-        ? { action: 'drink_add', date: op.date, kind: op.kind }
+        ? { action: 'drink_add', date: op.date, kind: op.kind, id: op.tmp }
         : { action: 'drink_del', id: op.id };
       const resp = await apiFetch({ method: 'POST', body: JSON.stringify(body) });
       if (!resp.ok) {
@@ -181,13 +186,8 @@ async function flush() {
       renderAll();
     }
     const resp = await apiFetch({ method: 'GET' });
-    if (resp.ok && Array.isArray(resp.drinks)) {
-      serverEntries = resp.drinks;
-      lsSet(CACHE_KEY, serverEntries);
-      setStatus('ok');
-    } else if (resp.ok) {
-      setStatus('stale');  // 舊版後端只回 entries，不動快取
-    }
+    if (!applyAll(resp)) { setStatus('stale'); return; }
+    setStatus('ok');
   } catch (err) {
     console.error('sync failed', err);
     setStatus(queue.length ? 'offline' : 'error');
@@ -205,7 +205,7 @@ function addDrink(date, kind) {
   flush();
 }
 function delDrink(id) {
-  if (String(id).startsWith('tmp-')) {
+  if (queue.some(op => op.action === 'drink_add' && op.tmp === id)) {  // 還沒上雲的直接撤掉
     queue = queue.filter(op => !(op.action === 'drink_add' && op.tmp === id));
   } else {
     queue = queue.concat([{ action: 'drink_del', id }]);
@@ -220,7 +220,7 @@ function setStatus(state) {
   const el = document.getElementById('sync-status');
   const pend = queue.length;
   if (state === 'sync') { el.className = ''; el.textContent = '同步中…'; }
-  else if (state === 'ok') { el.className = 'ok'; el.textContent = '已同步（多裝置共用）'; }
+  else if (state === 'ok') { el.className = 'ok'; el.textContent = '✓ 雲端已同步（多裝置共用）'; }
   else if (state === 'offline') { el.className = 'bad'; el.textContent = '離線中，' + pend + ' 筆待同步（連線後自動補送）'; }
   else if (state === 'stale') { el.className = 'bad'; el.textContent = '雲端後端待更新' + (pend ? '，' + pend + ' 筆已保留待補送' : '') + '（請爸爸更新 Apps Script）'; }
   else { el.className = 'bad'; el.textContent = '連不上雲端，先顯示上次資料'; }
@@ -282,10 +282,15 @@ function renderDay() {
   box.innerHTML = list.map(e =>
     '<div class="entry"><span class="bk">' + emojiOf(e.kind) + ' ' + esc(e.kind) + '</span>' +
     '<span class="p">+' + ptsOf(e.kind) + ' 點</span>' +
-    (e.pending ? '<span class="pend">待同步</span>' : '') +
+    (e.pending ? '<span class="pend">⏳ 還沒存到雲端</span>' : '') +
     '<button class="del" data-id="' + e.id + '">刪除</button></div>').join('');
 }
-function renderAll() { renderProgress(); renderCalendar(); renderDay(); }
+function renderPending() {
+  const bar = document.getElementById('pend-bar'), n = queue.length;
+  bar.hidden = !n;
+  bar.textContent = '⏳ 還有 ' + n + ' 筆沒存到雲端，正在送出…請先不要重複記';
+}
+function renderAll() { renderProgress(); renderCalendar(); renderDay(); renderPending(); }
 
 /* ---------- 事件 ---------- */
 document.getElementById('drink-btns').addEventListener('click', ev => {
@@ -293,6 +298,9 @@ document.getElementById('drink-btns').addEventListener('click', ev => {
   if (!btn) return;
   const date = document.getElementById('in-date').value;
   if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) return;
+  if (btn.disabled) return;
+  const all = document.querySelectorAll('.drink-btn'); all.forEach(b => { b.disabled = true; });
+  setTimeout(() => all.forEach(b => { b.disabled = false; }), 3000);
   addDrink(date, btn.dataset.kind);
   selected = date;
   view = { y: +date.slice(0, 4), m: +date.slice(5, 7) - 1 };
@@ -323,7 +331,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) flus
 document.getElementById('in-date').value = todayStr;
 renderAll();
 flush();
-fetchPenalty();
 """
 
 
@@ -338,6 +345,7 @@ def drink_log_html():
 <h1>&#129475; Owen 的牛奶點數</h1>
 <div class="sub">喝牛奶集點，每滿 {GOAL} 點換一個禮物 &#127873;</div>
 <div class="status"><span id="sync-status">同步中&hellip;</span></div>
+<div class="pendbar" id="pend-bar" hidden></div>
 
 <div class="card">
   <div class="progress">

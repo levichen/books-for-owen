@@ -25,8 +25,14 @@ function render(s){
 }
 try{ render(JSON.parse(localStorage.getItem('owen-home-summary')||'null')); }catch(e){}
 function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.json()}).catch(function(){return null});}
-Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps'), jget(API+'?mode=counter&sheet=penalty')]).then(function(rs){
-  var b=rs[0],d=rs[1],j=rs[2],p=rs[3];
+function loadAll(){
+  return jget(API+'?mode=all').then(function(a){
+    if(a&&a.ok&&Array.isArray(a.drinks)) return [{ok:true,entries:a.entries},{ok:true,drinks:a.drinks},{ok:true,items:a.jumps},{ok:true,items:a.penalty},a.penalty_reasons||null];
+    return Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=jumps'), jget(API+'?mode=counter&sheet=penalty'), null]);  // 舊後端
+  });
+}
+loadAll().then(function(rs){
+  var b=rs[0],d=rs[1],j=rs[2],p=rs[3],reasons=rs[4];
   var pen=0;
   if(p&&p.ok&&Array.isArray(p.items)) pen=p.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0);
   try{localStorage.setItem('owen-penalty-cache', String(pen));}catch(e){}
@@ -35,7 +41,7 @@ Promise.all([jget(API), jget(API+'?mode=drinks'), jget(API+'?mode=counter&sheet=
   if(d&&d.ok&&Array.isArray(d.drinks)) s.drinks=Math.max(0, d.drinks.reduce(function(t,e){return t+(PTS[e.kind]||1)},0)-pen);
   if(j&&j.ok&&Array.isArray(j.items)) s.jumps=Math.max(0, j.items.reduce(function(t,e){return t+(parseInt(e.value,10)||0)},0)-pen);
   render(s);
-  if(typeof window.onPenaltyData==='function') window.onPenaltyData(p);
+  if(typeof window.onPenaltyData==='function') window.onPenaltyData(p, reasons);
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
 });
 })();
@@ -107,7 +113,8 @@ function renderPen(){
   });
   document.getElementById('pen-list').innerHTML = rows.join('');
 }
-window.onPenaltyData = function(p){
+window.onPenaltyData = function(p, r){
+  if(r&&typeof r==='object') reasons=r; else fetchReasons();
   if(p&&p.ok&&Array.isArray(p.items)){ items=p.items; renderPen(); }
 };
 function msg(t){ document.getElementById('pen-msg').textContent=t; }
@@ -139,7 +146,6 @@ document.getElementById('pen-undo').onclick=function(){
     }).catch(function(){ msg('連不上雲端，稍後再試'); });
 };
 renderPen();
-fetchReasons();
 })();
 """
 

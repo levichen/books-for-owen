@@ -2,7 +2,7 @@
 """扣分紀錄小卡（三本集點頁共用）：條列每一筆扣分的日期、−10、原因，中文逐字加注音。
 
 資料：penalty 工作表（通用 counter API，各頁的 fetchPenalty 已抓，抓到後呼叫 PenaltyWidget.setItems）
-＋ kv_penalty 工作表（原因，key＝扣分列 id；由本小卡自己抓）。沒有扣分時整張卡隱藏。
+＋ kv_penalty 工作表（原因，key＝扣分列 id；各頁由 mode=all 一次取得後 setReasons）。沒有扣分時整張卡隱藏。
 注音字典 ../assets/zhuyin.json 懶載入；ruby class 以 pz 開頭，避免與閱讀紀錄頁的 .zc 衝突。"""
 
 PEN_CSS = """
@@ -34,7 +34,7 @@ PEN_HTML = """
 PEN_JS = """
 window.PenaltyWidget = (function () {
   'use strict';
-  var API = '__API__', items = null, reasons = null, ZY = null;
+  var items = null, reasons = null, ZY = null;
   function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function zyHtml(zy) {
     var last = zy.slice(-1), tone = 'ˊˇˋ'.indexOf(last) >= 0 ? last : '', light = last === '˙';
@@ -65,10 +65,10 @@ window.PenaltyWidget = (function () {
   }
   fetch('../assets/zhuyin.json').then(function (r) { return r.ok ? r.json() : null; })
     .then(function (m) { if (m) { ZY = m; render(); } }).catch(function (e) { console.error('zhuyin load failed', e); });
-  fetch(API + '?mode=kv&sheet=kv_penalty', { cache: 'no-store' }).then(function (r) { return r.json(); })
-    .then(function (j) { if (j && j.ok && j.items && typeof j.items === 'object') { reasons = j.items; render(); } })
-    .catch(function (e) { console.warn('penalty reasons fetch failed', e); });
-  return { setItems: function (list) { items = Array.isArray(list) ? list : []; render(); } };
+  return {
+    setItems: function (list) { items = Array.isArray(list) ? list : []; render(); },
+    setReasons: function (obj) { if (obj && typeof obj === 'object') { reasons = obj; render(); } }
+  };
 })();
 """
 

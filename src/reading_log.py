@@ -49,6 +49,7 @@ h1{font-size:clamp(24px,5vw,34px);text-align:center}
 .status{display:flex;justify-content:center;margin-bottom:14px}
 .status span{font-size:12px;color:#8A7460;background:#F3EADA;border-radius:999px;padding:4px 12px}
 .status span.ok{background:#E4F2E4;color:#4C7A4C}
+.pendbar{background:#FFF3CD;color:#7A5A00;border:1px solid #F0D98A;border-radius:14px;padding:10px 14px;font-size:14px;text-align:center;margin-bottom:14px}
 .status span.bad{background:#FDEAE0;color:#B0563F}
 
 /* --- 進度區：甜甜圈 + 大數字 --- */
@@ -147,7 +148,8 @@ let selected = todayStr;
 function localDateStr(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-function newTmpId() { return 'tmp-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+/* 手機端先產生唯一 id 一起送出：重送／雙擊／逾時重試都不會多一筆（後端同 id 直接回「已有」） */
+function newTmpId() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
 
 /* v1 搬遷：舊的純本機紀錄轉成待送佇列，之後照一般流程上雲 */
 function migrateOld() {
@@ -164,17 +166,19 @@ function migrateOld() {
 /* 表現扣分（penalty 工作表，三本共用）：total 顯示時扣除 */
 let penalty = 0;
 try { penalty = parseInt(localStorage.getItem('owen-penalty-cache') || '0', 10) || 0; } catch (e) {}
-function fetchPenalty() {
-  fetch(API + '?mode=counter&sheet=penalty', { cache: 'no-store' })
-    .then(r => r.json())
-    .then(j => {
-      if (j && j.ok && Array.isArray(j.items)) {
-        penalty = j.items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
-        try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
-        renderProgress();
-        if (window.PenaltyWidget) window.PenaltyWidget.setItems(j.items);
-      }
-    }).catch(() => {});
+function applyPenalty(items, reasons) {
+  if (!Array.isArray(items)) return;
+  penalty = items.reduce((s, e) => s + (parseInt(e.value, 10) || 0), 0);
+  try { localStorage.setItem('owen-penalty-cache', String(penalty)); } catch (e) {}
+  if (window.PenaltyWidget) { window.PenaltyWidget.setItems(items); if (reasons) window.PenaltyWidget.setReasons(reasons); }
+}
+/* mode=all 回應：一次拿到本頁紀錄＋扣分＋扣分原因（舊後端沒有這些欄位 → 回 false 視為待更新） */
+function applyAll(resp) {
+  if (!resp || !resp.ok || !Array.isArray(resp.entries)) return false;
+  serverEntries = resp.entries;
+  lsSet(CACHE_KEY, serverEntries);
+  applyPenalty(resp.penalty, resp.penalty_reasons);
+  return true;
 }
 
 /* 顯示用資料 = 雲端快照 + 佇列樂觀套用 */
@@ -192,7 +196,8 @@ function byDate(date) { return currentEntries().filter(e => e.date === date); }
 function apiFetch(opts) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 20000);
-  return fetch(API, Object.assign({ signal: ctrl.signal }, opts))
+  const url = (opts && opts.method === 'POST') ? API : API + '?mode=all';
+  return fetch(url, Object.assign({ signal: ctrl.signal }, opts))
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
     .finally(() => clearTimeout(timer));
 }
@@ -204,11 +209,12 @@ async function flush() {
     while (queue.length) {
       const op = queue[0];
       const body = op.action === 'add'
-        ? { action: 'add', date: op.date, title: op.title }
+        ? { action: 'add', date: op.date, title: op.title, id: op.tmp }
         : { action: 'del', id: op.id };
       const resp = await apiFetch({ method: 'POST', body: JSON.stringify(body) });
       if (!resp.ok) {
-        if (resp.error === 'bad input' || resp.error === 'unknown action') {
+        if (resp.error === 'unknown action') { setStatus('stale'); return; }  // 後端未更新：保留佇列
+        if (resp.error === 'bad input') {
           queue = queue.slice(1);  // 無效操作直接丟棄，避免卡死佇列
           lsSet(QUEUE_KEY, queue);
           continue;
@@ -223,7 +229,7 @@ async function flush() {
     }
     if (!queue.length) {
       const resp = await apiFetch({ method: 'GET' });
-      if (resp.ok) { serverEntries = resp.entries; lsSet(CACHE_KEY, serverEntries); }
+      if (!applyAll(resp)) { setStatus('stale'); return; }
     }
     setStatus('ok');
   } catch (err) {
@@ -243,7 +249,7 @@ function addBook(date, title) {
   flush();
 }
 function delBook(id) {
-  if (String(id).startsWith('tmp-')) {
+  if (queue.some(op => op.action === 'add' && op.tmp === id)) {  // 還沒上雲的直接撤掉
     queue = queue.filter(op => !(op.action === 'add' && op.tmp === id));  // 還沒上雲的，直接從佇列撤掉
   } else {
     queue = queue.concat([{ action: 'del', id }]);
@@ -258,7 +264,7 @@ function setStatus(state) {
   const el = document.getElementById('sync-status');
   const pend = queue.length;
   if (state === 'sync') { el.className = ''; el.textContent = '同步中…'; }
-  else if (state === 'ok') { el.className = 'ok'; el.textContent = '已同步（多裝置共用）'; }
+  else if (state === 'ok') { el.className = 'ok'; el.textContent = '✓ 雲端已同步（多裝置共用）'; }
   else if (state === 'offline') { el.className = 'bad'; el.textContent = '離線中，' + pend + ' 筆待同步（連線後自動補送）'; }
   else { el.className = 'bad'; el.textContent = '連不上雲端，先顯示上次資料'; }
 }
@@ -346,10 +352,15 @@ function renderDay() {
   if (!list.length) { box.innerHTML = '<div class="empty">這天還沒有紀錄</div>'; return; }
   box.innerHTML = list.map(e =>
     '<div class="entry"><span class="bk">&#128214; ' + rubyTitle(e.title) + '</span>' +
-    (e.pending ? '<span class="pend">待同步</span>' : '') +
+    (e.pending ? '<span class="pend">⏳ 還沒存到雲端</span>' : '') +
     '<button class="del" data-id="' + e.id + '">刪除</button></div>').join('');
 }
-function renderAll() { renderProgress(); renderCalendar(); renderDay(); }
+function renderPending() {
+  const bar = document.getElementById('pend-bar'), n = queue.length;
+  bar.hidden = !n;
+  bar.textContent = '⏳ 還有 ' + n + ' 筆沒存到雲端，正在送出…請先不要重複記';
+}
+function renderAll() { renderProgress(); renderCalendar(); renderDay(); renderPending(); }
 function showError(msg) { const el = document.getElementById('err'); el.textContent = msg; el.style.display = 'block'; }
 function clearError() { document.getElementById('err').style.display = 'none'; }
 
@@ -361,6 +372,9 @@ document.getElementById('add-form').addEventListener('submit', ev => {
   if (!date || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) { showError('請選擇日期'); return; }
   if (!title) { showError('請填書名'); return; }
   if (title.length > 100) { showError('書名太長（100 字內）'); return; }
+  const addBtn = ev.target.querySelector('.add-btn');
+  if (addBtn.disabled) return;
+  addBtn.disabled = true; setTimeout(() => { addBtn.disabled = false; }, 3000);
   addBook(date, title);
   selected = date;
   view = { y: +date.slice(0, 4), m: +date.slice(5, 7) - 1 };
@@ -393,7 +407,6 @@ document.getElementById('in-date').value = todayStr;
 migrateOld();
 renderAll();
 flush();
-fetchPenalty();
 """
 
 
@@ -408,6 +421,7 @@ def reading_log_html():
 <h1>&#128214; Owen 的閱讀紀錄</h1>
 <div class="sub">每天讀的書都記下來，每滿 {GOAL} 本換一個禮物 &#127873;</div>
 <div class="status"><span id="sync-status">同步中&hellip;</span></div>
+<div class="pendbar" id="pend-bar" hidden></div>
 
 <div class="card">
   <div class="progress">
