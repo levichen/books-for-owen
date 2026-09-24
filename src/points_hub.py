@@ -3,6 +3,7 @@
 未來新計數器都掛這一頁。HOME_JS 同時供首頁預覽按鈕使用。"""
 
 from reading_log import API_URL
+from loading_gate import GATE_CSS, GATE_HTML, GATE_JS
 
 # 即時進度 JS（首頁與點數 hub 共用）：三 API 平行抓，先顯示快取再更新
 HOME_JS = """
@@ -43,6 +44,7 @@ loadAll().then(function(rs){
   render(s);
   if(typeof window.onPenaltyData==='function') window.onPenaltyData(p, reasons);
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
+  if(window.LoadingGate) window.LoadingGate.done();
 });
 })();
 """
@@ -156,7 +158,7 @@ def points_html():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen 的點數</title>
 <meta name="robots" content="noindex">
-<style>{STYLE}</style></head><body><div class="wrap">
+<style>{STYLE}{GATE_CSS}</style></head><body>{GATE_HTML}<div class="wrap">
 <h1>&#127873; Owen 的點數</h1>
 <div class="sub">三種累積，滿了都能換禮物</div>
 
@@ -185,4 +187,4 @@ def points_html():
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
-</div><script>{js}</script></body></html>"""
+</div><script>{GATE_JS}{js}</script></body></html>"""

@@ -96,7 +96,15 @@ footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
 .pz .y{display:inline-flex;flex-direction:column;justify-content:center;margin-left:.06em}
 .pz .y i{font-style:normal;font-size:.42em;line-height:1.15;color:#A8887A;text-align:center;font-family:'Huninn',system-ui,sans-serif}
 .pz .t{font-size:.46em;color:#A8887A;align-self:center;line-height:1;font-family:'Huninn',system-ui,sans-serif}
-</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/" class="on">&#127873; 點數</a><a href="/books-for-owen/games/">&#127918; 遊戲</a></nav><div class="wrap">
+
+/* --- 載入遮罩 --- */
+#load-gate{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:rgba(255,255,255,.94);color:#6E5A50;font-size:17px;text-align:center;padding:24px;transition:opacity .25s}
+#load-gate.hide{opacity:0;pointer-events:none}
+#load-gate .spin{width:46px;height:46px;border-radius:50%;border:5px solid #E8E0F5;border-top-color:#6C4DD6;animation:lg-spin .9s linear infinite}
+#load-gate .sub{font-size:13px;color:#A8988F}
+@keyframes lg-spin{to{transform:rotate(360deg)}}
+</style><link rel="manifest" href="/books-for-owen/manifest.webmanifest"><link rel="apple-touch-icon" href="/books-for-owen/assets/icon-180.png"><meta name="apple-mobile-web-app-title" content="Owen 書架"><meta name="theme-color" content="#FBF4E8"></head><body><style>.site-nav{display:flex;justify-content:center;gap:8px;padding:12px 10px 0}.site-nav a{font-family:'Huninn',system-ui,sans-serif;font-size:14px;color:#8A7460;text-decoration:none;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;box-shadow:0 2px 8px rgba(74,59,50,.08)}.site-nav a.on{background:#4A3B32;color:#fff}</style><nav class="site-nav"><a href="/books-for-owen/">&#128214; 書櫃</a><a href="/books-for-owen/points/" class="on">&#127873; 點數</a><a href="/books-for-owen/games/">&#127918; 遊戲</a></nav><div id="load-gate" aria-busy="true"><div class="spin"></div><div>&#9729;&#65039; 正在讀取雲端紀錄&hellip;</div><div class="sub">讀完才能操作，避免重複記錄</div></div><div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#128214; Owen 的閱讀紀錄</h1>
 <div class="sub">每天讀的書都記下來，每滿 100 本換一個禮物 &#127873;</div>
@@ -153,6 +161,19 @@ footer{text-align:center;color:#B8A88F;font-size:13px;margin-top:30px}
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
 </div><script>
+window.LoadingGate = (function () {
+  'use strict';
+  var el = document.getElementById('load-gate'), doneFlag = false;
+  function done() {
+    if (doneFlag || !el) return;
+    doneFlag = true;
+    el.classList.add('hide');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }
+  setTimeout(done, 25000);  // 保險：離線或後端卡住時不要永遠鎖住
+  return { done: done };
+})();
+
 'use strict';
 const API = 'https://script.google.com/macros/s/AKfycbz2MC2MX7kLY6yNm_L4crX1TMY70M3xx81DcMuePbdTCoNg6uN6bvls4NYlSegXAoPQ/exec';
 const GOAL = 100;
@@ -275,6 +296,7 @@ async function flush() {
   } finally {
     flushing = false;
     renderAll();
+    if (window.LoadingGate) window.LoadingGate.done();
   }
 }
 
@@ -483,4 +505,4 @@ window.PenaltyWidget = (function () {
     setReasons: function (obj) { if (obj && typeof obj === 'object') { reasons = obj; render(); } }
   };
 })();
-</script><script>/*#AR#20260924083712*/(function(){var B='20260924083712';function busy(){try{var ks=['owen-reading-queue-v1','owen-drink-queue-v1','owen-jump-queue-v1','owen-wq-pqueue-v1'];for(var i=0;i<ks.length;i++){var v=JSON.parse(localStorage.getItem(ks[i])||'null');if(v&&(Array.isArray(v)?v.length:Object.keys(v).length))return true;}}catch(e){}return false;}try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)&&!busy()){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260924084957*/(function(){var B='20260924084957';function busy(){try{var ks=['owen-reading-queue-v1','owen-drink-queue-v1','owen-jump-queue-v1','owen-wq-pqueue-v1'];for(var i=0;i<ks.length;i++){var v=JSON.parse(localStorage.getItem(ks[i])||'null');if(v&&(Array.isArray(v)?v.length:Object.keys(v).length))return true;}}catch(e){}return false;}try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)&&!busy()){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

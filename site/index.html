@@ -271,6 +271,7 @@ loadAll().then(function(rs){
   render(s);
   if(typeof window.onPenaltyData==='function') window.onPenaltyData(p, reasons);
   try{localStorage.setItem('owen-home-summary', JSON.stringify(s));}catch(e){}
+  if(window.LoadingGate) window.LoadingGate.done();
 });
 })();
-</script><script>/*#AR#20260924083712*/(function(){var B='20260924083712';function busy(){try{var ks=['owen-reading-queue-v1','owen-drink-queue-v1','owen-jump-queue-v1','owen-wq-pqueue-v1'];for(var i=0;i<ks.length;i++){var v=JSON.parse(localStorage.getItem(ks[i])||'null');if(v&&(Array.isArray(v)?v.length:Object.keys(v).length))return true;}}catch(e){}return false;}try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)&&!busy()){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260924084957*/(function(){var B='20260924084957';function busy(){try{var ks=['owen-reading-queue-v1','owen-drink-queue-v1','owen-jump-queue-v1','owen-wq-pqueue-v1'];for(var i=0;i<ks.length;i++){var v=JSON.parse(localStorage.getItem(ks[i])||'null');if(v&&(Array.isArray(v)?v.length:Object.keys(v).length))return true;}}catch(e){}return false;}try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)&&!busy()){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>

@@ -9,6 +9,7 @@ action 用 drink_add/drink_del——後端未更新前操作會留在離線佇�
 
 from reading_log import API_URL
 from penalty_widget import PEN_CSS, PEN_HTML, penalty_js
+from loading_gate import GATE_CSS, GATE_HTML, GATE_JS
 
 GOAL = 100  # 每累積 100 點換一個禮物
 
@@ -194,6 +195,7 @@ async function flush() {
   } finally {
     flushing = false;
     renderAll();
+    if (window.LoadingGate) window.LoadingGate.done();
   }
 }
 
@@ -340,7 +342,7 @@ def drink_log_html():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Owen 的牛奶點數</title>
 <meta name="robots" content="noindex">
-<style>{STYLE}{PEN_CSS}</style></head><body><div class="wrap">
+<style>{STYLE}{PEN_CSS}{GATE_CSS}</style></head><body>{GATE_HTML}<div class="wrap">
 <a class="back" href="../">&larr; 回書架</a>
 <h1>&#129475; Owen 的牛奶點數</h1>
 <div class="sub">喝牛奶集點，每滿 {GOAL} 點換一個禮物 &#127873;</div>
@@ -391,4 +393,4 @@ def drink_log_html():
 </div>
 
 <footer>made with &hearts; by Daddy &amp; Claude</footer>
-</div><script>{script}{penalty_js(API_URL)}</script></body></html>"""
+</div><script>{GATE_JS}{script}{penalty_js(API_URL)}</script></body></html>"""
