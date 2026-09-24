@@ -187,10 +187,10 @@ if(doneBtn)doneBtn.onclick=async()=>{
   if(list.entries.some(e=>e.title===BOOK_TITLE&&e.date===today)){
    doneBtn.classList.add('ok');doneBtn.innerHTML='&#11088; 今天記過囉！';
    doneMsg.textContent='這本今天已經在紀錄裡了，明天再讀再記一筆';return;}
-  const resp=await (await fetch(LOG_API,{method:'POST',body:JSON.stringify({action:'add',date:today,title:BOOK_TITLE})})).json();
+  const resp=await (await fetch(LOG_API,{method:'POST',body:JSON.stringify({action:'add',date:today,title:BOOK_TITLE,id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)})})).json();
   if(!resp.ok)throw new Error(resp.error||'api');
   doneBtn.classList.add('ok');doneBtn.innerHTML='&#127881; 已記錄！';
   doneMsg.textContent='目前累積 '+resp.entries.length+' 本，繼續加油！';
  }catch(err){console.error(err);doneBtn.disabled=false;doneMsg.textContent='連不上網路，請稍後再按一次（或到閱讀紀錄頁手動記）';}
 };
-</script><script>/*#AR#20260921150431*/(function(){var B='20260921150431';try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
+</script><script>/*#AR#20260924083712*/(function(){var B='20260924083712';function busy(){try{var ks=['owen-reading-queue-v1','owen-drink-queue-v1','owen-jump-queue-v1','owen-wq-pqueue-v1'];for(var i=0;i<ks.length;i++){var v=JSON.parse(localStorage.getItem(ks[i])||'null');if(v&&(Array.isArray(v)?v.length:Object.keys(v).length))return true;}}catch(e){}return false;}try{fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){var m=t.match(/#AR#(\d{14})/);if(m&&m[1]!==B){var k='ar-'+m[1];if(!sessionStorage.getItem(k)&&!busy()){sessionStorage.setItem(k,'1');location.reload();}}}).catch(function(){});}catch(e){}})()</script></body></html>
