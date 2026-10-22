@@ -1,0 +1,357 @@
+# -*- coding: utf-8 -*-
+"""聰明餅乾遊戲頁（site/games/smart-cookies/）：關卡表＋解題畫面。
+
+題庫由 smart_cookies.py 產生並內嵌；JS 只負責畫線索卡、點選擺放、
+放滿九片時對照線索（違反的線索卡變紅）、提示（擺對一片）與過關紀錄（localStorage）。
+中文全部逐字注音（共用 assets/zhuyin.json）。
+"""
+
+import json
+
+from smart_cookies import load_puzzles
+
+STYLE = """
+@font-face { font-family:'Huninn'; src:url('../../assets/huninn.woff2') format('woff2'); font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+body{font-family:'Huninn',system-ui,sans-serif;background:#FBF4E8;min-height:100vh;color:#4A3B32}
+.wrap{max-width:520px;margin:0 auto;padding:18px 12px 50px;text-align:center}
+h1{font-size:clamp(22px,5vw,30px)}
+.sub{color:#8A7460;font-size:14px;margin:4px 0 14px;line-height:1.6}
+.hidden{display:none !important}
+button{font-family:inherit;border:none;cursor:pointer;color:inherit;background:none}
+/* 直式注音在字右側（台灣課本式） */
+.zc{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .14em 0 0}
+.zc .h{font-size:1em;line-height:1.25}
+.zc .zy{display:inline-flex;flex-direction:column;justify-content:center;margin-left:.06em}
+.zc .zy i{font-style:normal;font-size:.42em;line-height:1.15;color:#8A7460;text-align:center}
+.zc .tn{font-size:.46em;color:#8A7460;align-self:center;line-height:1}
+.bigbtn .zc .zy i,.bigbtn .zc .tn,.dot .zc .zy i,.dot .zc .tn{color:inherit;opacity:.85}
+/* 關卡表 */
+.bigbtn{background:#E4574C;color:#fff;font-size:20px;border-radius:999px;padding:14px 36px;margin:4px 0 18px;box-shadow:0 6px 16px rgba(228,87,76,.35)}
+.lvrow{background:#fff;border-radius:18px;padding:12px 14px;margin-bottom:10px;box-shadow:0 4px 14px rgba(74,59,50,.08);text-align:left}
+.lvname{font-size:17px;display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.lvname small{font-size:13px;color:#8A7460}
+.dots{display:flex;gap:5px;flex-wrap:wrap}
+.dot{width:34px;height:34px;border-radius:50%;background:#F3EADA;color:#8A7460;font-size:15px}
+.dot.ok{background:#CDE8CF;color:#2E7D32}
+.dot.star{background:#FFE9A8}
+/* 解題畫面 */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.topbar button{background:#fff;border-radius:999px;padding:8px 14px;font-size:14px;color:#8A7460;box-shadow:0 2px 8px rgba(74,59,50,.08);white-space:nowrap}
+.ptitle{font-size:17px}
+.clues{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;background:#fff;border-radius:18px;padding:10px;margin-bottom:12px;box-shadow:0 4px 14px rgba(74,59,50,.08)}
+.clue{border:3px solid #EFE4D4;border-radius:12px;padding:4px;background:#FFFDF8;line-height:0;display:flex;align-items:center}
+.clue svg{height:60px;width:auto;display:block}
+.clue.bad{border-color:#E4574C;background:#FFF0EE;animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#6B5A4E;border-radius:22px;padding:12px;max-width:330px;margin:0 auto 12px;box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}
+.cell{aspect-ratio:1;border-radius:14px;background:#F3EADA;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.cell.empty{background:#E7DCC9}
+.cell:active{transform:scale(.95)}
+.cell svg,.slot svg{width:78%;height:78%}
+.tray{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;background:#fff;border-radius:18px;padding:8px;box-shadow:0 4px 14px rgba(74,59,50,.08)}
+.slot{aspect-ratio:1;border-radius:12px;background:#FBF4E8;display:flex;align-items:center;justify-content:center;border:3px solid transparent;transition:transform .1s}
+.slot.sel{border-color:#F0B429;background:#FFF1C2;transform:scale(1.12)}
+.slot.gone{opacity:.15}
+.msg{min-height:30px;font-size:16px;color:#E4574C;margin:10px 0 0}
+.panel{background:#fff;border-radius:20px;padding:20px;margin-top:12px;box-shadow:0 8px 26px rgba(74,59,50,.12)}
+.panel .big{font-size:26px}
+.panel .stat{color:#8A7460;font-size:16px;margin-top:6px}
+.btnrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.btnrow .bigbtn{margin:0}
+.btnrow .ghost{background:#F3EADA;color:#8A7460;font-size:17px;border-radius:999px;padding:14px 26px}
+footer{color:#B8A88F;font-size:12px;margin-top:26px}
+@media (max-width:460px){ .tray{grid-template-columns:repeat(5,1fr)} }
+@media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important} }
+"""
+
+GAME_JS = r"""
+'use strict';
+const PUZZLES = __PUZZLES__;
+const PER = 8;
+const LEVEL_NAMES = ['照著放', '形狀和顏色', '不在這裡', '好鄰居', '這一排', '不在這排', '線索變少', '大挑戰'];
+const FILL = ['#E4574C', '#F0B429', '#3D7BC4'], DARK = ['#A83B32', '#B8830C', '#27579A'];
+const $ = id => document.getElementById(id);
+
+/* ---------- 過關紀錄 ---------- */
+let prog = { done: {} };
+try { prog = Object.assign(prog, JSON.parse(localStorage.getItem('owen-cookies-v1') || '{}')); } catch (e) {}
+function saveProg() { try { localStorage.setItem('owen-cookies-v1', JSON.stringify(prog)); } catch (e) {} }
+
+/* ---------- 注音 ---------- */
+let ZY = null;
+function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function zyHtml(zy) {
+  const last = zy.slice(-1);
+  const tone = 'ˊˇˋ'.includes(last) ? last : '';
+  const light = last === '˙';
+  const syms = (tone || light) ? zy.slice(0, -1) : zy;
+  let col = light ? '<i>˙</i>' : '';
+  for (const c of syms) col += '<i>' + c + '</i>';
+  return '<span class="zy">' + col + '</span>' + (tone ? '<span class="tn">' + tone + '</span>' : '');
+}
+function R(text) {
+  let out = '';
+  for (const ch of String(text)) {
+    out += (ZY && ZY[ch]) ? '<span class="zc"><span class="h">' + esc(ch) + '</span>' + zyHtml(ZY[ch]) + '</span>' : esc(ch);
+  }
+  return out;
+}
+fetch('../../assets/zhuyin.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(m => { if (m) { ZY = m; rerender(); } })
+  .catch(err => console.error('zhuyin load failed', err));
+
+/* ---------- 音效 ---------- */
+let AC = null;
+function beep(freq, dur, type, gain) {
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain || 0.1, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch (e) {}
+}
+const sfx = {
+  select: () => beep(660, .05, 'triangle'),
+  place: () => beep(520, .08, 'triangle'),
+  bad: () => beep(200, .25, 'sine', .08),
+  win: () => { beep(660, .12); setTimeout(() => beep(830, .12), 110); setTimeout(() => beep(990, .2), 230); },
+};
+
+/* ---------- 畫餅乾與線索 ---------- */
+function shapeTag(s, cx, cy, r) {
+  if (s === 0) return '<polygon points="' + cx + ',' + (cy - r * 1.08) + ' ' + (cx + r) + ',' + (cy + r * .72) + ' ' + (cx - r) + ',' + (cy + r * .72) + '"';
+  if (s === 1) return '<rect x="' + (cx - r * .88) + '" y="' + (cy - r * .88) + '" width="' + (r * 1.76) + '" height="' + (r * 1.76) + '" rx="' + (r * .22) + '"';
+  return '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * .95) + '"';
+}
+function cookie(k, cx, cy, r, gray) {
+  const s = Math.floor(k / 3), c = k % 3;
+  const fill = gray ? '#C9BCA6' : FILL[c], dark = gray ? '#A8977C' : DARK[c];
+  let out = shapeTag(s, cx, cy, r) + ' fill="' + fill + '" stroke="' + dark + '" stroke-width="' + (r * .16) + '" stroke-linejoin="round"/>';
+  if (!gray) {
+    for (const [dx, dy] of [[-.3, .2], [.3, .08], [0, -.22]])
+      out += '<circle cx="' + (cx + dx * r) + '" cy="' + (cy + dy * r) + '" r="' + (r * .12) + '" fill="' + dark + '"/>';
+  }
+  return out;
+}
+function drop(c, cx, cy, r) {
+  return '<path d="M' + cx + ',' + (cy - r) + ' C' + (cx + r * .15) + ',' + (cy - r * .5) + ' ' + (cx + r * .9) + ',' + (cy - r * .05) + ' ' + (cx + r * .9) + ',' + (cy + r * .3)
+    + ' A' + (r * .9) + ',' + (r * .9) + ' 0 1 1 ' + (cx - r * .9) + ',' + (cy + r * .3)
+    + ' C' + (cx - r * .9) + ',' + (cy - r * .05) + ' ' + (cx - r * .15) + ',' + (cy - r * .5) + ' ' + cx + ',' + (cy - r) + 'Z" fill="' + FILL[c] + '" stroke="' + DARK[c] + '" stroke-width="' + (r * .14) + '"/>';
+}
+function cross(cx, cy, r) {
+  const seg = (w, col) => '<path d="M' + (cx - r) + ',' + (cy - r) + 'L' + (cx + r) + ',' + (cy + r) + 'M' + (cx + r) + ',' + (cy - r) + 'L' + (cx - r) + ',' + (cy + r) + '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round" fill="none"/>';
+  return seg(r * .62, '#fff') + seg(r * .32, '#D7342A');
+}
+const CS = 18, GAP = 2, OFF = 1;
+function cellXY(cell) { return [OFF + (cell % 3) * (CS + GAP), OFF + Math.floor(cell / 3) * (CS + GAP)]; }
+function cellRect(x, y, w, h, band) {
+  return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="3" fill="' + (band ? '#FFF1C2' : '#F3EADA') + '" stroke="' + (band ? '#F0B429' : '#D9CBB5') + '" stroke-width="' + (band ? 1.2 : .8) + '"/>';
+}
+function miniGrid(skip) {
+  let out = '';
+  for (let i = 0; i < 9; i++) {
+    if (skip && skip(i)) continue;
+    const [x, y] = cellXY(i);
+    out += cellRect(x, y, CS, CS);
+  }
+  return out;
+}
+function clueSvg(cl) {
+  const t = cl.t;
+  if (t === 'rel') {
+    const horiz = cl.d === 'L';
+    const a = cookie(cl.a, 16, 16, 9), b = cookie(cl.b, horiz ? 44 : 16, horiz ? 16 : 44, 9);
+    const cells = cellRect(3, 3, 26, 26) + (horiz ? cellRect(31, 3, 26, 26) : cellRect(3, 31, 26, 26));
+    return '<svg viewBox="0 0 ' + (horiz ? 60 : 32) + ' ' + (horiz ? 32 : 60) + '">' + cells + a + b + '</svg>';
+  }
+  let body;
+  if (t === 'row' || t === 'col' || t === 'nrow' || t === 'ncol') {
+    const isRow = t === 'row' || t === 'nrow';
+    body = miniGrid(i => (isRow ? Math.floor(i / 3) : i % 3) === cl.i);
+    const span = CS * 3 + GAP * 2;
+    const [x, y] = cellXY(isRow ? cl.i * 3 : cl.i);
+    body += isRow ? cellRect(OFF, y, span, CS, true) : cellRect(x, OFF, CS, span, true);
+    const cx = isRow ? OFF + span / 2 : x + CS / 2, cy = isRow ? y + CS / 2 : OFF + span / 2;
+    body += cookie(cl.k, cx, cy, 7.5) + (t[0] === 'n' ? cross(cx, cy, 6.5) : '');
+  } else {
+    body = miniGrid();
+    const [x, y] = cellXY(cl.cell);
+    const cx = x + CS / 2, cy = y + CS / 2;
+    if (t === 'at') body += cookie(cl.k, cx, cy, 7.5);
+    else if (t === 'sat') body += cookie(cl.s * 3, cx, cy, 7.5, true);
+    else if (t === 'cat') body += drop(cl.c, cx, cy, 7.5);
+    else if (t === 'nat') body += cookie(cl.k, cx, cy, 7.5) + cross(cx, cy, 6.5);
+  }
+  return '<svg viewBox="0 0 60 60">' + body + '</svg>';
+}
+function bigCookie(k) { return '<svg viewBox="0 0 40 40">' + cookie(k, 20, 20, 15) + '</svg>'; }
+
+/* ---------- 線索判斷（盤面放滿後） ---------- */
+function evalClue(cl, b) {
+  const rowOf = c => Math.floor(c / 3), colOf = c => c % 3;
+  switch (cl.t) {
+    case 'at': return b[cl.cell] === cl.k;
+    case 'sat': return Math.floor(b[cl.cell] / 3) === cl.s;
+    case 'cat': return b[cl.cell] % 3 === cl.c;
+    case 'nat': return b[cl.cell] !== cl.k;
+    case 'rel': {
+      const pa = b.indexOf(cl.a), pb = b.indexOf(cl.b);
+      return cl.d === 'L' ? (rowOf(pa) === rowOf(pb) && pb === pa + 1) : pb === pa + 3;
+    }
+    case 'row': return rowOf(b.indexOf(cl.k)) === cl.i;
+    case 'col': return colOf(b.indexOf(cl.k)) === cl.i;
+    case 'nrow': return rowOf(b.indexOf(cl.k)) !== cl.i;
+    case 'ncol': return colOf(b.indexOf(cl.k)) !== cl.i;
+  }
+  return true;
+}
+
+/* ---------- 狀態 ---------- */
+let cur = null, board = Array(9).fill(null), sel = null, hinted = false, badClues = new Set(), solved = false, msg = '';
+
+function nextUnsolved() { for (let i = 0; i < PUZZLES.length; i++) if (!prog.done[i]) return i; return null; }
+function rerender() { if (cur === null) renderHome(); else renderPlay(); }
+
+function showHome() {
+  cur = null;
+  $('home').classList.remove('hidden'); $('play').classList.add('hidden');
+  renderHome();
+}
+function renderHome() {
+  const next = nextUnsolved();
+  $('howto').innerHTML = R('看線索，把九片餅乾放到烤盤上。') + '<br>' + R('點餅乾，再點格子。');
+  $('startbtn').innerHTML = next === null ? '&#127881; ' + R('全部過關了！') : '&#127850; ' + R('繼續玩');
+  $('startbtn').disabled = next === null;
+  $('levels').innerHTML = LEVEL_NAMES.map((name, lv) => {
+    const dots = Array.from({ length: PER }, (_, n) => {
+      const idx = lv * PER + n, st = prog.done[idx];
+      return '<button class="dot' + (st === 'star' ? ' star' : st ? ' ok' : '') + '" data-idx="' + idx + '">'
+        + (st === 'star' ? '&#11088;' : st ? '&#10004;' : (n + 1)) + '</button>';
+    }).join('');
+    return '<div class="lvrow"><div class="lvname">' + R('第') + ' ' + (lv + 1) + ' ' + R('關') + '<small>' + R(name) + '</small></div><div class="dots">' + dots + '</div></div>';
+  }).join('');
+}
+function start(idx) {
+  cur = idx; board = Array(9).fill(null); sel = null; hinted = false; badClues = new Set(); solved = false; msg = '';
+  $('home').classList.add('hidden'); $('play').classList.remove('hidden');
+  window.scrollTo(0, 0);
+  renderPlay();
+}
+function renderPlay() {
+  const p = PUZZLES[cur];
+  $('ptitle').innerHTML = R('第') + ' ' + p.lv + ' ' + R('關') + '・' + R('第') + ' ' + (cur % PER + 1) + ' ' + R('題');
+  $('clues').innerHTML = p.clues.map((c, i) => '<div class="clue' + (badClues.has(i) ? ' bad' : '') + '">' + clueSvg(c) + '</div>').join('');
+  $('board').innerHTML = board.map((k, i) =>
+    '<button class="cell' + (k === null ? ' empty' : '') + '" data-i="' + i + '" aria-label="cell ' + i + '">' + (k === null ? '' : bigCookie(k)) + '</button>').join('');
+  $('tray').innerHTML = Array.from({ length: 9 }, (_, k) => {
+    const gone = board.includes(k);
+    return '<button class="slot' + (gone ? ' gone' : '') + (sel === k ? ' sel' : '') + '" data-k="' + k + '"' + (gone ? ' disabled' : '') + '>' + bigCookie(k) + '</button>';
+  }).join('');
+  $('msg').innerHTML = msg ? R(msg) : '';
+  $('hintbtn').innerHTML = '&#128161; ' + R('提示');
+  $('homebtn').innerHTML = '&larr; ' + R('關卡表');
+  $('win').classList.toggle('hidden', !solved);
+  if (solved) {
+    $('win-big').innerHTML = '&#127881; ' + R('答對了！');
+    $('win-stat').innerHTML = hinted ? '&#10004; ' + R('用了提示也很棒！') : '&#11088; ' + R('自己想出來的！');
+    $('nextbtn').innerHTML = R('下一題') + ' &#9654;';
+    $('nextbtn').classList.toggle('hidden', cur + 1 >= PUZZLES.length);
+    $('backbtn').innerHTML = R('關卡表');
+  }
+}
+
+function check() {
+  const p = PUZZLES[cur];
+  const bad = p.clues.map((c, i) => evalClue(c, board) ? -1 : i).filter(i => i >= 0);
+  if (bad.length) {
+    badClues = new Set(bad); msg = '紅色的線索還不對，再看看！'; sfx.bad();
+  } else {
+    solved = true; msg = '';
+    const st = hinted ? 'ok' : 'star';
+    if (prog.done[cur] !== 'star') { prog = { ...prog, done: { ...prog.done, [cur]: st } }; saveProg(); }
+    sfx.win();
+  }
+  renderPlay();
+}
+function afterChange() {
+  badClues = new Set(); msg = '';
+  renderPlay();
+  if (!board.includes(null)) check();
+}
+function hint() {
+  if (solved) return;
+  const sol = PUZZLES[cur].sol;
+  const ids = Array.from({ length: 9 }, (_, k) => k);
+  let k = ids.find(k => board.includes(k) && board.indexOf(k) !== sol.indexOf(k));
+  if (k === undefined) k = ids.find(k => !board.includes(k));
+  if (k === undefined) return;
+  const cell = sol.indexOf(k);
+  board = board.map((v, j) => j === cell ? k : (v === k ? null : v));
+  hinted = true; sel = null; sfx.place();
+  afterChange();
+}
+
+$('tray').addEventListener('click', ev => {
+  const el = ev.target.closest('.slot');
+  if (!el || el.disabled || solved) return;
+  const k = +el.dataset.k;
+  sel = sel === k ? null : k; sfx.select();
+  renderPlay();
+});
+$('board').addEventListener('click', ev => {
+  const el = ev.target.closest('.cell');
+  if (!el || solved) return;
+  const i = +el.dataset.i;
+  if (sel !== null) {
+    board = board.map((v, j) => j === i ? sel : v); sel = null; sfx.place();
+  } else if (board[i] !== null) {
+    sel = board[i]; board = board.map((v, j) => j === i ? null : v); sfx.select();
+  } else return;
+  afterChange();
+});
+$('levels').addEventListener('click', ev => {
+  const el = ev.target.closest('.dot');
+  if (el) start(+el.dataset.idx);
+});
+$('startbtn').addEventListener('click', () => { const n = nextUnsolved(); if (n !== null) start(n); });
+$('hintbtn').addEventListener('click', hint);
+$('homebtn').addEventListener('click', showHome);
+$('backbtn').addEventListener('click', showHome);
+$('nextbtn').addEventListener('click', () => { if (cur + 1 < PUZZLES.length) start(cur + 1); });
+showHome();
+"""
+
+
+def smart_cookies_html():
+    script = GAME_JS.replace("__PUZZLES__", json.dumps(load_puzzles(), separators=(",", ":")))
+    return f"""<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>聰明餅乾</title>
+<meta name="robots" content="noindex">
+<style>{STYLE}</style></head><body>
+<div class="wrap">
+  <div id="home">
+    <h1>&#127850; 聰明餅乾</h1>
+    <div class="sub" id="howto"></div>
+    <button class="bigbtn" id="startbtn"></button>
+    <div id="levels"></div>
+  </div>
+  <div id="play" class="hidden">
+    <div class="topbar"><button id="homebtn"></button><div class="ptitle" id="ptitle"></div><button id="hintbtn"></button></div>
+    <div class="clues" id="clues"></div>
+    <div class="board" id="board"></div>
+    <div class="tray" id="tray"></div>
+    <div class="msg" id="msg"></div>
+    <div class="panel hidden" id="win">
+      <div class="big" id="win-big"></div>
+      <div class="stat" id="win-stat"></div>
+      <div class="btnrow"><button class="bigbtn" id="nextbtn"></button><button class="ghost" id="backbtn"></button></div>
+    </div>
+  </div>
+  <footer>made with &hearts; by Daddy &amp; Claude</footer>
+</div><script>{script}</script></body></html>"""
